@@ -1,7 +1,8 @@
 # WafflePost
 
 Every Waffle House in America you can walk to from a truck stop. Single-page
-app, no build step, no API key, deployed to GitHub Pages.
+app, no build step, deployed to GitHub Pages. Needs a HERE key to draw the
+map; the atlas itself is computed from local data and needs no network.
 
 A sibling of [FuelPost](https://github.com/5w311/FuelPost) — same shape, same
 discipline, different question. FuelPost answers *where am I allowed to fuel*.
@@ -10,8 +11,8 @@ WafflePost answers *can I get a plate of hashbrowns without moving the truck*.
 Two tabs:
 
 - **Atlas** — map and list of all 67 exits, filterable by corridor, state,
-  truck stop chain, walk distance and free text. Calls nothing; works with no
-  signal once loaded.
+  truck stop chain, walk distance and free text. Every row, distance and
+  filter is computed locally; only the basemap under the pins is fetched.
 - **Route** — pickup, delivery, vehicle profile. Get a truck route from HERE
   and every Waffle House on the atlas that sits near it, in the order you pass
   them, with the mile marker and how far off the road each one is.
@@ -26,7 +27,7 @@ lib/routewaffles.js       projects atlas rows onto a route polyline (no DOM, no 
 lib/vehicleprofile.js     truck dimensions/hazmat -> HERE vehicle[...] params (no DOM, no network)
 lib/triptext.js           formats a stop or a planned run for share/save
 lib/escape.js             HTML-escapes strings before they reach innerHTML
-lib/flexible-polyline.js  PLACEHOLDER - copy the vendored decoder from FuelPost
+lib/flexible-polyline.js  HERE's reference decoder, vendored unmodified (MIT)
 test/*.test.js            plain-node tests, no framework
 test/_assert.js           three assertions; that is the whole framework
 test/run.js               runs every test file and reports a combined total
@@ -112,19 +113,37 @@ Marshall TX and Beaumont TX both show in every unfiltered list, marked
 **read first**, because the thing a driver needs to know about those stops is
 worth a row rather than an omission.
 
-## Atlas needs no key at all
+## The key draws the map now
 
-The Atlas tab calls nothing: Leaflet with CARTO's free basemap tiles, every
-distance computed client-side against `DATA`. A fork of this repo deploys and
-works with no account, no key and no call budget. Route is the only thing that
-changes that, and it is gated so a missing key disables exactly one tab.
+Through 2.x the Atlas tab called nothing — Leaflet with CARTO's free basemap
+tiles — and a fork of this repo deployed with no account and no key. **v3.0.0
+ends that.** The map is HERE Maps JS 3.1, `H.service.Platform` authenticates
+with `HERE_API_KEY`, and an empty key costs the basemap on *both* tabs.
+
+What did not change is where the atlas itself comes from. Every distance,
+tier, filter and walk strip is still computed client-side against `DATA`, and
+the rows, the panel and the stop sheets all read correctly with no network at
+all. An empty key costs the basemap under the pins, not the atlas — the map
+area says what is missing and everything else works.
+
+That degradation is deliberate and guarded, not automatic: `H.service.Platform`
+**throws** on an empty `apikey` ("Argument #0 apikey must be specified"), and
+since the key ships empty, an unguarded construction would abort the whole
+inline script and take the atlas down with the map. `MAP_ON` is what keeps the
+keyless build usable.
+
+The trade was deliberate. One map vendor across WafflePost and FuelPost means
+one set of quirks to know and one place the scar tissue accumulates, instead
+of two — and it buys satellite imagery, which this app has a specific use for:
+its whole claim is that a walk is walkable, and a road map does not show a
+fence, a drainage ditch, or a kerb with no gap in it.
 
 ## Route mode
 
-Route is the one mode that talks to an API, and it is gated so the rest of the
-app never depends on it.
+Route is the one mode that talks to a *routing* API, and it is gated so the
+rest of the app never depends on it.
 
-**Setup, in three steps:**
+**Setup, in two steps:**
 
 1. Paste a HERE key into `HERE_API_KEY` at the top of the app script in
    `index.html`. Empty is the shipped state, and `test/structure.test.js`
@@ -133,15 +152,18 @@ app never depends on it.
 2. **Restrict the key to this app's domain in the HERE console before you
    commit anything.** A client-side map app cannot hide a key; domain
    restriction is what makes publishing one survivable, and secrecy is not.
-3. Copy the vendored polyline decoder over the placeholder:
-   `cp ../FuelPost/lib/flexible-polyline.js lib/flexible-polyline.js`
+There is no third step any more. `lib/flexible-polyline.js` used to ship as a
+placeholder that threw, with a `cp` command in its header; it now holds HERE's
+own reference decoder, vendored unmodified from
+[heremaps/flexible-polyline](https://github.com/heremaps/flexible-polyline)
+and covered by `test/polyline.test.js` against HERE's published test vector.
 
-That third step is deliberate. The decoder is **not** reimplemented here: it is
-exactly the kind of code that looks right, passes a hand-written test, and then
-puts a route in the wrong hemisphere on some real response nobody thought to
-try — and this repo has no way to call HERE and check. FuelPost's copy has been
-reading live responses in production for many versions. One decoder between the
-two apps, not two that can drift.
+Vendoring rather than reimplementing is deliberate. A decoder is exactly the
+kind of code that looks right, passes a hand-written test, and then puts a
+route in the wrong hemisphere on some real response nobody thought to try —
+and this repo has no way to call HERE and check. FuelPost's copy has been
+reading live responses in production for many versions. One decoder between
+the two apps, not two that can drift.
 
 ### What it shows
 
@@ -230,7 +252,7 @@ Same reasoning as FuelPost, different perishable thing:
   that has closed is a wasted exit at 3am. A driver cannot tell stale atlas
   data from current atlas data without it. Bump only when the rows are
   re-audited.
-- **`APP_VERSION`** (`1.0.0`) — the code. Shown in the **legend card**.
+- **`APP_VERSION`** (`3.0.0`) — the code. Shown in the **legend card**.
   Bumped for every shipped change, and stamped onto every `lib/` URL as a
   cache-buster.
 
@@ -248,6 +270,55 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v3.0.0
+
+**The map is HERE Maps JS 3.1 on the HARP engine.** Leaflet and CARTO are
+gone: the CDN stylesheet and script, the `TILES` object, the `ATTR` string,
+`setTiles`, and every `L.` call with them. One map vendor across WafflePost
+and FuelPost, so there is one set of quirks to know rather than two.
+
+**The map does not follow the theme, on purpose.** Light / Dark / System still
+theme the chrome exactly as before; the map is one fixed base layer
+(`vector.normal.map`) set at construction and never changed again. That single
+decision deletes the whole class of machinery FuelPost accumulated around it —
+no `mapnight` constant, no deferred idempotent `setBaseLayer`, no
+`baselayerchange` listener, no rebuilding a control on theme change, no
+preserving centre and zoom across a layer switch. `applyTheme` no longer
+references the map at all. With dark chrome the map stays the bright day map;
+if that ever reads badly in a cab at night, the fix is one constant.
+
+**Satellite, and no traffic.** The layer switcher is built once from
+`H.ui.MapSettingsControl`'s public config object, naming its own `baseLayers`;
+omitting the optional `layers` array is what drops the traffic checkboxes. The
+scale bar is re-added *after* the button so the bottom-right anchor keeps its
+original child order, and it reads in miles (`setUnitSystem(IMPERIAL)`).
+
+**Pins land on their coordinate.** HERE's `DomIcon` has no anchor option, and
+it writes its own inline transform onto whatever element it is handed —
+silently overwriting a CSS transform on that same element. So the anchor
+translate moved one level deeper, onto a wrapper HERE never touches, with the
+pin's own rotate inside that. One `DomIcon` per distinct appearance (tier
+crossed with brand letter, up to 28 across 67 markers), memoized; markers are
+built once at startup in `DATA` order, and filtering flips `setVisibility`
+instead of rebuilding 67 markers on every keystroke.
+
+**Viewport.** A window resize listener and a `ResizeObserver` on the map
+element, both debounced 120ms, call `getViewPort().resize()` and sync padding —
+the canvas cannot see its own container change height, and the drawer and panel
+both change it. The old 260ms `setTimeout(invalidateSize)` calls are gone.
+Route fits apply the panel's measured height as bottom padding, so the delivery
+end no longer lands behind the panel, and the panel is rendered *before* the
+fit so it measures this plan's panel rather than the previous one's. The atlas
+is fitted once at startup and never automatically again.
+
+**`lib/flexible-polyline.js` is real.** HERE's reference decoder, vendored
+unmodified, replacing the placeholder that threw — with `test/polyline.test.js`
+(25 assertions) against HERE's published test vector. Route mode can decode
+geometry for the first time.
+
+The seven `lib/` modules are untouched and none gained a map dependency.
+`ATLAS_REV` is unchanged; no atlas data moved.
 
 ### v2.0.0
 
