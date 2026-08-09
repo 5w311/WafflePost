@@ -27,6 +27,8 @@ lib/routewaffles.js       projects atlas rows onto a route polyline (no DOM, no 
 lib/vehicleprofile.js     truck dimensions/hazmat -> HERE vehicle[...] params (no DOM, no network)
 lib/triptext.js           formats a stop or a planned run for share/save
 lib/escape.js             HTML-escapes strings before they reach innerHTML
+lib/autosuggest.js        address-suggestion helpers, vendored from FuelPost
+lib/location.js           GPS fix labelling/precision, vendored from FuelPost
 lib/flexible-polyline.js  HERE's reference decoder, vendored unmodified (MIT)
 test/*.test.js            plain-node tests, no framework
 test/_assert.js           three assertions; that is the whole framework
@@ -265,7 +267,7 @@ Same reasoning as FuelPost, different perishable thing:
   that has closed is a wasted exit at 3am. A driver cannot tell stale atlas
   data from current atlas data without it. Bump only when the rows are
   re-audited.
-- **`APP_VERSION`** (`3.0.1`) — the code. Shown in the **legend card**.
+- **`APP_VERSION`** (`3.1.0`) — the code. Shown in the **legend card**.
   Bumped for every shipped change, and stamped onto every `lib/` URL as a
   cache-buster.
 
@@ -283,6 +285,39 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v3.1.0
+
+**The pickup and delivery boxes now match FuelPost's.** Each is a labelled
+combobox with HERE Autosuggest under it, a per-field clear, and — on pickup —
+a "use my current location" button. `lib/autosuggest.js` and `lib/location.js`
+are vendored from FuelPost unmodified, so the decidable parts have one
+implementation between the two apps rather than two that can drift.
+
+Tapping a suggestion, or filling from GPS, resolves that end to real
+coordinates immediately, so `planRoute` **skips the forward geocode for it** —
+picking a specific suggestion is exactly what resolves the ambiguity a geocode
+would otherwise guess at. Editing the text afterwards drops that resolution
+and hands the field back to geocode-on-plan. Verified end to end: a plan with
+both ends tapped from suggestions fires the routing call and no geocode call
+at all.
+
+Autosuggest is debounced 300ms behind a 3-character minimum, and both numbers
+are call-volume decisions rather than UX ones: it fires per keystroke where
+geocode and routing fire once per plan, and the key is public. The dropdown is
+plain `position:absolute` under the input — no JS-computed coordinates, so it
+pans with the field when the on-screen keyboard moves the visual viewport —
+and `.drawer-body`'s `overflow-y:auto` is lifted only while a list is open.
+
+Roles only, no arrow-key navigation: this is about screen-reader legibility on
+a phone-first app, and it matches what FuelPost ships.
+
+`structure.test.js`'s network-call count moves from 2 to 5 — geocode, routing,
+autosuggest, lookup, revgeocode — all still inside Route. The Atlas tab calls
+nothing beyond its basemap. Lib count moves from 7 to 9.
+
+Not ported: FuelPost's geocode candidate picker, which is a separate feature
+from the fields themselves.
 
 ### v3.0.1
 
