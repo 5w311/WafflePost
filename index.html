@@ -118,6 +118,35 @@ header{background:var(--char);color:#fff;display:flex;align-items:center;gap:10p
 
 .stage{flex:1;position:relative;min-height:0}
 #map{position:absolute;inset:0;background:var(--bg)}
+/* Shown in place of the map when HERE_API_KEY is empty, which is the state
+   this repo ships in. The atlas underneath is unaffected. */
+.mapoff{position:absolute;inset:0;display:grid;align-content:center;justify-items:center;
+  text-align:center;padding:22px 26px;color:var(--sub);font-size:13.5px;line-height:1.5}
+.mapoff b{display:block;color:var(--ink);font-size:15px;margin-bottom:5px}
+
+/* ---- HERE's own controls, above the panel ----
+   HERE ships its UI layer as `.H_ui{z-index:2;position:absolute}` and its
+   copyright imprint at an inline `z-index:1`, both inside #map. The results
+   panel is z-index 500 and — unlike FuelPost's, which hides itself entirely
+   in Stops mode — is on screen in EVERY mode here, expanded to 62% at first
+   paint. Without these rules the zoom buttons, the layers button that is the
+   only way to reach Satellite, the imperial scale bar and HERE's required
+   attribution all paint underneath it and take no taps.
+
+   It has to be .H_ui that is raised, not .H_l_bottom: z-index on a
+   positioned element makes .H_ui a stacking context, so lifting a descendant
+   cannot get it past a 500 sibling — the whole subtree is clamped at 2.
+   .sheet (900) and .pop (950) still sit above these, which is correct.
+
+   Raising alone would only stack them ON the panel, so --panel-h (set by
+   syncMapPadding from the same measurement it feeds to setPadding) lifts
+   them clear of its top edge, tracking collapse and expand. The imprint's
+   offsets are inline styles from mapsjs-core.js and need !important; the
+   .H_l_* rules come from mapsjs-ui.css, which this block already outranks
+   on document order. */
+.H_ui{z-index:600}
+.H_l_bottom{bottom:calc(var(--panel-h,0px) + 16px)}
+.H_imprint{z-index:600!important;bottom:var(--panel-h,0px)!important}
 .panel{position:absolute;left:0;right:0;bottom:0;max-height:62%;background:var(--surface);
   border-top:1px solid var(--line);display:flex;flex-direction:column;border-radius:14px 14px 0 0;
   box-shadow:0 -6px 24px rgba(0,0,0,.14);padding-bottom:env(safe-area-inset-bottom,0px);z-index:500}
@@ -372,13 +401,16 @@ var module={exports:{}};
 /* ===== HERE API key =================================================
    The key is no longer Route's alone. As of 3.0.0 the map itself is HERE,
    and H.service.Platform authenticates with this key, so an empty key now
-   means a blank map on BOTH tabs — not just a Route tab that explains
+   costs the basemap on BOTH tabs — not just a Route tab that explains
    itself. Route additionally uses it for its two fetches, and still says
    so rather than failing at the first one.
 
    Everything computed from DATA — every distance, tier, filter and walk
-   strip — is still client-side and still needs no network at all. What an
-   empty key costs is the basemap under the pins, not the atlas itself.
+   strip — is still client-side and still needs no network at all. So an
+   empty key is a degraded app, not a broken one: the map area says what is
+   missing and the atlas underneath works normally. That is not automatic —
+   Platform THROWS on an empty apikey, so the bring-up is guarded. See
+   MAP_ON below.
 
    Restrict the key to this app's own domain in HERE's console before you
    commit it. A client-side map app cannot hide a key — domain
@@ -525,115 +557,73 @@ var $ = function(id){ return document.getElementById(id); };
      - the H.Map option selects the engine that draws. Omit it and the map
        falls back to WEBGL, under which HERE's own MapSettingsControl
        renders Satellite greyed out and unpickable. */
-var HERE_ENGINE = H.Map.EngineType.HARP;
-var platform = new H.service.Platform({apikey:HERE_API_KEY});
-var defaultLayers = platform.createDefaultLayers({engineType:HERE_ENGINE});
+/* H.service.Platform THROWS on an empty apikey - "Argument #0 apikey must be
+   specified" - verified against the real 3.1 bundle, not assumed. The key
+   ships empty (test/structure.test.js enforces it, and that test is what
+   stands between a local paste and an accidental push), so constructing
+   unconditionally would abort this whole script block on its first line and
+   take the atlas down with the map: no rows, no filters, no listeners, not
+   even Route's own "needs a key" explainer. Everything the atlas shows is
+   computed from DATA and needs no network, so the MAP is what degrades and
+   the rest of the app still boots. */
+var MAP_ON = !!HERE_API_KEY;
 
-/* ONE fixed base layer, set at construction and never changed again.
-   The app's Light/Dark/System control themes the CHROME only; the map does
-   not follow it. That is deliberate, and it is what lets this file carry no
-   mapnight constant, no setBaseLayer choke point, no baselayerchange
-   listener and no centre/zoom preservation across a layer switch. The pin
-   colours were chosen to read on either tile style, so nothing about them
-   depends on which one is up. If the bright day map ever reads badly in a
-   cab at night, the fix is to construct with vector.normal.mapnight here —
-   one constant, still no theme machinery. */
-var map = new H.Map(document.getElementById('map'),
-  defaultLayers.vector.normal.map,
-  {engineType:HERE_ENGINE,
-   /* Pre-fit fallback only: the marker build below fits to the whole atlas
-      in this same script task, before the browser paints a frame. */
-   center:{lat:32.5,lng:-85.5}, zoom:5,
-   pixelRatio:window.devicePixelRatio||1});
-
-new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
-var ui = H.ui.UI.createDefault(map, defaultLayers);
-/* HERE's scale bar defaults to metric. Every distance this app states is
-   feet and miles, so the bar has to read the same way. */
-ui.setUnitSystem(H.ui.UnitSystem.IMPERIAL);
-
-/* The layer switcher is built here rather than taken from createDefault,
-   from H.ui.MapSettingsControl's public config object. `baseLayers` names
-   the entries; OMITTING the optional `layers` array is what drops the
-   traffic checkboxes, which are not part of what this app does.
-   Built once and never rebuilt — nothing in this app changes it, because
-   the base layer never follows the theme. Satellite earns its place here
-   specifically: this app's claim is that a walk is walkable, and a road map
-   does not show a fence, a drainage ditch, or a kerb with no gap in it. */
-ui.removeControl('mapsettings');
-ui.addControl('mapsettings', new H.ui.MapSettingsControl({
-  baseLayers:[
-    {label:'Map view', layer:defaultLayers.vector.normal.map},
-    {label:'Satellite', layer:defaultLayers.raster.satellite.map}
-  ],
-  alignment:H.ui.LayoutAlignment.BOTTOM_RIGHT
-}));
-/* Re-adding the scale bar AFTER the button is load-bearing, not tidying.
-   `alignment` picks the anchor; position WITHIN it is DOM child order, and
-   bottom-right is a horizontal row shared by both. createDefault leaves it
-   [scalebar, button]; removing and re-adding only the button makes it
-   [button, scalebar], which slides the button to roughly the centre of a
-   phone screen. */
-var scalebar = ui.removeControl('scalebar');
-if (scalebar) ui.addControl('scalebar', scalebar);
+/* Declared ahead of the guarded bring-up so every consumer below has a
+   defined name whether or not a key was pasted. */
+var map = null, ui = null, markers = {}, markerGroup = null, routeGroup = null;
 
 /* The panel sits absolutely over the map's bottom edge (up to 62% of it),
-   and HERE fits to the full element — which centres a fitted route in area
+   and HERE fits to the full element - which centres a fitted route in area
    the driver cannot see. setPadding is HERE's mechanism for exactly this:
    the padded area's centre becomes the visual centre, zoom included.
    Measured from the DOM, so whoever changes the panel need not know the
    viewport exists. Declared HERE, in map setup, above first use: the
-   one-time startup fit in the marker build below calls syncMapPadding()
-   and reads MAP_FIT_MARGIN, and a declaration after that call site is a
-   temporal-dead-zone crash at startup — which has bitten the sibling
-   project twice. */
+   one-time startup fit calls syncMapPadding() and reads MAP_FIT_MARGIN, and
+   a declaration after that call site is a temporal-dead-zone crash at
+   startup - which has bitten the sibling project twice.
+
+   The same measurement drives --panel-h, which lifts HERE's own controls and
+   copyright imprint clear of the panel. See the .H_ui block in the CSS: that
+   is a stacking fix, and it needs this number too. */
 var MAP_FIT_MARGIN = 32;
 function syncMapPadding(){
   var p = document.getElementById('panel');
   var h = p ? Math.round(p.getBoundingClientRect().height) : 0;
+  document.documentElement.style.setProperty('--panel-h', h+'px');
+  if (!map) return;
   map.getViewPort().setPadding(MAP_FIT_MARGIN, MAP_FIT_MARGIN,
                                h + MAP_FIT_MARGIN, MAP_FIT_MARGIN);
 }
 
 /* HERE's canvas only re-measures on a real window resize or an explicit
-   resize() call — it cannot see its own container change height, which
-   happens whenever the trip drawer or the results panel grows or shrinks.
-   Miss one and the canvas keeps its old size: a dead black band where the
-   map should be. Observing the map element covers every cause at once
-   instead of hand-wiring a call at each height-changing site and
-   inevitably missing the next one. Debounced so a stream of size changes
-   settles into one resize at the final size. This supersedes the
-   setTimeout invalidateSize() calls the Leaflet build scattered around. */
+   resize() call - it cannot see its own container change height, which
+   happens whenever the trip drawer grows or shrinks. Miss one and the canvas
+   keeps its old size: a dead black band where the map should be. Observing
+   the map element covers every cause at once instead of hand-wiring a call
+   at each height-changing site and inevitably missing the next one.
+   Debounced so a stream of size changes settles into one resize at the final
+   size. This supersedes the setTimeout invalidateSize() calls the Leaflet
+   build scattered around. */
 var mapResizeTimer = 0;
 function mapResized(){
   clearTimeout(mapResizeTimer);
   mapResizeTimer = setTimeout(function(){
-    map.getViewPort().resize(); syncMapPadding();
+    if (map) map.getViewPort().resize();
+    syncMapPadding();
   }, 120);
 }
-window.addEventListener('resize', mapResized);
-new ResizeObserver(mapResized).observe(document.getElementById('map'));
-
-var markers = {}, markerGroup = new H.map.Group(), routeGroup = new H.map.Group();
-map.addObject(markerGroup);
-map.addObject(routeGroup);
 
 /* One DomIcon per distinct pin APPEARANCE, not per marker. WafflePost's
-   appearance is tier crossed with brand letter — up to 28 icons across 67
-   markers — and the class string that distinguishes them is the cache key.
+   appearance is tier crossed with brand letter - up to 28 icons across 67
+   markers - and the class string that distinguishes them is the cache key.
    DomIcon CLONES its template element for every marker rather than
    attaching it, so sharing one icon across markers is safe: each renders an
    independent element and the template is never mutated. Route endpoint
-   pins are per plan and stay uncached.
-
-   Markers themselves are built once — the atlas is a fixed set that never
-   changes within a session — in DATA order, which is shortest walk first,
-   so pin stacking where markers overlap is deterministic. Filtering flips
-   setVisibility (see render); nothing is constructed per keystroke. */
+   pins are per plan and stay uncached. */
 var iconCache = {};
 function pinIcon(row){
   var tier = wd.tierFor(row.feet), key = tier==='honorary' ? 'hon' : tier;
-  var letter = BRAND[row.brand] ? BRAND[row.brand].letter : '\u2605';
+  var letter = BRAND[row.brand] ? BRAND[row.brand].letter : '★';
   var cacheKey = key + ' ' + letter;
   var icon = iconCache[cacheKey];
   if (!icon) {
@@ -649,13 +639,6 @@ function pinIcon(row){
   }
   return icon;
 }
-var built = DATA.map(function(row,i){
-  var m = new H.map.DomMarker({lat:row.lat,lng:row.lon},{icon:pinIcon(row)});
-  m.addEventListener('tap',function(){ openSheet(row); });
-  markers[i]=m;
-  return m;
-});
-markerGroup.addObjects(built);   // one call: the group does its bookkeeping once
 
 /* Fit the first view to the whole atlas, ONCE. The constructor's
    center/zoom shows a few states; the app exists to show a national atlas
@@ -667,10 +650,100 @@ markerGroup.addObjects(built);   // one call: the group does its bookkeeping onc
    filtering, or on returning from Route. The driver owns the camera from
    first paint on. */
 function fitAtlas(){
+  if (!markerGroup) return;
   var b = markerGroup.getBoundingBox();
   if (!b) return;
   syncMapPadding();
   map.getViewModel().setLookAtData({bounds:b});
+}
+
+if (MAP_ON) {
+  /* The engine type has to be passed in BOTH places or the map half-works:
+       - createDefaultLayers({engineType}) builds layers whose styles the
+         engine can actually parse. Omit it and HARP throws "Wrong style
+         format" because it is handed WEBGL-format styles.
+       - the H.Map option selects the engine that draws. Omit it and the map
+         falls back to WEBGL, under which HERE's own MapSettingsControl
+         renders Satellite greyed out and unpickable. */
+  var HERE_ENGINE = H.Map.EngineType.HARP;
+  var platform = new H.service.Platform({apikey:HERE_API_KEY});
+  var defaultLayers = platform.createDefaultLayers({engineType:HERE_ENGINE});
+
+  /* ONE fixed base layer, set at construction and never changed again.
+     The app's Light/Dark/System control themes the CHROME only; the map does
+     not follow it. That is deliberate, and it is what lets this file carry no
+     mapnight constant, no setBaseLayer choke point, no baselayerchange
+     listener and no centre/zoom preservation across a layer switch. The pin
+     colours were chosen to read on either tile style, so nothing about them
+     depends on which one is up. If the bright day map ever reads badly in a
+     cab at night, the fix is to construct with vector.normal.mapnight here -
+     one constant, still no theme machinery. */
+  map = new H.Map(document.getElementById('map'),
+    defaultLayers.vector.normal.map,
+    {engineType:HERE_ENGINE,
+     /* Pre-fit fallback only: the marker build below fits to the whole atlas
+        in this same script task, before the browser paints a frame. */
+     center:{lat:32.5,lng:-85.5}, zoom:5,
+     pixelRatio:window.devicePixelRatio||1});
+
+  new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
+  ui = H.ui.UI.createDefault(map, defaultLayers);
+  /* HERE's scale bar defaults to metric. Every distance this app states is
+     feet and miles, so the bar has to read the same way. */
+  ui.setUnitSystem(H.ui.UnitSystem.IMPERIAL);
+
+  /* The layer switcher is built here rather than taken from createDefault,
+     from H.ui.MapSettingsControl's public config object. `baseLayers` names
+     the entries; OMITTING the optional `layers` array is what drops the
+     traffic checkboxes, which are not part of what this app does.
+     Built once and never rebuilt - nothing in this app changes it, because
+     the base layer never follows the theme. Satellite earns its place here
+     specifically: this app's claim is that a walk is walkable, and a road map
+     does not show a fence, a drainage ditch, or a kerb with no gap in it. */
+  ui.removeControl('mapsettings');
+  ui.addControl('mapsettings', new H.ui.MapSettingsControl({
+    baseLayers:[
+      {label:'Map view', layer:defaultLayers.vector.normal.map},
+      {label:'Satellite', layer:defaultLayers.raster.satellite.map}
+    ],
+    alignment:H.ui.LayoutAlignment.BOTTOM_RIGHT
+  }));
+  /* Re-adding the scale bar AFTER the button is load-bearing, not tidying.
+     `alignment` picks the anchor; position WITHIN it is DOM child order, and
+     bottom-right is a horizontal row shared by both. createDefault leaves it
+     [scalebar, button]; removing and re-adding only the button makes it
+     [button, scalebar], which slides the button to roughly the centre of a
+     phone screen. */
+  var scalebar = ui.removeControl('scalebar');
+  if (scalebar) ui.addControl('scalebar', scalebar);
+
+  window.addEventListener('resize', mapResized);
+  new ResizeObserver(mapResized).observe(document.getElementById('map'));
+
+  markerGroup = new H.map.Group();
+  routeGroup  = new H.map.Group();
+  map.addObject(markerGroup);
+  map.addObject(routeGroup);
+
+  /* Markers are built once - the atlas is a fixed set that never changes
+     within a session - in DATA order, which is shortest walk first, so pin
+     stacking where markers overlap is deterministic. Filtering flips
+     setVisibility (see render); nothing is constructed per keystroke.
+     One addObjects call: the group does its bookkeeping once. */
+  markerGroup.addObjects(DATA.map(function(row,i){
+    var m = new H.map.DomMarker({lat:row.lat,lng:row.lon},{icon:pinIcon(row)});
+    m.addEventListener('tap',function(){ openSheet(row); });
+    markers[i]=m;
+    return m;
+  }));
+} else {
+  /* Say so where the map would be, rather than leaving an unexplained void.
+     The atlas itself is unaffected and renders normally underneath. */
+  document.getElementById('map').innerHTML =
+    '<div class="mapoff"><b>No map key</b>Paste a HERE key into '+
+    '<code>HERE_API_KEY</code> at the top of the app script to draw the map. '+
+    'Every row, distance and filter below is computed from local data and '+
+    'works without one.</div>';
 }
 
 /* ---- shared row rendering ---- */
@@ -823,7 +896,7 @@ function openSheet(row){
   sheet.innerHTML=h; sheet.classList.add('show');
   $('sheetClose').addEventListener('click',function(){ sheet.classList.remove('show'); });
   $('sheetShare').addEventListener('click',function(){ share(tt.formatStopText(row,ATLAS_REV)); });
-  map.setCenter({lat:row.lat,lng:row.lon}, true);
+  if (map) map.setCenter({lat:row.lat,lng:row.lon}, true);
 }
 
 function share(text){
@@ -915,6 +988,7 @@ function planRoute(){
 }
 
 function drawRoute(poly, ends){
+  if (!routeGroup) return;
   routeGroup.removeAll();
   var ls = new H.geo.LineString();
   poly.forEach(function(pt){ ls.pushPoint({lat:pt[0], lng:pt[1]}); });
@@ -930,10 +1004,18 @@ function drawRoute(poly, ends){
     routeGroup.addObject(new H.map.DomMarker({lat:e.lat,lng:e.lon},
       {icon:new H.map.DomIcon(w.firstElementChild)}));
   });
-  /* Padding is synced immediately before the fit, and planRoute renders the
-     panel BEFORE calling here, so the fit measures THIS plan's panel rather
-     than the previous one's. Without the bottom padding the delivery end
-     lands behind the panel. */
+  /* Resize BEFORE fitting, synchronously. planRoute collapses the trip
+     drawer immediately before calling here, which grows #map by the whole
+     drawer body in the same frame — but the ResizeObserver's own resize is
+     debounced 120ms, so without this the fit would be computed against a
+     viewport HERE still believes is ~200px shorter, and land wrong. The
+     debounced pass still runs afterwards and is then a no-op.
+
+     Padding is synced immediately before the fit too, and planRoute renders
+     the panel BEFORE calling here, so the fit measures THIS plan's panel
+     rather than the previous one's. Without the bottom padding the delivery
+     end lands behind the panel. */
+  map.getViewPort().resize();
   syncMapPadding();
   map.getViewModel().setLookAtData({bounds:line.getBoundingBox()});
 }
@@ -1058,7 +1140,7 @@ function setMode(m){
   closePops(); render();
   /* Returning to Atlas clears the route but does NOT refit — the startup
      fit was the one and only automatic camera move. */
-  if (m==='atlas') routeGroup.removeAll();
+  if (m==='atlas') { if (routeGroup) routeGroup.removeAll(); }
   else if (state.route) drawRoute(state.route.poly, [
     {lat:state.route.poly[0][0], lon:state.route.poly[0][1]},
     {lat:state.route.poly[state.route.poly.length-1][0],

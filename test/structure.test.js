@@ -19,6 +19,33 @@ libTags.forEach(function(tag){
   t.eq(/\bdefer\b|\basync\b/.test(tag), false, 'no defer/async on: ' + tag);
 });
 
+// The five HERE SDK tags are third-party CDN URLs at a pinned version, not our
+// files. A ?v= stamp on them would be a cache-buster on someone else's cache.
+var hereTags = src.match(/<script src="https:\/\/js\.api\.here\.com\/[^"]+"><\/script>/g) || [];
+t.eq(hereTags.length, 5, 'five HERE SDK scripts are loaded');
+hereTags.forEach(function(tag){
+  t.eq(tag.indexOf('?v=') === -1, true, 'no version stamp on third-party CDN: ' + tag);
+});
+
+// H.service.Platform THROWS on an empty apikey ("Argument #0 apikey must be
+// specified"), and the key ships empty by design two assertions below. An
+// unguarded construction therefore aborts the whole inline script and takes
+// the atlas down with the map - no rows, no filters, not even Route's own
+// "needs a key" explainer. Nothing else in this suite would catch it: these
+// tests never run a browser, and the app script still PARSES perfectly.
+t.eq(/var MAP_ON = !!HERE_API_KEY;/.test(src), true,
+     'the map bring-up is gated on a non-empty key (MAP_ON)');
+var guardAt = src.indexOf('if (MAP_ON) {'), platAt = src.indexOf('new H.service.Platform');
+t.eq(guardAt !== -1 && platAt > guardAt, true,
+     'H.service.Platform is constructed only inside that gate');
+
+// Leaflet and CARTO left at 3.0.0. Prose in comments may still name them
+// (explaining why the anchoring is what it is); URLs and L. calls may not.
+t.eq(/cdnjs\.cloudflare\.com|basemaps\.cartocdn\.com/.test(src), false,
+     'no Leaflet or CARTO CDN URLs remain');
+t.eq(/\bL\.(map|marker|divIcon|polyline|tileLayer|featureGroup|layerGroup|control)\b/.test(src),
+     false, 'no Leaflet API calls remain');
+
 t.eq((src.match(/^var ATLAS_REV   = /m) || []).length, 1, 'one ATLAS_REV declaration');
 t.eq(src.indexOf('id="revLine"') !== -1, true, 'the atlas revision has a home in the header');
 

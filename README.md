@@ -1,7 +1,8 @@
 # WafflePost
 
 Every Waffle House in America you can walk to from a truck stop. Single-page
-app, no build step, no API key, deployed to GitHub Pages.
+app, no build step, deployed to GitHub Pages. Needs a HERE key to draw the
+map; the atlas itself is computed from local data and needs no network.
 
 A sibling of [FuelPost](https://github.com/5w311/FuelPost) — same shape, same
 discipline, different question. FuelPost answers *where am I allowed to fuel*.
@@ -10,8 +11,8 @@ WafflePost answers *can I get a plate of hashbrowns without moving the truck*.
 Two tabs:
 
 - **Atlas** — map and list of all 67 exits, filterable by corridor, state,
-  truck stop chain, walk distance and free text. Calls nothing; works with no
-  signal once loaded.
+  truck stop chain, walk distance and free text. Every row, distance and
+  filter is computed locally; only the basemap under the pins is fetched.
 - **Route** — pickup, delivery, vehicle profile. Get a truck route from HERE
   and every Waffle House on the atlas that sits near it, in the order you pass
   them, with the mile marker and how far off the road each one is.
@@ -117,12 +118,19 @@ worth a row rather than an omission.
 Through 2.x the Atlas tab called nothing — Leaflet with CARTO's free basemap
 tiles — and a fork of this repo deployed with no account and no key. **v3.0.0
 ends that.** The map is HERE Maps JS 3.1, `H.service.Platform` authenticates
-with `HERE_API_KEY`, and an empty key means a blank canvas on *both* tabs.
+with `HERE_API_KEY`, and an empty key costs the basemap on *both* tabs.
 
 What did not change is where the atlas itself comes from. Every distance,
 tier, filter and walk strip is still computed client-side against `DATA`, and
 the rows, the panel and the stop sheets all read correctly with no network at
-all. An empty key costs the basemap under the pins, not the atlas.
+all. An empty key costs the basemap under the pins, not the atlas — the map
+area says what is missing and everything else works.
+
+That degradation is deliberate and guarded, not automatic: `H.service.Platform`
+**throws** on an empty `apikey` ("Argument #0 apikey must be specified"), and
+since the key ships empty, an unguarded construction would abort the whole
+inline script and take the atlas down with the map. `MAP_ON` is what keeps the
+keyless build usable.
 
 The trade was deliberate. One map vendor across WafflePost and FuelPost means
 one set of quirks to know and one place the scar tissue accumulates, instead
