@@ -1,0 +1,68 @@
+feet,corridor,state,exit,city,truck_stop,lat,lon
+170,I-65,AL,304,Good Hope,Jack's Truck Stop,34.11486,-86.86387
+189,I-75,KY,175,Walton,Pilot (WH pickup-only),38.91759,-84.63184
+190,I-75,GA,293,Cartersville,JP Truck Center,34.2409,-84.77486
+205,I-55,LA,28,Hammond,Pilot + Petro 659ft,30.47809,-90.45646
+228,I-24,TN,81,Murfreesboro,Pilot,35.78567,-86.36598
+238,I-10,FL,142,Marianna,Pilot next door,30.72596,-85.18602
+255,I-65,IN,76A,Taylorsville,Mapco,39.29666,-85.95825
+330,I-75,OH,36,Franklin,Pilot,39.54266,-84.29161
+336,I-10,TX,829,Winnie,JP Truck Stop + Bingo,29.83065,-94.38455
+347,I-65,KY,117,Shepherdsville,Pilot,37.98872,-85.70679
+356,I-20,LA,13,Shreveport,Airport Travel Plaza,32.45986,-93.82719
+381,I-20,TX,596,Longview,RaceTrac,32.44855,-94.72351
+394,I-10,LA,115,Henderson,Henderson Travel Ctr,30.31355,-91.83292
+398,I-95,NC,106,Kenly,Pilot + Kenly95 635ft,35.58192,-78.14814
+399,I-75,GA,345,Ringgold,truck stop,34.89051,-85.07438
+405,I-10,AL,13,Theodore,Pilot,30.5601,-88.20673
+417,I-75,FL,224,Ellenton,ONE9,27.52768,-82.51312
+419,I-95,GA,87,Richmond Hill,TA,31.92471,-81.33386
+428,I-75,GA,149,Byron,truck stop,32.65804,-83.74741
+429,I-75,FL,341,Ocala,Marion Oaks Pilot,29.02599,-82.15995
+429,I-80,OH,234,Hubbard,truck stop,41.18165,-80.5699
+503,I-65,AL,171,Montgomery,truck stop,32.32649,-86.33302
+506,I-95,SC,77,St. George,Flying J,33.19459,-80.6038
+521,I-10,FL,258,Madison,Fast Track,30.39877,-83.3578
+531,I-10,LA,209,LaPlace,Pilot,30.08712,-90.44526
+536,I-95,GA,109,Port Wentworth,Pilot,32.18745,-81.1941
+636,I-95,FL,129,Fort Pierce,Love's + Pilot,27.41228,-80.3966
+646,I-20,GA,114,Madison,TA,33.55181,-83.47304
+671,I-10,MS,31,Gulfport,Flying J,30.42038,-89.13606
+678,I-10,FL,70,DeFuniak Springs,Love's,30.7358,-86.34972
+697,I-75,FL,329,Wildwood,truck stop,28.87188,-82.09006
+699,I-75,GA,11,Valdosta,Pilot (WH delivery-only),30.75253,-83.27228
+723,I-75,KY,126,Georgetown,truck stop,38.27408,-84.55312
+738,I-95,SC,5,Hardeeville,Pilot,32.27079,-81.08075
+753,I-85,GA,149,Commerce,TA,34.25187,-83.46108
+791,I-95,SC,119,Manning,TA Country Pride,33.70314,-80.24317
+836,I-40,AR,81,Russellville,truck stop,35.28191,-93.09513
+858,I-95,VA,104,Carmel Church,truck stop,37.93494,-77.47452
+859,I-10,FL,343,Baldwin,TA,30.28307,-81.98388
+869,I-24,TN,64,La Vergne,truck stop,35.99889,-86.59777
+871,I-65,AL,334,Priceville,truck stop,34.53579,-86.9099
+883,I-75,GA,16,Valdosta,Bigfoot,30.82016,-83.3117
+892,I-10,FL,26,Milton,Love's,30.57642,-87.03186
+904,I-10,TX,877,Orange,Pilot + Flying J 911ft,30.11405,-93.82053
+919,I-10,LA,64,Jennings,Jennings Travel Plaza,30.2402,-92.66398
+946,I-75,FL,161,Punta Gorda,truck stop,26.89615,-82.00744
+978,I-75,KY,41,London,The Scale Dodger,37.1493,-84.11636
+1048,I-65,TN,46,Columbia,truck stop,35.64335,-86.89491
+1050,I-65,AL,13,Satsuma,truck stop,30.86994,-88.04735
+1050,I-65,AL,57,Atmore,truck stop,31.10705,-87.47717
+1053,I-95,MD,109,Elkton,Flying J,39.63551,-75.80539
+1069,I-95,GA,3,Kingsland,truck stop,30.78043,-81.62451
+1100,I-75,GA,101,Cordele,truck stop,31.95881,-83.7501
+1221,I-80,OH,226,Girard,truck stop,41.1433,-80.72091
+1348,I-10,TX,848,Beaumont,Petro Iron Skillet,30.0397,-94.15429
+1442,I-20,GA,19,Temple,Pilot AND Flying J,33.7227,-85.02881
+1498,I-75,GA,201,Jackson,Flying J (+TA/Love's),33.20347,-84.06293
+1528,I-65,AL,205,Clanton,truck stop,32.80092,-86.57739
+1588,I-10,LA,266,Slidell,TA,30.28517,-89.74616
+1619,I-24,KY,86,Oak Grove,truck stop,36.69333,-87.45229
+1869,I-10,LA,151,Port Allen,Love's,30.45,-91.24561
+1885,I-20,TX,617,Marshall,"Marshall TS ($15, rough)",32.4943,-94.35878
+1913,I-20,TX,501,Terrell,Valero Travel Plaza,32.7043,-96.27687
+1933,I-81,VA,150,Troutville,ONE9,37.38399,-79.90364
+2078,I-12,LA,10,Denham Springs,truck stop,30.45746,-90.9556
+2091,I-65,AL,164,Hope Hull,truck stop,32.26881,-86.3575
+2392,I-20,SC,116,Bishopville,Pilot (HONORARY 0.45mi),34.19673,-80.27721
