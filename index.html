@@ -1,0 +1,958 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>WafflePost</title>
+<meta name="description" content="Every Waffle House in America you can walk to from a truck stop.">
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+<link rel="preconnect" href="https://basemaps.cartocdn.com" crossorigin>
+<script>
+/* Resolve theme before first paint so there is no light-then-dark flash.
+   Wrapped in try/catch: localStorage throws in sandboxed frames (and in
+   Safari private mode), and a theme preference is never worth a broken app. */
+(function(){try{var t=localStorage.getItem('wafflepost.theme.v1');
+if(t!=='light'&&t!=='dark')t=null;
+document.documentElement.setAttribute('data-theme',
+  t||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'));
+}catch(e){document.documentElement.setAttribute('data-theme','light');}})();
+</script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+/* ---- tokens -------------------------------------------------------------
+   The palette is the sign and the griddle: sign yellow, char black, syrup
+   brown, a pat of butter for surfaces. Tier colours run light-to-dark as the
+   walk gets longer, so pin colour reads as distance without a legend. */
+:root{
+  --sign:#FFC72C; --char:#14110E; --syrup:#7A4A21; --steel:#454C52;
+  --bg:#F6F1E6; --surface:#fff; --ink:#14110E; --sub:#6B655C; --line:#E2D9C6;
+  --t-porch:#FFC72C; --t-porch-ink:#14110E;
+  --t-short:#E8A317; --t-short-ink:#14110E;
+  --t-long:#7A4A21;  --t-long-ink:#FFF6E3;
+  --t-hon:#FFF6E3;   --t-hon-ink:#7A4A21;
+  --danger-text:#8A1C1C;
+}
+html[data-theme=dark]{
+  --bg:#14110E; --surface:#1E1A16; --ink:#F5EEE2; --sub:#A69B8A; --line:#332C24;
+  --t-hon:#332C24; --t-hon-ink:#E8B96B; --danger-text:#F2555A;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;overflow:hidden;overscroll-behavior:none}
+body{background:var(--bg);color:var(--ink);
+  font:15px/1.45 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  font-variant-numeric:tabular-nums;display:flex;flex-direction:column}
+button,input,select{font:inherit;color:inherit;font-variant-numeric:tabular-nums}
+:focus-visible{outline:3px solid var(--sign);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+header{background:var(--char);color:#fff;display:flex;align-items:center;gap:10px;
+  padding:10px 12px;padding-top:calc(10px + env(safe-area-inset-top,0px));flex:none}
+.tile{width:34px;height:34px;border-radius:5px;background:var(--sign);color:var(--char);
+  display:grid;place-items:center;font-weight:900;font-size:21px;letter-spacing:-.04em;flex:none}
+.brand{font-weight:800;letter-spacing:.14em;text-transform:uppercase;font-size:14px}
+.rev{font-size:11px;color:#C9C1B4}
+.hspace{flex:1}
+.hbtn{background:transparent;border:1px solid #4A443B;color:#fff;border-radius:8px;
+  padding:6px 10px;font-size:12px;font-weight:600;cursor:pointer}
+
+.modes{display:flex;gap:6px;padding:8px 12px;background:var(--surface);
+  border-bottom:1px solid var(--line);flex:none}
+.mode{flex:1;padding:8px 6px;border:1px solid var(--line);background:transparent;
+  border-radius:9px;font-size:12px;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;cursor:pointer;color:var(--sub)}
+.mode[aria-selected=true]{background:var(--sign);border-color:var(--sign);color:var(--char)}
+
+.toolbar{display:flex;gap:8px;padding:8px 12px;background:var(--surface);
+  border-bottom:1px solid var(--line);flex:none;align-items:center}
+.searchwrap{position:relative;flex:1;min-width:0}
+.searchwrap input{width:100%;padding:9px 30px 9px 32px;border:1px solid var(--line);
+  border-radius:9px;background:var(--bg);color:var(--ink)}
+.searchwrap .mag{position:absolute;left:10px;top:50%;transform:translateY(-50%);
+  color:var(--sub);pointer-events:none;font-size:13px}
+.clr{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;
+  background:transparent;color:var(--sub);cursor:pointer;font-size:17px;padding:2px 6px;
+  line-height:1;display:none}
+.clr.on{display:block}
+.tbtn{position:relative;border:1px solid var(--line);background:var(--bg);border-radius:9px;
+  padding:9px 12px;font-size:13px;font-weight:600;cursor:pointer;flex:none}
+.tbtn .dot{position:absolute;top:-5px;right:-5px;min-width:17px;height:17px;border-radius:9px;
+  background:var(--sign);color:var(--char);font-size:11px;font-weight:800;
+  display:grid;place-items:center;padding:0 4px}
+
+/* ---- route drawer ----
+   Collapses to a summary tab once a plan renders, the way FuelPost's trip
+   drawer does, and expands again on an error so the field that needs fixing
+   is on screen. */
+.drawer{background:var(--surface);border-bottom:1px solid var(--line);flex:none}
+.drawer-body{padding:10px 12px;display:flex;flex-direction:column;gap:8px;
+  max-height:70vh;overflow-y:auto}
+.drawer.collapsed .drawer-body{display:none}
+.drawer-tab{display:none;align-items:center;gap:8px;padding:9px 12px;cursor:pointer;
+  font-size:12.5px;color:var(--sub)}
+.drawer.collapsed .drawer-tab{display:flex}
+.drawer-tab b{color:var(--ink)}
+.fld{position:relative}
+.fld input{width:100%;padding:10px 30px 10px 11px;border:1px solid var(--line);
+  border-radius:9px;background:var(--bg);color:var(--ink)}
+.fld .clr{display:none}
+.fld .clr.on{display:block}
+.seg{display:flex;gap:5px}
+.seg button{flex:1;min-width:0;padding:8px 4px;border:1px solid var(--line);background:var(--bg);
+  border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;color:var(--sub)}
+.seg button[aria-pressed=true]{background:var(--char);border-color:var(--char);color:#fff}
+.vfields{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.vfields label{font-size:11px;color:var(--sub)}
+.vfields input{width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+.hazgrid{display:grid;grid-template-columns:1fr 1fr;gap:2px 8px}
+.hazgrid label{display:flex;gap:6px;align-items:center;font-size:12px;cursor:pointer}
+.hazgrid input{accent-color:var(--sign)}
+.vlabel{font-size:11.5px;color:var(--sub)}
+.err{color:var(--danger-text);font-size:12.5px}
+.go{padding:11px;border-radius:10px;border:1px solid var(--sign);background:var(--sign);
+  color:var(--char);font-weight:800;cursor:pointer}
+.go:disabled{opacity:.55;cursor:default}
+
+.stage{flex:1;position:relative;min-height:0}
+#map{position:absolute;inset:0;background:var(--bg)}
+.panel{position:absolute;left:0;right:0;bottom:0;max-height:62%;background:var(--surface);
+  border-top:1px solid var(--line);display:flex;flex-direction:column;border-radius:14px 14px 0 0;
+  box-shadow:0 -6px 24px rgba(0,0,0,.14);padding-bottom:env(safe-area-inset-bottom,0px);z-index:500}
+.panel-tab{display:flex;align-items:center;gap:8px;padding:9px 14px;cursor:pointer;
+  border-bottom:1px solid var(--line);flex:none}
+.panel-tab .count{font-weight:800}
+.panel-tab .chev{margin-left:auto;color:var(--sub);transition:transform .2s}
+.panel.collapsed .chev{transform:rotate(180deg)}
+.panel-body{overflow-y:auto;flex:1;min-height:0;-webkit-overflow-scrolling:touch}
+.panel.collapsed .panel-body{display:none}
+
+/* The walk strip: a proportional bar from the truck stop to the Waffle House
+   with the 0.4 mi line marked, on a FIXED scale across every row so bars are
+   comparable down the list. */
+.row{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);
+  background:transparent;padding:11px 14px;cursor:pointer}
+.row:hover{background:var(--bg)}
+.row-top{display:flex;align-items:baseline;gap:8px}
+.row-city{font-weight:700}
+.row-ex{font-size:12px;color:var(--sub)}
+.row-ft{margin-left:auto;font-weight:800}
+.row-ts{font-size:12.5px;color:var(--sub);margin-top:1px}
+.strip{position:relative;height:7px;border-radius:4px;background:var(--line);margin-top:7px}
+.strip i{position:absolute;left:0;top:0;bottom:0;border-radius:4px;display:block}
+.strip .line{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--steel);opacity:.55}
+.mile{display:inline-block;min-width:52px;font-weight:800;color:var(--syrup)}
+html[data-theme=dark] .mile{color:#E8B96B}
+.pill{font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+  padding:2px 6px;border-radius:5px;background:var(--bg);border:1px solid var(--line);color:var(--sub)}
+.pill.warn{color:var(--danger-text);border-color:currentColor}
+
+.pin{width:28px;height:28px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);
+  display:grid;place-items:center;border:2px solid var(--char);box-shadow:0 1px 4px rgba(0,0,0,.4)}
+.pin b{transform:rotate(45deg);font-size:10px;font-weight:900}
+.pin.hon{border-style:dashed}
+.pinwrap{transform:translate(-50%,-100%)}
+.endpin{width:16px;height:16px;border-radius:50%;border:3px solid var(--char);
+  background:var(--sign);transform:translate(-50%,-50%)}
+
+.sheet{position:absolute;inset:auto 0 0 0;background:var(--surface);z-index:900;
+  border-radius:14px 14px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.28);
+  padding:14px 16px calc(18px + env(safe-area-inset-bottom,0px));max-height:78%;
+  overflow-y:auto;display:none}
+.sheet.show{display:block}
+.sheet h2{margin:0 0 2px;font-size:19px}
+.sheet .sub{color:var(--sub);font-size:13px;margin-bottom:12px}
+.bigft{display:flex;align-items:baseline;gap:8px;margin:2px 0 4px}
+.bigft b{font-size:34px;font-weight:900;letter-spacing:-.03em;line-height:1}
+.bigft span{color:var(--sub);font-size:13px}
+.walkscale{margin:12px 0 4px}
+.walkscale .ends{display:flex;justify-content:space-between;font-size:11px;color:var(--sub);
+  margin-bottom:5px;text-transform:uppercase;letter-spacing:.07em;font-weight:700}
+.walkscale .strip{height:11px}
+.kv{display:flex;gap:10px;padding:7px 0;border-top:1px solid var(--line);font-size:14px}
+.kv span:first-child{color:var(--sub);flex:none;width:104px}
+.note{background:var(--bg);border-left:3px solid var(--sign);padding:9px 11px;
+  border-radius:0 8px 8px 0;font-size:13.5px;margin:10px 0}
+.note.warn{border-left-color:var(--danger-text)}
+.sheet-actions{display:flex;gap:8px;margin-top:12px}
+.act{flex:1;padding:11px;border-radius:10px;border:1px solid var(--line);background:var(--bg);
+  font-weight:700;font-size:13.5px;cursor:pointer}
+.act.primary{background:var(--sign);border-color:var(--sign);color:var(--char)}
+
+.pop{position:absolute;top:0;right:10px;width:264px;background:var(--surface);
+  border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.24);
+  padding:12px;z-index:950;display:none}
+.pop.show{display:block}
+.pop h3{margin:0 0 8px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--sub)}
+.pop label{display:block;font-size:12px;color:var(--sub);margin:9px 0 3px}
+.pop select{width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+.chk{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:13.5px;cursor:pointer}
+.chk input{width:17px;height:17px;accent-color:var(--sign)}
+.fine{font-size:11.5px;color:var(--sub);line-height:1.4;margin-top:9px}
+.legend-row{display:flex;align-items:center;gap:9px;padding:4px 0;font-size:13px}
+.sw{width:15px;height:15px;border-radius:4px;border:2px solid var(--char);flex:none}
+.themerow{display:flex;gap:5px;margin-top:9px}
+.themerow button{flex:1;min-width:0;padding:7px 2px;font-size:11.5px;border:1px solid var(--line);
+  background:var(--bg);border-radius:7px;cursor:pointer;font-weight:600}
+.themerow button[aria-checked=true]{background:var(--sign);border-color:var(--sign);color:var(--char)}
+
+.summary{margin:11px 14px;padding:11px 13px;border-radius:10px;background:var(--bg);
+  border:1px solid var(--line)}
+.summary .hd{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--sub);
+  font-weight:800;margin-bottom:3px}
+.summary .big{font-size:21px;font-weight:900;letter-spacing:-.02em}
+.summary .sub2{font-size:12.5px;color:var(--sub);margin-top:2px}
+.leg{font-size:11.5px;color:var(--sub);padding:3px 14px 9px}
+.empty{padding:26px 18px;text-align:center;color:var(--sub);font-size:14px}
+.empty b{display:block;color:var(--ink);font-size:15px;margin-bottom:5px}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="tile" aria-hidden="true">W</div>
+  <div>
+    <div class="brand">WafflePost</div>
+    <div class="rev" id="revLine"></div>
+  </div>
+  <div class="hspace"></div>
+  <button class="hbtn" id="legendBtn" aria-expanded="false">Legend</button>
+</header>
+
+<div class="modes" role="tablist" aria-label="Mode">
+  <button class="mode" role="tab" id="mAtlas" aria-selected="true">Atlas</button>
+  <button class="mode" role="tab" id="mRoute" aria-selected="false">Route</button>
+</div>
+
+<div class="toolbar" id="toolbar">
+  <div class="searchwrap">
+    <span class="mag" aria-hidden="true">&#9906;</span>
+    <input id="q" type="search" placeholder="City, state, exit, truck stop"
+           aria-label="Search the atlas" autocomplete="off">
+    <button class="clr" id="qClear" aria-label="Clear search">&times;</button>
+  </div>
+  <button class="tbtn" id="filterBtn" aria-expanded="false">Filters<span class="dot hidden" id="fDot">0</span></button>
+</div>
+
+<div class="drawer hidden" id="drawer">
+  <div class="drawer-tab" id="drawerTab" role="button" tabindex="0">
+    <b id="drawerSummary">Trip</b><span id="drawerProfile"></span>
+    <span style="margin-left:auto">&#9662;</span>
+  </div>
+  <div class="drawer-body">
+    <div class="fld">
+      <input id="rFrom" placeholder="Pickup address" aria-label="Pickup address" autocomplete="off">
+      <button class="clr" data-for="rFrom" aria-label="Clear pickup">&times;</button>
+    </div>
+    <div class="fld">
+      <input id="rTo" placeholder="Delivery address" aria-label="Delivery address" autocomplete="off">
+      <button class="clr" data-for="rTo" aria-label="Clear delivery">&times;</button>
+    </div>
+
+    <div class="seg" role="group" aria-label="Vehicle">
+      <button id="vStd"    aria-pressed="true">Standard</button>
+      <button id="vHaz"    aria-pressed="false">Hazmat</button>
+      <button id="vCustom" aria-pressed="false">Custom</button>
+    </div>
+    <div class="vlabel" id="vLabel"></div>
+
+    <div class="vfields hidden" id="vCustomFields">
+      <label>Height (in)<input id="vH" type="number" inputmode="numeric" placeholder="162"></label>
+      <label>Width (in)<input id="vW" type="number" inputmode="numeric" placeholder="102"></label>
+      <label>Length (ft)<input id="vL" type="number" inputmode="numeric" placeholder="70"></label>
+      <label>Gross (lb)<input id="vG" type="number" inputmode="numeric" placeholder="80000"></label>
+    </div>
+    <div class="hazgrid hidden" id="vHazFields"></div>
+
+    <div class="err hidden" id="rErr"></div>
+    <button class="go" id="rGo">Find waffles on this route</button>
+  </div>
+</div>
+
+<div class="stage">
+  <div id="map"></div>
+
+  <div class="pop" id="filterPop" role="dialog" aria-label="Filters">
+    <h3>Narrow the atlas</h3>
+    <label for="fCorridor">Corridor</label><select id="fCorridor"></select>
+    <label for="fState">State</label><select id="fState"></select>
+    <label for="fBrand">Truck stop</label><select id="fBrand"></select>
+    <label for="fTier">Walk no further than</label><select id="fTier"></select>
+    <h3 style="margin-top:12px">What do you need tonight?</h3>
+    <label class="chk"><input type="checkbox" id="fFree">Confirmed free parking</label>
+    <label class="chk"><input type="checkbox" id="fScale">Confirmed CAT scale</label>
+    <label class="chk"><input type="checkbox" id="fDiner">Sit-down diner at the stop</label>
+    <label class="chk"><input type="checkbox" id="fDouble">Two or more truck stops</label>
+    <label class="chk"><input type="checkbox" id="fHide">Hide flagged stops</label>
+    <p class="fine">The three "confirmed" filters match only what the audit actually
+      verified. A stop without the flag may still have it — it was never checked.
+      They narrow, they do not rule out.</p>
+    <button class="act" id="fReset" style="margin-top:10px;width:100%">Clear filters</button>
+  </div>
+
+  <div class="pop" id="legendPop" role="dialog" aria-label="Legend">
+    <h3>Pin colour is the walk</h3>
+    <div class="legend-row"><i class="sw" style="background:var(--t-porch)"></i>Front porch — under 500 ft</div>
+    <div class="legend-row"><i class="sw" style="background:var(--t-short)"></i>Short walk — under 1,000 ft</div>
+    <div class="legend-row"><i class="sw" style="background:var(--t-long)"></i>Long walk — under 2,112 ft</div>
+    <div class="legend-row"><i class="sw" style="background:var(--t-hon);border-style:dashed"></i>Honorary — past the 0.4 mi line</div>
+    <p class="fine">2,112 ft is 0.4 mi — the line the audit drew for "walkable".
+      Every distance is truck stop to Waffle House door, straight line, from
+      coordinates. Letters name the chain; &#9733; is an independent.</p>
+    <h3 style="margin-top:12px">Appearance</h3>
+    <div class="themerow" role="radiogroup" aria-label="Theme">
+      <button id="thLight" role="radio" aria-checked="false">Light</button>
+      <button id="thDark"  role="radio" aria-checked="false">Dark</button>
+      <button id="thSys"   role="radio" aria-checked="false">System</button>
+    </div>
+    <p class="fine" id="verLine"></p>
+  </div>
+
+  <div class="panel" id="panel">
+    <div class="panel-tab" id="panelTab" role="button" tabindex="0" aria-expanded="true">
+      <span class="count" id="panelCount">—</span>
+      <span id="panelSummary" style="font-size:12.5px;color:var(--sub)"></span>
+      <span class="chev" aria-hidden="true">&#9662;</span>
+    </div>
+    <div class="panel-body" id="panelBody"></div>
+  </div>
+
+  <div class="sheet" id="sheet" role="dialog" aria-label="Stop detail"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+
+<!-- lib/ loads as classic scripts. FuelPost uses a bare module.exports shim;
+     ours also needs require(), because these modules depend on each other.
+     __mods is that resolver: two lines, no bundler, no build step. -->
+<script>
+var __mods={};
+function require(p){return __mods[p.replace(/^\.\//,'').replace(/\.js$/,'')];}
+var module={exports:{}};
+</script>
+<script src="lib/waffledist.js?v=2.0.0"></script>
+<script>__mods.waffledist=module.exports;module={exports:{}};</script>
+<script src="lib/atlasfilter.js?v=2.0.0"></script>
+<script>__mods.atlasfilter=module.exports;module={exports:{}};</script>
+<script src="lib/routewaffles.js?v=2.0.0"></script>
+<script>__mods.routewaffles=module.exports;module={exports:{}};</script>
+<script src="lib/vehicleprofile.js?v=2.0.0"></script>
+<script>__mods.vehicleprofile=module.exports;module={exports:{}};</script>
+<script src="lib/triptext.js?v=2.0.0"></script>
+<script>__mods.triptext=module.exports;module={exports:{}};</script>
+<script src="lib/escape.js?v=2.0.0"></script>
+<script>__mods.escape=module.exports;module={exports:{}};</script>
+<script src="lib/flexible-polyline.js?v=2.0.0"></script>
+<script>__mods['flexible-polyline']=module.exports;module={exports:{}};</script>
+
+<script>
+/* ===== HERE API key =================================================
+   Route is the only tab that touches a network API. Paste a HERE key
+   between the quotes and it works; leave it empty and that tab explains
+   itself instead of failing at the first fetch. Atlas never calls
+   anything and works either way.
+
+   Restrict the key to this app's own domain in HERE's console before you
+   commit it. A client-side map app cannot hide a key — domain
+   restriction is what makes publishing one survivable, not secrecy. */
+var HERE_API_KEY = '';
+
+/* ===== two version strings, on purpose ==============================
+   ATLAS_REV  - which edition of the walkability audit DATA came from.
+                Shown in the HEADER, because Waffle Houses and truck
+                stops open and close: Troutville's store did not exist a
+                year before this revision, and a pair that has closed is
+                a wasted exit at 3am.
+   APP_VERSION - the code. Shown in the legend card. Bumped every change,
+                and stamped onto every lib/ URL as a cache-buster. */
+var ATLAS_REV   = 'Atlas Rev 08-2026';
+var APP_VERSION = '2.0.0';
+
+/* ===== DATA ==========================================================
+   66 exits, 73 pairings, one honorary. Every row: feet measured by
+   haversine between verified coordinates, not estimated from an exit
+   guide's own distance column.
+
+   feet   truck stop door to Waffle House door, straight line
+   alt    a second (third, fourth) truck stop at the same exit
+   flags  ONLY what the audit actually confirmed:
+            free    free overnight parking confirmed
+            scale   CAT scale confirmed
+            diner   sit-down restaurant inside the truck stop
+            limited the Waffle House is not full service (pickup only,
+                    delivery only, or window service some hours)
+            caution something about the stop a driver should know first
+   note   the specific thing, in plain words. Empty is honest; do not
+          pad these with generic copy. */
+var DATA = [
+{feet:170,corridor:'I-65',state:'AL',exit:'304',city:'Good Hope',ts:"Jack's Truck Stop",brand:'IND',lat:34.11486,lon:-86.86387,flags:[],note:'The shortest walk in America.'},
+{feet:189,corridor:'I-75',state:'KY',exit:'175',city:'Walton',ts:'Pilot',brand:'PIL',lat:38.91759,lon:-84.63184,flags:['limited'],note:'Reviews report this store running pickup-only. Call before you walk.'},
+{feet:190,corridor:'I-75',state:'GA',exit:'293',city:'Cartersville',ts:'JP Truck Center',brand:'IND',lat:34.24090,lon:-84.77486,flags:[],note:'Parking is $20.'},
+{feet:205,corridor:'I-55',state:'LA',exit:'28',city:'Hammond',ts:'Pilot',brand:'PIL',lat:30.47809,lon:-90.45646,flags:['diner'],alt:[{ts:'Petro (Iron Skillet)',feet:659,brand:'PET'}],note:'Invisible to every exit guide — they all list the Thomas St store two miles off. A Pilot night clerk named Lucas is the reason this row exists.'},
+{feet:228,corridor:'I-24',state:'TN',exit:'81',city:'Murfreesboro',ts:'Pilot',brand:'PIL',lat:35.78567,lon:-86.36598,flags:[],note:''},
+{feet:238,corridor:'I-10',state:'FL',exit:'142',city:'Marianna',ts:'Pilot',brand:'PIL',lat:30.72596,lon:-85.18602,flags:[],note:'Pilot is 2209 FL-71, the store is 2215. Next door.'},
+{feet:255,corridor:'I-65',state:'IN',exit:'76A',city:'Taylorsville',ts:'Mapco',brand:'IND',lat:39.29666,lon:-85.95825,flags:[],note:'Confirm truck parking before you commit — this one is a fuel stop first.'},
+{feet:330,corridor:'I-75',state:'OH',exit:'36',city:'Franklin',ts:'Pilot',brand:'PIL',lat:39.54266,lon:-84.29161,flags:[],note:''},
+{feet:336,corridor:'I-10',state:'TX',exit:'829',city:'Winnie',ts:'JP Truck Stop',brand:'IND',lat:29.83065,lon:-94.38455,flags:['scale','free'],alt:[{ts:'Bingo Travel Plaza',feet:935,brand:'IND'}],note:'The western frontier of walkable waffles. Bingo next door has boudin in the warmers and showers its reviewers rate over the majors.'},
+{feet:347,corridor:'I-65',state:'KY',exit:'117',city:'Shepherdsville',ts:'Pilot',brand:'PIL',lat:37.98872,lon:-85.70679,flags:[],note:''},
+{feet:356,corridor:'I-20',state:'LA',exit:'13',city:'Shreveport',ts:'Airport Travel Plaza',brand:'IND',lat:32.45986,lon:-93.82719,flags:[],note:''},
+{feet:381,corridor:'I-20',state:'TX',exit:'596',city:'Longview',ts:'RaceTrac',brand:'IND',lat:32.44855,lon:-94.72351,flags:[],note:'One of the big-format RaceTracs — semi parking confirmed by drivers.'},
+{feet:394,corridor:'I-10',state:'LA',exit:'115',city:'Henderson',ts:'I-10 Henderson Travel Center',brand:'IND',lat:30.31355,lon:-91.83292,flags:[],alt:[{ts:'Bayou Belle Travel Stop (casino)',feet:2315,brand:'IND'}],note:'The 394 ft stop is rough. Bayou Belle up the same road is the classier night: 4.2 stars, casino, confirmed overnight parking.'},
+{feet:398,corridor:'I-95',state:'NC',exit:'106',city:'Kenly',ts:'Pilot',brand:'PIL',lat:35.58192,lon:-78.14814,flags:[],alt:[{ts:'Kenly 95 Truckstop',feet:635,brand:'IND'}],note:''},
+{feet:399,corridor:'I-75',state:'GA',exit:'345',city:'Ringgold',ts:'Truck stop',brand:'IND',lat:34.89051,lon:-85.07438,flags:[],note:''},
+{feet:405,corridor:'I-10',state:'AL',exit:'13',city:'Theodore',ts:'Pilot',brand:'PIL',lat:30.56010,lon:-88.20673,flags:['scale','free'],note:''},
+{feet:417,corridor:'I-75',state:'FL',exit:'224',city:'Ellenton',ts:'ONE9',brand:'ONE9',lat:27.52768,lon:-82.51312,flags:[],note:''},
+{feet:419,corridor:'I-95',state:'GA',exit:'87',city:'Richmond Hill',ts:'TA',brand:'TA',lat:31.92471,lon:-81.33386,flags:[],note:''},
+{feet:428,corridor:'I-75',state:'GA',exit:'149',city:'Byron',ts:'Truck stop',brand:'IND',lat:32.65804,lon:-83.74741,flags:[],note:''},
+{feet:429,corridor:'I-80',state:'OH',exit:'234',city:'Hubbard',ts:'Truck stop',brand:'IND',lat:41.18165,lon:-80.56990,flags:[],note:''},
+{feet:429,corridor:'I-75',state:'FL',exit:'341',city:'Ocala',ts:'Marion Oaks Pilot',brand:'PIL',lat:29.02599,lon:-82.15995,flags:[],note:''},
+{feet:503,corridor:'I-65',state:'AL',exit:'171',city:'Montgomery',ts:'Truck stop',brand:'IND',lat:32.32649,lon:-86.33302,flags:[],note:''},
+{feet:506,corridor:'I-95',state:'SC',exit:'77',city:'St. George',ts:'Flying J',brand:'FJ',lat:33.19459,lon:-80.60380,flags:[],note:'A driver of 26 years called this the cleanest one he had used.'},
+{feet:521,corridor:'I-10',state:'FL',exit:'258',city:'Madison',ts:'Fast Track Travel Center',brand:'IND',lat:30.39877,lon:-83.35780,flags:[],note:'$10 showers. A review puts it "right across the street from the waffle house".'},
+{feet:531,corridor:'I-10',state:'LA',exit:'209',city:'LaPlace',ts:'Pilot',brand:'PIL',lat:30.08712,lon:-90.44526,flags:[],note:'4301 Main St and 4304 Main St.'},
+{feet:536,corridor:'I-95',state:'GA',exit:'109',city:'Port Wentworth',ts:'Pilot',brand:'PIL',lat:32.18745,lon:-81.19410,flags:[],note:''},
+{feet:636,corridor:'I-95',state:'FL',exit:'129',city:'Fort Pierce',ts:"Love's",brand:'LOV',lat:27.41228,lon:-80.39660,flags:[],alt:[{ts:'Pilot',feet:1279,brand:'PIL'}],note:'A second Waffle House sits right at the ramp.'},
+{feet:646,corridor:'I-20',state:'GA',exit:'114',city:'Madison',ts:'TA',brand:'TA',lat:33.55181,lon:-83.47304,flags:[],alt:[{ts:'Pilot',feet:3643,brand:'PIL'}],note:''},
+{feet:671,corridor:'I-10',state:'MS',exit:'31',city:'Gulfport',ts:'Flying J',brand:'FJ',lat:30.42038,lon:-89.13606,flags:[],note:"Mississippi's only walkable pair, on the whole interstate system."},
+{feet:678,corridor:'I-10',state:'FL',exit:'70',city:'DeFuniak Springs',ts:"Love's",brand:'LOV',lat:30.73580,lon:-86.34972,flags:[],note:'Two Waffle Houses at this exit; the Love\u2019s pairs with the farther one.'},
+{feet:697,corridor:'I-75',state:'FL',exit:'329',city:'Wildwood',ts:'Truck stop',brand:'IND',lat:28.87188,lon:-82.09006,flags:[],note:''},
+{feet:699,corridor:'I-75',state:'GA',exit:'11',city:'Valdosta',ts:'Pilot',brand:'PIL',lat:30.75253,lon:-83.27228,flags:['limited'],note:'Reviews report delivery-only hours at this store.'},
+{feet:723,corridor:'I-75',state:'KY',exit:'126',city:'Georgetown',ts:'Truck stop',brand:'IND',lat:38.27408,lon:-84.55312,flags:[],note:''},
+{feet:738,corridor:'I-95',state:'SC',exit:'5',city:'Hardeeville',ts:'Pilot',brand:'PIL',lat:32.27079,lon:-81.08075,flags:[],note:''},
+{feet:753,corridor:'I-85',state:'GA',exit:'149',city:'Commerce',ts:'TA',brand:'TA',lat:34.25187,lon:-83.46108,flags:[],note:'The only walkable pair on all 666 miles of I-85.'},
+{feet:791,corridor:'I-95',state:'SC',exit:'119',city:'Manning',ts:'TA (Country Pride)',brand:'TA',lat:33.70314,lon:-80.24317,flags:['diner'],note:''},
+{feet:836,corridor:'I-40',state:'AR',exit:'81',city:'Russellville',ts:'Truck stop',brand:'IND',lat:35.28191,lon:-93.09513,flags:[],note:''},
+{feet:858,corridor:'I-95',state:'VA',exit:'104',city:'Carmel Church',ts:'Truck stop',brand:'IND',lat:37.93494,lon:-77.47452,flags:[],note:''},
+{feet:859,corridor:'I-10',state:'FL',exit:'343',city:'Baldwin',ts:'TA',brand:'TA',lat:30.28307,lon:-81.98388,flags:[],note:''},
+{feet:869,corridor:'I-24',state:'TN',exit:'64',city:'La Vergne',ts:'Truck stop',brand:'IND',lat:35.99889,lon:-86.59777,flags:[],note:''},
+{feet:871,corridor:'I-65',state:'AL',exit:'334',city:'Priceville',ts:'Truck stop',brand:'IND',lat:34.53579,lon:-86.90990,flags:[],note:''},
+{feet:883,corridor:'I-75',state:'GA',exit:'16',city:'Valdosta',ts:'Bigfoot',brand:'IND',lat:30.82016,lon:-83.31170,flags:[],note:''},
+{feet:892,corridor:'I-10',state:'FL',exit:'26',city:'Milton',ts:"Love's (Garcon Point)",brand:'LOV',lat:30.57642,lon:-87.03186,flags:[],note:'Two Waffle Houses at this exit; the Love\u2019s pairs with the farther one.'},
+{feet:904,corridor:'I-10',state:'TX',exit:'877',city:'Orange',ts:'Pilot',brand:'PIL',lat:30.11405,lon:-93.82053,flags:['diner'],alt:[{ts:'Flying J',feet:911,brand:'FJ'}],note:'There is a Denny\u2019s inside the Pilot. Drivers walk 900 ft past it anyway.'},
+{feet:919,corridor:'I-10',state:'LA',exit:'64',city:'Jennings',ts:'Jennings Travel Plaza',brand:'IND',lat:30.24020,lon:-92.66398,flags:['scale','diner'],note:'Cajun sit-down restaurant, scales, casino. A driver review calls the walk "30 seconds".'},
+{feet:946,corridor:'I-75',state:'FL',exit:'161',city:'Punta Gorda',ts:'Truck stop',brand:'IND',lat:26.89615,lon:-82.00744,flags:[],note:''},
+{feet:978,corridor:'I-75',state:'KY',exit:'41',city:'London',ts:'The Scale Dodger',brand:'IND',lat:37.14930,lon:-84.11636,flags:['diner'],note:'Inside the Dogpatch Trading Center. Yes, that is its real name.'},
+{feet:1048,corridor:'I-65',state:'TN',exit:'46',city:'Columbia',ts:'Truck stop',brand:'IND',lat:35.64335,lon:-86.89491,flags:[],note:''},
+{feet:1050,corridor:'I-65',state:'AL',exit:'57',city:'Atmore',ts:'Truck stop',brand:'IND',lat:31.10705,lon:-87.47717,flags:[],note:''},
+{feet:1050,corridor:'I-65',state:'AL',exit:'13',city:'Satsuma',ts:'Truck stop',brand:'IND',lat:30.86994,lon:-88.04735,flags:[],note:''},
+{feet:1053,corridor:'I-95',state:'MD',exit:'109',city:'Elkton',ts:'Flying J',brand:'FJ',lat:39.63551,lon:-75.80539,flags:[],note:'The northern terminus of walkable waffles. Delaware has none on I-95.'},
+{feet:1069,corridor:'I-95',state:'GA',exit:'3',city:'Kingsland',ts:'Truck stop',brand:'IND',lat:30.78043,lon:-81.62451,flags:[],note:''},
+{feet:1100,corridor:'I-75',state:'GA',exit:'101',city:'Cordele',ts:'Truck stop',brand:'IND',lat:31.95881,lon:-83.75010,flags:[],note:''},
+{feet:1221,corridor:'I-80',state:'OH',exit:'226',city:'Girard',ts:'Truck stop',brand:'IND',lat:41.14330,lon:-80.72091,flags:[],note:''},
+{feet:1348,corridor:'I-10',state:'TX',exit:'848',city:'Beaumont',ts:'Petro (Iron Skillet)',brand:'PET',lat:30.03970,lon:-94.15429,flags:['diner','caution'],note:'One driver fueled here, got verbal OK to park, and was threatened with a tow mid-meal. Eat fast.'},
+{feet:1442,corridor:'I-20',state:'GA',exit:'19',city:'Temple',ts:'Pilot',brand:'PIL',lat:33.72270,lon:-85.02881,flags:[],alt:[{ts:'Flying J',feet:1442,brand:'FJ'}],note:'Both majors sit at this exit. Exit 19, not 24 — the guides get this wrong.'},
+{feet:1498,corridor:'I-75',state:'GA',exit:'201',city:'Jackson',ts:'Flying J',brand:'FJ',lat:33.20347,lon:-84.06293,flags:[],alt:[{ts:'TA',feet:1725,brand:'TA'},{ts:"Love's",feet:2192,brand:'LOV'},{ts:'Pilot',feet:3274,brand:'PIL'}],note:'More major chains walkable from one Waffle House than anywhere else in the country.'},
+{feet:1528,corridor:'I-65',state:'AL',exit:'205',city:'Clanton',ts:'Truck stop',brand:'IND',lat:32.80092,lon:-86.57739,flags:[],note:''},
+{feet:1588,corridor:'I-10',state:'LA',exit:'266',city:'Slidell',ts:'TA',brand:'TA',lat:30.28517,lon:-89.74616,flags:[],note:''},
+{feet:1619,corridor:'I-24',state:'KY',exit:'86',city:'Oak Grove',ts:'Truck stop',brand:'IND',lat:36.69333,lon:-87.45229,flags:[],note:''},
+{feet:1869,corridor:'I-10',state:'LA',exit:'151',city:'Port Allen',ts:"Love's",brand:'LOV',lat:30.45000,lon:-91.24561,flags:[],note:''},
+{feet:1885,corridor:'I-20',state:'TX',exit:'617',city:'Marshall',ts:'Marshall Truck Stop',brand:'IND',lat:32.49430,lon:-94.35878,flags:['caution'],note:'$15 to park on a lot reviewers compare to a crater field, gates close at midnight. Free parking at exit 599.'},
+{feet:1913,corridor:'I-20',state:'TX',exit:'501',city:'Terrell',ts:'Valero Terrell Travel Plaza',brand:'IND',lat:32.70430,lon:-96.27687,flags:[],note:''},
+{feet:1933,corridor:'I-81',state:'VA',exit:'150',city:'Troutville',ts:'ONE9',brand:'ONE9',lat:37.38399,lon:-79.90364,flags:[],note:'This store is new — it did not exist a year ago. The TA up the same road is the backup when the ONE9 lot fills.'},
+{feet:2078,corridor:'I-12',state:'LA',exit:'10',city:'Denham Springs',ts:'Truck stop',brand:'IND',lat:30.45746,lon:-90.95560,flags:[],note:''},
+{feet:2091,corridor:'I-65',state:'AL',exit:'164',city:'Hope Hull',ts:'Truck stop',brand:'IND',lat:32.26881,lon:-86.35750,flags:[],note:''},
+{feet:2392,corridor:'I-20',state:'SC',exit:'116',city:'Bishopville',ts:'Pilot',brand:'PIL',lat:34.19673,lon:-80.27721,flags:['limited'],note:'Honorary member at 0.45 mi. It is on the list because a driver review says it plainly: for truckers like us, thankfully there is a waffle house near the truck stop. The store sometimes runs window service only.'}
+];
+
+/* ===== brand letters ===============================================
+   One or two characters, because Pilot and Petro share a P and a
+   driver reading a pin at a glance should never have to guess which.
+   Independents get a star: on this atlas they are the good stories. */
+var BRAND = {
+  PIL:{letter:'P',  name:'Pilot'},
+  FJ: {letter:'FJ', name:'Flying J'},
+  LOV:{letter:'L',  name:"Love's"},
+  TA: {letter:'TA', name:'TA'},
+  PET:{letter:'PT', name:'Petro'},
+  ONE9:{letter:'O9',name:'ONE9'},
+  IND:{letter:'\u2605', name:'Independent'}
+};
+
+var wd   = require('./waffledist'),
+    af   = require('./atlasfilter'),
+    rw   = require('./routewaffles'),
+    vp   = require('./vehicleprofile'),
+    tt   = require('./triptext'),
+    esc  = require('./escape').escapeHtml;
+
+var state = {
+  mode:'atlas',
+  q:'', corridor:'all', state:'all', brand:'all', tier:'all',
+  doublesOnly:false, hideFlagged:false, freeParking:false, scale:false, diner:false,
+  vehicle:{mode:'standard', heightIn:'', widthIn:'', lengthFt:'', grossLb:'',
+           hazmat:vp.HAZMAT_CLASSES.slice()},
+  route:null, plan:null, routeErr:null, routeBusy:false
+};
+var $ = function(id){ return document.getElementById(id); };
+
+/* ---- map ---- */
+var TILES = {
+  light:'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+  dark: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+};
+var ATTR = '&copy; OpenStreetMap contributors &copy; CARTO';
+var map = L.map('map',{zoomControl:false}).setView([32.5,-85.5],5);
+L.control.zoom({position:'topleft'}).addTo(map);
+var tileLayer=null, markers={}, markerGroup=L.layerGroup().addTo(map),
+    routeLayer=L.layerGroup().addTo(map);
+
+function currentTheme(){ return document.documentElement.getAttribute('data-theme'); }
+function setTiles(){
+  if (tileLayer) map.removeLayer(tileLayer);
+  tileLayer = L.tileLayer(TILES[currentTheme()]||TILES.light,
+                          {maxZoom:19,attribution:ATTR,subdomains:'abcd'}).addTo(map);
+}
+setTiles();
+
+/* Markers are built once — the atlas is a fixed set that never changes within
+   a session — and filtering flips layer membership rather than rebuilding 67
+   markers on every keystroke. */
+function pinHtml(row){
+  var tier = wd.tierFor(row.feet), key = tier==='honorary' ? 'hon' : tier;
+  return '<div class="pinwrap"><div class="pin' + (tier==='honorary'?' hon':'') +
+    '" style="background:var(--t-'+key+');color:var(--t-'+key+'-ink)"><b>' +
+    esc(BRAND[row.brand] ? BRAND[row.brand].letter : '\u2605') + '</b></div></div>';
+}
+DATA.forEach(function(row,i){
+  var m = L.marker([row.lat,row.lon],{
+    icon:L.divIcon({className:'',html:pinHtml(row),iconSize:[28,28],iconAnchor:[0,0]}),
+    keyboard:true, title:row.city+', '+row.state});
+  m.on('click',function(){ openSheet(row); });
+  markers[i]=m;
+});
+
+/* ---- shared row rendering ---- */
+function stripHtml(feet){
+  /* Fixed 2,500 ft scale across every row so bars are comparable down the
+     list. A per-row scale would render 205 ft and 2,392 ft the same length,
+     which is the one thing this app must never do. */
+  var SCALE=2500, tier=wd.tierFor(feet), key = tier==='honorary'?'hon':tier;
+  return '<div class="strip"><i style="width:'+Math.min(100,feet/SCALE*100).toFixed(1)+
+    '%;background:var(--t-'+key+')"></i><span class="line" style="left:'+
+    (wd.WALKABLE_FT/SCALE*100).toFixed(1)+'%"></span></div>';
+}
+function walkLabel(feet){
+  var m = wd.walkMinutes(feet);
+  return m < 1 ? 'under a minute' : m + ' min walk';
+}
+function rowHtml(row, idx, lead, extra){
+  var pills=[];
+  if (row.alt && row.alt.length) pills.push('<span class="pill">+'+row.alt.length+' more stop'+(row.alt.length>1?'s':'')+'</span>');
+  if ((row.flags||[]).indexOf('caution')!==-1) pills.push('<span class="pill warn">read first</span>');
+  if ((row.flags||[]).indexOf('limited')!==-1) pills.push('<span class="pill">limited service</span>');
+  return '<button class="row" data-i="'+idx+'">'+
+    '<div class="row-top">'+(lead?'<span class="mile">'+esc(lead)+'</span>':'')+
+      '<span class="row-city">'+esc(row.city)+', '+esc(row.state)+'</span>'+
+      '<span class="row-ex">'+esc(row.corridor)+' exit '+esc(row.exit)+'</span>'+
+      '<span class="row-ft">'+row.feet.toLocaleString('en-US')+' ft</span></div>'+
+    '<div class="row-ts">'+esc(row.ts)+' &middot; '+walkLabel(row.feet)+
+      (extra?' &middot; '+esc(extra):'')+'</div>'+
+    stripHtml(row.feet)+
+    (pills.length?'<div style="margin-top:6px;display:flex;gap:5px;flex-wrap:wrap">'+pills.join('')+'</div>':'')+
+    '</button>';
+}
+
+/* ---- render ---- */
+function render(){
+  var body=$('panelBody'), html='', rows=[];
+
+  if (state.mode==='route') {
+    html = routeHtml();
+    rows = state.route ? state.route.stops.map(function(s){return s.row;}) : [];
+    var n = rows.length;
+    $('panelCount').textContent = state.plan ? n+(n===1?' pair':' pairs') : '\u2014';
+    $('panelSummary').textContent = state.route ? 'on '+Math.round(state.route.miles)+' mi' : '';
+  } else {
+    rows = DATA.filter(function(r){ return af.passes(r,state); })
+               .sort(function(a,b){ return a.feet-b.feet; });
+    if (!rows.length) {
+      html = '<div class="empty"><b>Nothing matches those filters</b>Clear one and try '+
+             'again — the atlas only holds 67 exits, so stacking filters runs out of country fast.</div>';
+    } else {
+      rows.forEach(function(r){ html += rowHtml(r, DATA.indexOf(r)); });
+    }
+    $('panelCount').textContent = rows.length+(rows.length===1?' pair':' pairs');
+    $('panelSummary').textContent = rows.length===DATA.length ? 'the whole atlas' : 'of '+DATA.length;
+  }
+
+  markerGroup.clearLayers();
+  rows.forEach(function(r){ var i=DATA.indexOf(r); if (markers[i]) markerGroup.addLayer(markers[i]); });
+
+  body.innerHTML = html;
+  Array.prototype.forEach.call(body.querySelectorAll('.row'), function(el){
+    el.addEventListener('click', function(){ openSheet(DATA[+el.dataset.i]); });
+  });
+  var sr=$('shareRoute'); if (sr) sr.addEventListener('click', shareRoute);
+
+  var n2 = af.activeFilterCount(state);
+  $('fDot').textContent = n2;
+  $('fDot').classList.toggle('hidden', n2===0);
+}
+
+/* ---- route panel ---- */
+function routeHtml(){
+  if (!HERE_API_KEY) {
+    return '<div class="empty"><b>Route needs a HERE key</b>Paste one into '+
+      '<code>HERE_API_KEY</code> at the top of the app script and this tab plans your run. '+
+      'The Atlas tab never calls anything and works without it.</div>';
+  }
+  if (state.routeBusy) return '<div class="empty"><b>Planning\u2026</b>Geocoding both ends, then routing the truck.</div>';
+  if (state.routeErr)  return '<div class="empty"><b>Could not plan that run</b>'+esc(state.routeErr)+'</div>';
+  if (!state.plan) {
+    return '<div class="empty"><b>What is on this run?</b>Enter the pickup and delivery '+
+      'off the dispatch. Every Waffle House on the atlas that sits near your route comes '+
+      'back in order, with the mile you pass it.</div>';
+  }
+
+  var p=state.plan, h='';
+  h += '<div class="summary"><div class="hd">On this route</div><div class="big">'+
+       p.stops.length+' walkable '+(p.stops.length===1?'pair':'pairs')+'</div>'+
+       '<div class="sub2">'+esc(p.fromLabel)+' &rarr; '+esc(p.toLabel)+' &middot; '+
+       Math.round(p.miles).toLocaleString('en-US')+' mi &middot; '+esc(p.profile)+'</div></div>';
+
+  if (!p.stops.length) {
+    h += '<div class="empty"><b>None within '+p.tierUsed+' mi of this route</b>'+
+         'The atlas holds 67 exits nationwide and this run does not pass one. '+
+         'That is a finding, not missing data.</div>';
+    return h;
+  }
+  if (p.widened) {
+    h += '<div class="leg">Nothing sat within 1 mi of this route, so the search widened to '+
+         p.tierUsed+' mi off it.</div>';
+  }
+  p.stops.forEach(function(s){
+    h += rowHtml(s.row, DATA.indexOf(s.row), 'mi '+Math.round(s.routeMile),
+                 s.detourMi.toFixed(1)+' mi off route');
+  });
+  h += '<div style="padding:12px 14px"><button class="act" id="shareRoute" style="width:100%">Share this run</button></div>';
+  return h;
+}
+
+/* ---- stop sheet ---- */
+function openSheet(row){
+  if (!row) return;
+  var b=BRAND[row.brand]||BRAND.IND, tier=wd.tierFor(row.feet);
+  var tierLabel = wd.TIERS.filter(function(t){return t.id===tier;})[0].label;
+  var h='<h2>'+esc(row.city)+', '+esc(row.state)+'</h2>'+
+    '<div class="sub">'+esc(row.corridor)+' &middot; exit '+esc(row.exit)+'</div>'+
+    '<div class="bigft"><b>'+row.feet.toLocaleString('en-US')+'</b><span>feet &middot; '+
+      walkLabel(row.feet)+' each way</span></div>'+
+    '<div class="walkscale"><div class="ends"><span>'+esc(b.name)+'</span><span>Waffle House</span></div>'+
+      stripHtml(row.feet)+'<div style="font-size:11px;color:var(--sub);margin-top:5px">'+
+      esc(tierLabel)+' &middot; the mark is the 0.4 mi walkable line</div></div>'+
+    '<div class="kv"><span>Truck stop</span><span>'+esc(row.ts)+'</span></div>';
+  (row.alt||[]).forEach(function(a){
+    h += '<div class="kv"><span>Also here</span><span>'+esc(a.ts)+' &middot; '+
+      a.feet.toLocaleString('en-US')+' ft'+
+      (a.feet>wd.WALKABLE_FT?' <em style="color:var(--sub)">(past the line)</em>':'')+'</span></div>';
+  });
+  var conf=[];
+  if ((row.flags||[]).indexOf('free')!==-1)  conf.push('free parking');
+  if ((row.flags||[]).indexOf('scale')!==-1) conf.push('CAT scale');
+  if ((row.flags||[]).indexOf('diner')!==-1) conf.push('sit-down diner');
+  if (conf.length) h += '<div class="kv"><span>Confirmed</span><span>'+esc(conf.join(', '))+'</span></div>';
+  if (state.plan) {
+    var hit = state.plan.stops.filter(function(s){ return s.row===row; })[0];
+    if (hit) h += '<div class="kv"><span>On your run</span><span>mile '+
+      Math.round(hit.routeMile)+' &middot; '+hit.detourMi.toFixed(1)+' mi off route</span></div>';
+  }
+  h += '<div class="kv"><span>Coordinates</span><span>'+row.lat.toFixed(5)+', '+row.lon.toFixed(5)+'</span></div>';
+  if (row.note) {
+    var warn = (row.flags||[]).indexOf('caution')!==-1;
+    h += '<div class="note'+(warn?' warn':'')+'">'+esc(row.note)+'</div>';
+  }
+  h += '<div class="sheet-actions"><button class="act" id="sheetClose">Close</button>'+
+       '<button class="act primary" id="sheetShare">Share stop</button></div>';
+  var sheet=$('sheet');
+  sheet.innerHTML=h; sheet.classList.add('show');
+  $('sheetClose').addEventListener('click',function(){ sheet.classList.remove('show'); });
+  $('sheetShare').addEventListener('click',function(){ share(tt.formatStopText(row,ATLAS_REV)); });
+  map.panTo([row.lat,row.lon]);
+}
+
+function share(text){
+  if (navigator.share) { navigator.share({text:text}).catch(function(){}); return; }
+  if (navigator.clipboard) { navigator.clipboard.writeText(text).catch(function(){}); return; }
+  window.prompt('Copy this', text);
+}
+function shareRoute(){ if (state.plan) share(tt.formatRouteText(state.plan, ATLAS_REV)); }
+
+/* ===== HERE calls ===================================================
+   Two GETs, both key-gated. Everything downstream of them is pure and
+   lives in lib/, so the untestable surface of this app is these forty
+   lines and nothing else. */
+function hereUrl(base, params){
+  params.apiKey = HERE_API_KEY;
+  return base+'?'+Object.keys(params).map(function(k){
+    return encodeURIComponent(k)+'='+encodeURIComponent(params[k]);
+  }).join('&');
+}
+function geocode(q){
+  return fetch(hereUrl('https://geocode.search.hereapi.com/v1/geocode',
+                       {q:q, in:'countryCode:USA', limit:1}))
+    .then(function(r){ if(!r.ok) throw new Error('Geocoding failed ('+r.status+')'); return r.json(); })
+    .then(function(j){
+      if (!j.items||!j.items.length) throw new Error('No match for "'+q+'"');
+      return {lat:j.items[0].position.lat, lon:j.items[0].position.lng, label:j.items[0].title};
+    });
+}
+function truckRoute(a,b,vehicleParams){
+  var params = {transportMode:'truck', origin:a.lat+','+a.lon, destination:b.lat+','+b.lon,
+                return:'polyline,summary'};
+  Object.keys(vehicleParams).forEach(function(k){ params[k]=vehicleParams[k]; });
+  return fetch(hereUrl('https://router.hereapi.com/v8/routes', params))
+    .then(function(r){ if(!r.ok) throw new Error('Routing failed ('+r.status+
+      '). A 400 here usually means no legal truck route for this vehicle profile.'); return r.json(); })
+    .then(function(j){
+      if (!j.routes||!j.routes.length) throw new Error('No truck route between those two.');
+      var poly=[];
+      j.routes[0].sections.forEach(function(sec){
+        var d = require('./flexible-polyline').decode(sec.polyline);
+        (d.polyline||d).forEach(function(pt){ poly.push([pt[0],pt[1]]); });
+      });
+      return poly;
+    });
+}
+
+function planRoute(){
+  if (!HERE_API_KEY) return;
+  var from=$('rFrom').value.trim(), to=$('rTo').value.trim();
+  if (!from||!to) { showErr('Enter both a pickup and a delivery address.'); return; }
+
+  /* Validation BLOCKS planning rather than warning. A typo'd height is
+     exactly the input that produces a confident illegal route, and a warning
+     next to a route that still drew would be read as a route. */
+  var check = vp.validate(state.vehicle);
+  if (!check.ok) { showErr(check.errors.join('. ')); return; }
+
+  showErr(''); state.routeBusy=true; state.routeErr=null; setDrawer(false); render();
+
+  Promise.all([geocode(from), geocode(to)])
+    .then(function(ends){
+      return truckRoute(ends[0], ends[1], vp.toHereParams(state.vehicle))
+        .then(function(poly){ return {ends:ends, poly:poly}; });
+    })
+    .then(function(res){
+      var found = rw.stopsAlongRoute(res.poly, DATA);
+      var miles = rw.routeMiles(res.poly);
+      state.route = {poly:res.poly, miles:miles, stops:found.stops};
+      state.plan = {
+        fromLabel:res.ends[0].label, toLabel:res.ends[1].label,
+        from:res.ends[0].label, to:res.ends[1].label,
+        miles:miles, stops:found.stops, tierUsed:found.tierUsed, widened:found.widened,
+        profile:vp.label(state.vehicle)
+      };
+      state.routeBusy=false;
+      drawRoute(res.poly, res.ends);
+      setDrawer(true);   // collapse to the summary tab once a plan renders
+      render();
+    })
+    .catch(function(e){
+      state.routeBusy=false; state.route=null; state.plan=null;
+      state.routeErr = e.message||'Could not plan that run.';
+      setDrawer(false);  // expand again so the field that needs fixing is on screen
+      render();
+    });
+}
+
+function drawRoute(poly, ends){
+  routeLayer.clearLayers();
+  L.polyline(poly,{color:'#7A4A21',weight:4,opacity:.85}).addTo(routeLayer);
+  [ends[0],ends[1]].forEach(function(e){
+    L.marker([e.lat,e.lon],{icon:L.divIcon({className:'',html:'<div class="endpin"></div>',
+      iconSize:[16,16],iconAnchor:[0,0]})}).addTo(routeLayer);
+  });
+  map.fitBounds(L.polyline(poly).getBounds(),{padding:[30,30]});
+}
+function showErr(msg){
+  var el=$('rErr'); el.textContent=msg||''; el.classList.toggle('hidden',!msg);
+}
+
+/* ---- vehicle controls ---- */
+function setVehicleMode(m){
+  state.vehicle.mode=m;
+  $('vStd').setAttribute('aria-pressed', String(m==='standard'));
+  $('vHaz').setAttribute('aria-pressed', String(m==='hazmat'));
+  $('vCustom').setAttribute('aria-pressed', String(m==='custom'));
+  $('vCustomFields').classList.toggle('hidden', m!=='custom');
+  $('vHazFields').classList.toggle('hidden', m!=='hazmat');
+  syncVehicleLabel();
+}
+function syncVehicleLabel(){
+  var l = vp.label(state.vehicle);
+  $('vLabel').textContent = state.vehicle.mode==='standard'
+    ? "Standard rig \u2014 13'6\" \u00d7 8'6\" \u00d7 70 ft, 80,000 lb"
+    : l;
+  $('drawerProfile').textContent = l;
+}
+$('vStd').addEventListener('click',function(){ setVehicleMode('standard'); });
+$('vHaz').addEventListener('click',function(){ setVehicleMode('hazmat'); });
+$('vCustom').addEventListener('click',function(){ setVehicleMode('custom'); });
+[['vH','heightIn'],['vW','widthIn'],['vL','lengthFt'],['vG','grossLb']].forEach(function(pair){
+  $(pair[0]).addEventListener('input',function(){
+    state.vehicle[pair[1]] = this.value; syncVehicleLabel();
+  });
+});
+$('vHazFields').innerHTML = vp.HAZMAT_CLASSES.map(function(c){
+  return '<label><input type="checkbox" class="haz" value="'+esc(c)+'" checked>'+esc(c)+'</label>';
+}).join('');
+Array.prototype.forEach.call($('vHazFields').querySelectorAll('.haz'), function(el){
+  el.addEventListener('change', function(){
+    var on = Array.prototype.filter.call($('vHazFields').querySelectorAll('.haz'),
+              function(x){ return x.checked; }).map(function(x){ return x.value; });
+    /* Deselecting the last class re-selects them all rather than silently
+       sending none: HERE does not infer between classes, so "no classes" on a
+       hazmat load is a route that ignores every hazmat restriction. */
+    if (!on.length) {
+      Array.prototype.forEach.call($('vHazFields').querySelectorAll('.haz'),
+        function(x){ x.checked = true; });
+      on = vp.HAZMAT_CLASSES.slice();
+    }
+    state.vehicle.hazmat = on; syncVehicleLabel();
+  });
+});
+$('rGo').addEventListener('click', planRoute);
+
+/* ---- drawer ---- */
+function setDrawer(collapsed){
+  $('drawer').classList.toggle('collapsed', !!collapsed);
+  var f=$('rFrom').value.trim(), t=$('rTo').value.trim();
+  $('drawerSummary').textContent = (f&&t) ? (f+' \u2192 '+t) : 'Trip';
+  setTimeout(function(){ map.invalidateSize(); }, 260);
+}
+$('drawerTab').addEventListener('click', function(){ setDrawer(false); });
+$('drawerTab').addEventListener('keydown', function(e){
+  if (e.key==='Enter'||e.key===' ') { e.preventDefault(); setDrawer(false); }
+});
+Array.prototype.forEach.call(document.querySelectorAll('.fld .clr'), function(btn){
+  btn.addEventListener('click', function(){
+    var inp=$(btn.dataset.for); inp.value=''; btn.classList.remove('on'); inp.focus();
+  });
+});
+['rFrom','rTo'].forEach(function(id){
+  $(id).addEventListener('input', function(){
+    this.parentNode.querySelector('.clr').classList.toggle('on', !!this.value);
+  });
+});
+
+/* ---- atlas filters ---- */
+function fillSelect(el,opts,val){
+  el.innerHTML = opts.map(function(o){
+    return '<option value="'+esc(o[0])+'"'+(o[0]===val?' selected':'')+'>'+esc(o[1])+'</option>';
+  }).join('');
+}
+function uniq(key){
+  var s={}; DATA.forEach(function(r){ s[r[key]]=1; });
+  return Object.keys(s).sort(function(a,b){
+    return key==='corridor' ? (+a.slice(2))-(+b.slice(2)) : (a<b?-1:1);
+  });
+}
+fillSelect($('fCorridor'),[['all','All corridors']].concat(uniq('corridor').map(function(c){return [c,c];})),'all');
+fillSelect($('fState'),[['all','All states']].concat(uniq('state').map(function(s){return [s,s];})),'all');
+fillSelect($('fBrand'),[['all','Any truck stop']].concat(Object.keys(BRAND).map(function(k){return [k,BRAND[k].name];})),'all');
+fillSelect($('fTier'),[['all','Any distance']].concat(wd.TIERS.map(function(t){
+  return [t.id, t.max===Infinity ? 'Include honorary' : t.label+' \u2014 '+t.max.toLocaleString('en-US')+' ft'];
+})),'all');
+function bindSel(id,key){ $(id).addEventListener('change',function(){ state[key]=this.value; render(); }); }
+bindSel('fCorridor','corridor'); bindSel('fState','state'); bindSel('fBrand','brand'); bindSel('fTier','tier');
+function bindChk(id,key){ $(id).addEventListener('change',function(){ state[key]=this.checked; render(); }); }
+bindChk('fFree','freeParking'); bindChk('fScale','scale'); bindChk('fDiner','diner');
+bindChk('fDouble','doublesOnly'); bindChk('fHide','hideFlagged');
+$('fReset').addEventListener('click',function(){
+  state.corridor=state.state=state.brand=state.tier='all';
+  state.doublesOnly=state.hideFlagged=state.freeParking=state.scale=state.diner=false;
+  ['fCorridor','fState','fBrand','fTier'].forEach(function(id){ $(id).value='all'; });
+  ['fFree','fScale','fDiner','fDouble','fHide'].forEach(function(id){ $(id).checked=false; });
+  render();
+});
+$('q').addEventListener('input',function(){
+  state.q=this.value; $('qClear').classList.toggle('on',!!this.value); render();
+});
+$('qClear').addEventListener('click',function(){
+  $('q').value=''; state.q=''; this.classList.remove('on'); $('q').focus(); render();
+});
+
+/* ---- modes ---- */
+function setMode(m){
+  state.mode=m;
+  $('mAtlas').setAttribute('aria-selected', m==='atlas');
+  $('mRoute').setAttribute('aria-selected', m==='route');
+  $('toolbar').classList.toggle('hidden', m!=='atlas');
+  $('drawer').classList.toggle('hidden', m!=='route');
+  $('sheet').classList.remove('show');
+  closePops(); render();
+  if (m==='atlas') { routeLayer.clearLayers(); fitVisible(); }
+  else if (state.route) drawRoute(state.route.poly, [
+    {lat:state.route.poly[0][0], lon:state.route.poly[0][1]},
+    {lat:state.route.poly[state.route.poly.length-1][0],
+     lon:state.route.poly[state.route.poly.length-1][1]}]);
+  setTimeout(function(){ map.invalidateSize(); }, 60);
+}
+$('mAtlas').addEventListener('click',function(){ setMode('atlas'); });
+$('mRoute').addEventListener('click',function(){ setMode('route'); });
+
+function fitVisible(){
+  var layers=[]; markerGroup.eachLayer(function(l){ layers.push(l); });
+  if (layers.length) map.fitBounds(L.featureGroup(layers).getBounds(),{padding:[34,34],maxZoom:11});
+}
+
+/* ---- popovers / panel / theme ---- */
+function closePops(){
+  ['filterPop','legendPop'].forEach(function(id){ $(id).classList.remove('show'); });
+  $('filterBtn').setAttribute('aria-expanded','false');
+  $('legendBtn').setAttribute('aria-expanded','false');
+}
+function togglePop(popId,btnId){
+  var p=$(popId), open=p.classList.contains('show');
+  closePops();
+  if (!open) { p.classList.add('show'); $(btnId).setAttribute('aria-expanded','true'); }
+}
+$('filterBtn').addEventListener('click',function(e){ e.stopPropagation(); togglePop('filterPop','filterBtn'); });
+$('legendBtn').addEventListener('click',function(e){ e.stopPropagation(); togglePop('legendPop','legendBtn'); });
+document.addEventListener('click',function(e){
+  if (!e.target.closest('.pop') && !e.target.closest('#filterBtn') && !e.target.closest('#legendBtn')) closePops();
+});
+function togglePanel(){
+  var c=$('panel').classList.toggle('collapsed');
+  $('panelTab').setAttribute('aria-expanded', String(!c));
+  setTimeout(function(){ map.invalidateSize(); },260);
+}
+$('panelTab').addEventListener('click', togglePanel);
+$('panelTab').addEventListener('keydown',function(e){
+  if (e.key==='Enter'||e.key===' ') { e.preventDefault(); togglePanel(); }
+});
+function applyTheme(choice){
+  try {
+    if (choice==='system') localStorage.removeItem('wafflepost.theme.v1');
+    else localStorage.setItem('wafflepost.theme.v1', choice);
+  } catch(e) { /* sandboxed frame: the choice just does not persist */ }
+  document.documentElement.setAttribute('data-theme',
+    choice==='system' ? (matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light') : choice);
+  setTiles(); syncThemeButtons(choice);
+}
+function storedChoice(){
+  try { var t=localStorage.getItem('wafflepost.theme.v1');
+        return (t==='light'||t==='dark') ? t : 'system'; }
+  catch(e){ return 'system'; }
+}
+function syncThemeButtons(c){
+  $('thLight').setAttribute('aria-checked',String(c==='light'));
+  $('thDark').setAttribute('aria-checked', String(c==='dark'));
+  $('thSys').setAttribute('aria-checked',  String(c==='system'));
+}
+$('thLight').addEventListener('click',function(){ applyTheme('light'); });
+$('thDark').addEventListener('click', function(){ applyTheme('dark'); });
+$('thSys').addEventListener('click',  function(){ applyTheme('system'); });
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',function(){
+  if (storedChoice()==='system') applyTheme('system');
+});
+syncThemeButtons(storedChoice());
+
+/* boot */
+$('revLine').textContent = ATLAS_REV+' \u00b7 '+DATA.length+' exits';
+$('verLine').textContent = 'WafflePost v'+APP_VERSION+' \u00b7 '+ATLAS_REV;
+setVehicleMode('standard');
+render(); fitVisible();
+window.addEventListener('resize',function(){ map.invalidateSize(); });
+</script>
+</body>
+</html>
