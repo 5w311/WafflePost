@@ -5,8 +5,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>WafflePost</title>
 <meta name="description" content="Every Waffle House in America you can walk to from a truck stop.">
-<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-<link rel="preconnect" href="https://basemaps.cartocdn.com" crossorigin>
+<!-- First contact with js.api.here.com is the render-blocking stylesheet
+     below, then five SDK scripts. crossorigin is load-bearing, not
+     decoration: those are all CORS fetches, and a preconnect hint without
+     it opens a socket on a different connection key, so the socket is not
+     reused and the hint does nothing at all. -->
+<link rel="preconnect" href="https://js.api.here.com" crossorigin>
 <script>
 /* Resolve theme before first paint so there is no light-then-dark flash.
    Wrapped in try/catch: localStorage throws in sandboxed frames (and in
@@ -17,7 +21,7 @@ document.documentElement.setAttribute('data-theme',
   t||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'));
 }catch(e){document.documentElement.setAttribute('data-theme','light');}})();
 </script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="https://js.api.here.com/v3/3.1/mapsjs-ui.css">
 <style>
 /* ---- tokens -------------------------------------------------------------
    The palette is the sign and the griddle: sign yellow, char black, syrup
@@ -149,9 +153,20 @@ html[data-theme=dark] .mile{color:#E8B96B}
   display:grid;place-items:center;border:2px solid var(--char);box-shadow:0 1px 4px rgba(0,0,0,.4)}
 .pin b{transform:rotate(45deg);font-size:10px;font-weight:900}
 .pin.hon{border-style:dashed}
-.pinwrap{transform:translate(-50%,-100%)}
+/* HERE's DomIcon has no anchor option — it puts the icon element's own
+   top-left corner on the coordinate, and unlike Leaflet's iconAnchor there
+   is no option to say otherwise. Worse, HERE writes its own inline
+   transform:matrix(...) onto whatever element is handed to DomIcon, which
+   would silently overwrite a CSS transform declared on that same element.
+   So the anchor translate lives one level deeper, on a wrapper HERE never
+   touches, and the pin keeps its own rotate on the element inside that.
+   Both wrappers carry an explicit box: translate percentages resolve
+   against the element's own size, and an auto-width block div would resolve
+   -50% against the whole map. */
+.pinwrap{width:28px;height:28px;transform:translate(-50%,-100%)}
+.endwrap{width:16px;height:16px;transform:translate(-50%,-50%)}
 .endpin{width:16px;height:16px;border-radius:50%;border:3px solid var(--char);
-  background:var(--sign);transform:translate(-50%,-50%)}
+  background:var(--sign)}
 
 .sheet{position:absolute;inset:auto 0 0 0;background:var(--surface);z-index:900;
   border-radius:14px 14px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.28);
@@ -319,7 +334,16 @@ html[data-theme=dark] .mile{color:#E8B96B}
   <div class="sheet" id="sheet" role="dialog" aria-label="Stop detail"></div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<!-- HERE Maps JS 3.1. mapsjs-harp.js is the HARP rendering engine and must
+     follow core; service, mapevents and ui all extend the H namespace core
+     creates. None of these five carry a ?v= stamp — they are third-party
+     CDN URLs at a pinned version, not our files, so APP_VERSION has no
+     business on them (test/structure.test.js counts lib/ tags only). -->
+<script src="https://js.api.here.com/v3/3.1/mapsjs-core.js"></script>
+<script src="https://js.api.here.com/v3/3.1/mapsjs-harp.js"></script>
+<script src="https://js.api.here.com/v3/3.1/mapsjs-service.js"></script>
+<script src="https://js.api.here.com/v3/3.1/mapsjs-mapevents.js"></script>
+<script src="https://js.api.here.com/v3/3.1/mapsjs-ui.js"></script>
 
 <!-- lib/ loads as classic scripts. FuelPost uses a bare module.exports shim;
      ours also needs require(), because these modules depend on each other.
@@ -329,27 +353,32 @@ var __mods={};
 function require(p){return __mods[p.replace(/^\.\//,'').replace(/\.js$/,'')];}
 var module={exports:{}};
 </script>
-<script src="lib/waffledist.js?v=2.0.0"></script>
+<script src="lib/waffledist.js?v=3.0.0"></script>
 <script>__mods.waffledist=module.exports;module={exports:{}};</script>
-<script src="lib/atlasfilter.js?v=2.0.0"></script>
+<script src="lib/atlasfilter.js?v=3.0.0"></script>
 <script>__mods.atlasfilter=module.exports;module={exports:{}};</script>
-<script src="lib/routewaffles.js?v=2.0.0"></script>
+<script src="lib/routewaffles.js?v=3.0.0"></script>
 <script>__mods.routewaffles=module.exports;module={exports:{}};</script>
-<script src="lib/vehicleprofile.js?v=2.0.0"></script>
+<script src="lib/vehicleprofile.js?v=3.0.0"></script>
 <script>__mods.vehicleprofile=module.exports;module={exports:{}};</script>
-<script src="lib/triptext.js?v=2.0.0"></script>
+<script src="lib/triptext.js?v=3.0.0"></script>
 <script>__mods.triptext=module.exports;module={exports:{}};</script>
-<script src="lib/escape.js?v=2.0.0"></script>
+<script src="lib/escape.js?v=3.0.0"></script>
 <script>__mods.escape=module.exports;module={exports:{}};</script>
-<script src="lib/flexible-polyline.js?v=2.0.0"></script>
+<script src="lib/flexible-polyline.js?v=3.0.0"></script>
 <script>__mods['flexible-polyline']=module.exports;module={exports:{}};</script>
 
 <script>
 /* ===== HERE API key =================================================
-   Route is the only tab that touches a network API. Paste a HERE key
-   between the quotes and it works; leave it empty and that tab explains
-   itself instead of failing at the first fetch. Atlas never calls
-   anything and works either way.
+   The key is no longer Route's alone. As of 3.0.0 the map itself is HERE,
+   and H.service.Platform authenticates with this key, so an empty key now
+   means a blank map on BOTH tabs — not just a Route tab that explains
+   itself. Route additionally uses it for its two fetches, and still says
+   so rather than failing at the first one.
+
+   Everything computed from DATA — every distance, tier, filter and walk
+   strip — is still client-side and still needs no network at all. What an
+   empty key costs is the basemap under the pins, not the atlas itself.
 
    Restrict the key to this app's own domain in HERE's console before you
    commit it. A client-side map app cannot hide a key — domain
@@ -365,7 +394,7 @@ var HERE_API_KEY = '';
    APP_VERSION - the code. Shown in the legend card. Bumped every change,
                 and stamped onto every lib/ URL as a cache-buster. */
 var ATLAS_REV   = 'Atlas Rev 08-2026';
-var APP_VERSION = '2.0.0';
+var APP_VERSION = '3.0.0';
 
 /* ===== DATA ==========================================================
    66 exits, 73 pairings, one honorary. Every row: feet measured by
@@ -484,41 +513,165 @@ var state = {
 };
 var $ = function(id){ return document.getElementById(id); };
 
-/* ---- map ---- */
-var TILES = {
-  light:'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-  dark: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-};
-var ATTR = '&copy; OpenStreetMap contributors &copy; CARTO';
-var map = L.map('map',{zoomControl:false}).setView([32.5,-85.5],5);
-L.control.zoom({position:'topleft'}).addTo(map);
-var tileLayer=null, markers={}, markerGroup=L.layerGroup().addTo(map),
-    routeLayer=L.layerGroup().addTo(map);
+/* ---- map ==========================================================
+   HERE Maps JS 3.1 on the HARP engine — the same stack FuelPost runs, so
+   there is one map vendor across both apps and one place the scar tissue
+   accumulates rather than two.
 
-function currentTheme(){ return document.documentElement.getAttribute('data-theme'); }
-function setTiles(){
-  if (tileLayer) map.removeLayer(tileLayer);
-  tileLayer = L.tileLayer(TILES[currentTheme()]||TILES.light,
-                          {maxZoom:19,attribution:ATTR,subdomains:'abcd'}).addTo(map);
+   The engine type has to be passed in BOTH places or the map half-works:
+     - createDefaultLayers({engineType}) builds layers whose styles the
+       engine can actually parse. Omit it and HARP throws "Wrong style
+       format" because it is handed WEBGL-format styles.
+     - the H.Map option selects the engine that draws. Omit it and the map
+       falls back to WEBGL, under which HERE's own MapSettingsControl
+       renders Satellite greyed out and unpickable. */
+var HERE_ENGINE = H.Map.EngineType.HARP;
+var platform = new H.service.Platform({apikey:HERE_API_KEY});
+var defaultLayers = platform.createDefaultLayers({engineType:HERE_ENGINE});
+
+/* ONE fixed base layer, set at construction and never changed again.
+   The app's Light/Dark/System control themes the CHROME only; the map does
+   not follow it. That is deliberate, and it is what lets this file carry no
+   mapnight constant, no setBaseLayer choke point, no baselayerchange
+   listener and no centre/zoom preservation across a layer switch. The pin
+   colours were chosen to read on either tile style, so nothing about them
+   depends on which one is up. If the bright day map ever reads badly in a
+   cab at night, the fix is to construct with vector.normal.mapnight here —
+   one constant, still no theme machinery. */
+var map = new H.Map(document.getElementById('map'),
+  defaultLayers.vector.normal.map,
+  {engineType:HERE_ENGINE,
+   /* Pre-fit fallback only: the marker build below fits to the whole atlas
+      in this same script task, before the browser paints a frame. */
+   center:{lat:32.5,lng:-85.5}, zoom:5,
+   pixelRatio:window.devicePixelRatio||1});
+
+new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
+var ui = H.ui.UI.createDefault(map, defaultLayers);
+/* HERE's scale bar defaults to metric. Every distance this app states is
+   feet and miles, so the bar has to read the same way. */
+ui.setUnitSystem(H.ui.UnitSystem.IMPERIAL);
+
+/* The layer switcher is built here rather than taken from createDefault,
+   from H.ui.MapSettingsControl's public config object. `baseLayers` names
+   the entries; OMITTING the optional `layers` array is what drops the
+   traffic checkboxes, which are not part of what this app does.
+   Built once and never rebuilt — nothing in this app changes it, because
+   the base layer never follows the theme. Satellite earns its place here
+   specifically: this app's claim is that a walk is walkable, and a road map
+   does not show a fence, a drainage ditch, or a kerb with no gap in it. */
+ui.removeControl('mapsettings');
+ui.addControl('mapsettings', new H.ui.MapSettingsControl({
+  baseLayers:[
+    {label:'Map view', layer:defaultLayers.vector.normal.map},
+    {label:'Satellite', layer:defaultLayers.raster.satellite.map}
+  ],
+  alignment:H.ui.LayoutAlignment.BOTTOM_RIGHT
+}));
+/* Re-adding the scale bar AFTER the button is load-bearing, not tidying.
+   `alignment` picks the anchor; position WITHIN it is DOM child order, and
+   bottom-right is a horizontal row shared by both. createDefault leaves it
+   [scalebar, button]; removing and re-adding only the button makes it
+   [button, scalebar], which slides the button to roughly the centre of a
+   phone screen. */
+var scalebar = ui.removeControl('scalebar');
+if (scalebar) ui.addControl('scalebar', scalebar);
+
+/* The panel sits absolutely over the map's bottom edge (up to 62% of it),
+   and HERE fits to the full element — which centres a fitted route in area
+   the driver cannot see. setPadding is HERE's mechanism for exactly this:
+   the padded area's centre becomes the visual centre, zoom included.
+   Measured from the DOM, so whoever changes the panel need not know the
+   viewport exists. Declared HERE, in map setup, above first use: the
+   one-time startup fit in the marker build below calls syncMapPadding()
+   and reads MAP_FIT_MARGIN, and a declaration after that call site is a
+   temporal-dead-zone crash at startup — which has bitten the sibling
+   project twice. */
+var MAP_FIT_MARGIN = 32;
+function syncMapPadding(){
+  var p = document.getElementById('panel');
+  var h = p ? Math.round(p.getBoundingClientRect().height) : 0;
+  map.getViewPort().setPadding(MAP_FIT_MARGIN, MAP_FIT_MARGIN,
+                               h + MAP_FIT_MARGIN, MAP_FIT_MARGIN);
 }
-setTiles();
 
-/* Markers are built once — the atlas is a fixed set that never changes within
-   a session — and filtering flips layer membership rather than rebuilding 67
-   markers on every keystroke. */
-function pinHtml(row){
+/* HERE's canvas only re-measures on a real window resize or an explicit
+   resize() call — it cannot see its own container change height, which
+   happens whenever the trip drawer or the results panel grows or shrinks.
+   Miss one and the canvas keeps its old size: a dead black band where the
+   map should be. Observing the map element covers every cause at once
+   instead of hand-wiring a call at each height-changing site and
+   inevitably missing the next one. Debounced so a stream of size changes
+   settles into one resize at the final size. This supersedes the
+   setTimeout invalidateSize() calls the Leaflet build scattered around. */
+var mapResizeTimer = 0;
+function mapResized(){
+  clearTimeout(mapResizeTimer);
+  mapResizeTimer = setTimeout(function(){
+    map.getViewPort().resize(); syncMapPadding();
+  }, 120);
+}
+window.addEventListener('resize', mapResized);
+new ResizeObserver(mapResized).observe(document.getElementById('map'));
+
+var markers = {}, markerGroup = new H.map.Group(), routeGroup = new H.map.Group();
+map.addObject(markerGroup);
+map.addObject(routeGroup);
+
+/* One DomIcon per distinct pin APPEARANCE, not per marker. WafflePost's
+   appearance is tier crossed with brand letter — up to 28 icons across 67
+   markers — and the class string that distinguishes them is the cache key.
+   DomIcon CLONES its template element for every marker rather than
+   attaching it, so sharing one icon across markers is safe: each renders an
+   independent element and the template is never mutated. Route endpoint
+   pins are per plan and stay uncached.
+
+   Markers themselves are built once — the atlas is a fixed set that never
+   changes within a session — in DATA order, which is shortest walk first,
+   so pin stacking where markers overlap is deterministic. Filtering flips
+   setVisibility (see render); nothing is constructed per keystroke. */
+var iconCache = {};
+function pinIcon(row){
   var tier = wd.tierFor(row.feet), key = tier==='honorary' ? 'hon' : tier;
-  return '<div class="pinwrap"><div class="pin' + (tier==='honorary'?' hon':'') +
-    '" style="background:var(--t-'+key+');color:var(--t-'+key+'-ink)"><b>' +
-    esc(BRAND[row.brand] ? BRAND[row.brand].letter : '\u2605') + '</b></div></div>';
+  var letter = BRAND[row.brand] ? BRAND[row.brand].letter : '\u2605';
+  var cacheKey = key + ' ' + letter;
+  var icon = iconCache[cacheKey];
+  if (!icon) {
+    /* The outer div is what DomIcon receives, and what HERE writes its own
+       inline transform onto; .pinwrap one level in carries the anchor
+       translate, and .pin inside that keeps its own rotate. See the CSS. */
+    var w = document.createElement('div');
+    w.innerHTML = '<div><div class="pinwrap"><div class="pin' +
+      (key==='hon'?' hon':'') + '" style="background:var(--t-'+key+
+      ');color:var(--t-'+key+'-ink)"><b>' + esc(letter) + '</b></div></div></div>';
+    icon = new H.map.DomIcon(w.firstElementChild);
+    iconCache[cacheKey] = icon;
+  }
+  return icon;
 }
-DATA.forEach(function(row,i){
-  var m = L.marker([row.lat,row.lon],{
-    icon:L.divIcon({className:'',html:pinHtml(row),iconSize:[28,28],iconAnchor:[0,0]}),
-    keyboard:true, title:row.city+', '+row.state});
-  m.on('click',function(){ openSheet(row); });
+var built = DATA.map(function(row,i){
+  var m = new H.map.DomMarker({lat:row.lat,lng:row.lon},{icon:pinIcon(row)});
+  m.addEventListener('tap',function(){ openSheet(row); });
   markers[i]=m;
+  return m;
 });
+markerGroup.addObjects(built);   // one call: the group does its bookkeeping once
+
+/* Fit the first view to the whole atlas, ONCE. The constructor's
+   center/zoom shows a few states; the app exists to show a national atlas
+   and the first glance should say so. Called from boot AFTER render() has
+   filled the panel, in the same script task before the browser paints, so
+   the panel is measured at its real height rather than its empty one: an
+   empty panel is its 38px tab where a full one is 62% of the stage, and
+   syncMapPadding reads the DOM. Once only: no refit on resize, on
+   filtering, or on returning from Route. The driver owns the camera from
+   first paint on. */
+function fitAtlas(){
+  var b = markerGroup.getBoundingBox();
+  if (!b) return;
+  syncMapPadding();
+  map.getViewModel().setLookAtData({bounds:b});
+}
 
 /* ---- shared row rendering ---- */
 function stripHtml(feet){
@@ -574,8 +727,11 @@ function render(){
     $('panelSummary').textContent = rows.length===DATA.length ? 'the whole atlas' : 'of '+DATA.length;
   }
 
-  markerGroup.clearLayers();
-  rows.forEach(function(r){ var i=DATA.indexOf(r); if (markers[i]) markerGroup.addLayer(markers[i]); });
+  /* No construction, no teardown: every marker was built once at startup.
+     Filtering is one pass of visibility flips. */
+  var show = {};
+  rows.forEach(function(r){ show[DATA.indexOf(r)] = true; });
+  DATA.forEach(function(r,i){ if (markers[i]) markers[i].setVisibility(!!show[i]); });
 
   body.innerHTML = html;
   Array.prototype.forEach.call(body.querySelectorAll('.row'), function(el){
@@ -593,7 +749,8 @@ function routeHtml(){
   if (!HERE_API_KEY) {
     return '<div class="empty"><b>Route needs a HERE key</b>Paste one into '+
       '<code>HERE_API_KEY</code> at the top of the app script and this tab plans your run. '+
-      'The Atlas tab never calls anything and works without it.</div>';
+      'The same key draws the map on both tabs; the atlas rows and distances '+
+      'are computed from local data and read fine without it.</div>';
   }
   if (state.routeBusy) return '<div class="empty"><b>Planning\u2026</b>Geocoding both ends, then routing the truck.</div>';
   if (state.routeErr)  return '<div class="empty"><b>Could not plan that run</b>'+esc(state.routeErr)+'</div>';
@@ -666,7 +823,7 @@ function openSheet(row){
   sheet.innerHTML=h; sheet.classList.add('show');
   $('sheetClose').addEventListener('click',function(){ sheet.classList.remove('show'); });
   $('sheetShare').addEventListener('click',function(){ share(tt.formatStopText(row,ATLAS_REV)); });
-  map.panTo([row.lat,row.lon]);
+  map.setCenter({lat:row.lat,lng:row.lon}, true);
 }
 
 function share(text){
@@ -742,9 +899,12 @@ function planRoute(){
         profile:vp.label(state.vehicle)
       };
       state.routeBusy=false;
-      drawRoute(res.poly, res.ends);
       setDrawer(true);   // collapse to the summary tab once a plan renders
+      /* Render BEFORE drawing: drawRoute fits with the panel's measured
+         height as bottom padding, and it must measure this plan's panel,
+         not the one the previous plan left on screen. */
       render();
+      drawRoute(res.poly, res.ends);
     })
     .catch(function(e){
       state.routeBusy=false; state.route=null; state.plan=null;
@@ -755,13 +915,27 @@ function planRoute(){
 }
 
 function drawRoute(poly, ends){
-  routeLayer.clearLayers();
-  L.polyline(poly,{color:'#7A4A21',weight:4,opacity:.85}).addTo(routeLayer);
+  routeGroup.removeAll();
+  var ls = new H.geo.LineString();
+  poly.forEach(function(pt){ ls.pushPoint({lat:pt[0], lng:pt[1]}); });
+  var line = new H.map.Polyline(ls,
+    {style:{lineWidth:4,strokeColor:'rgba(122,74,33,.85)',lineJoin:'round'}});
+  routeGroup.addObject(line);
+  /* Endpoint pins are per plan, so they are not worth caching. Same wrapper
+     reason as pinIcon: HERE's inline transform lands on the element handed
+     to DomIcon, so .endwrap's anchor translate sits one level deeper. */
   [ends[0],ends[1]].forEach(function(e){
-    L.marker([e.lat,e.lon],{icon:L.divIcon({className:'',html:'<div class="endpin"></div>',
-      iconSize:[16,16],iconAnchor:[0,0]})}).addTo(routeLayer);
+    var w = document.createElement('div');
+    w.innerHTML = '<div><div class="endwrap"><div class="endpin"></div></div></div>';
+    routeGroup.addObject(new H.map.DomMarker({lat:e.lat,lng:e.lon},
+      {icon:new H.map.DomIcon(w.firstElementChild)}));
   });
-  map.fitBounds(L.polyline(poly).getBounds(),{padding:[30,30]});
+  /* Padding is synced immediately before the fit, and planRoute renders the
+     panel BEFORE calling here, so the fit measures THIS plan's panel rather
+     than the previous one's. Without the bottom padding the delivery end
+     lands behind the panel. */
+  syncMapPadding();
+  map.getViewModel().setLookAtData({bounds:line.getBoundingBox()});
 }
 function showErr(msg){
   var el=$('rErr'); el.textContent=msg||''; el.classList.toggle('hidden',!msg);
@@ -817,7 +991,9 @@ function setDrawer(collapsed){
   $('drawer').classList.toggle('collapsed', !!collapsed);
   var f=$('rFrom').value.trim(), t=$('rTo').value.trim();
   $('drawerSummary').textContent = (f&&t) ? (f+' \u2192 '+t) : 'Trip';
-  setTimeout(function(){ map.invalidateSize(); }, 260);
+  /* No resize call here: the ResizeObserver on the map element sees the
+     drawer's height change and handles it, debounced, along with every
+     other cause. */
 }
 $('drawerTab').addEventListener('click', function(){ setDrawer(false); });
 $('drawerTab').addEventListener('keydown', function(e){
@@ -880,20 +1056,16 @@ function setMode(m){
   $('drawer').classList.toggle('hidden', m!=='route');
   $('sheet').classList.remove('show');
   closePops(); render();
-  if (m==='atlas') { routeLayer.clearLayers(); fitVisible(); }
+  /* Returning to Atlas clears the route but does NOT refit — the startup
+     fit was the one and only automatic camera move. */
+  if (m==='atlas') routeGroup.removeAll();
   else if (state.route) drawRoute(state.route.poly, [
     {lat:state.route.poly[0][0], lon:state.route.poly[0][1]},
     {lat:state.route.poly[state.route.poly.length-1][0],
      lon:state.route.poly[state.route.poly.length-1][1]}]);
-  setTimeout(function(){ map.invalidateSize(); }, 60);
 }
 $('mAtlas').addEventListener('click',function(){ setMode('atlas'); });
 $('mRoute').addEventListener('click',function(){ setMode('route'); });
-
-function fitVisible(){
-  var layers=[]; markerGroup.eachLayer(function(l){ layers.push(l); });
-  if (layers.length) map.fitBounds(L.featureGroup(layers).getBounds(),{padding:[34,34],maxZoom:11});
-}
 
 /* ---- popovers / panel / theme ---- */
 function closePops(){
@@ -914,7 +1086,10 @@ document.addEventListener('click',function(e){
 function togglePanel(){
   var c=$('panel').classList.toggle('collapsed');
   $('panelTab').setAttribute('aria-expanded', String(!c));
-  setTimeout(function(){ map.invalidateSize(); },260);
+  /* The panel overlays the map rather than resizing it, so the observer
+     never fires for this one — but the padding it contributes changed, and
+     route fits read that padding. */
+  syncMapPadding();
 }
 $('panelTab').addEventListener('click', togglePanel);
 $('panelTab').addEventListener('keydown',function(e){
@@ -927,7 +1102,10 @@ function applyTheme(choice){
   } catch(e) { /* sandboxed frame: the choice just does not persist */ }
   document.documentElement.setAttribute('data-theme',
     choice==='system' ? (matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light') : choice);
-  setTiles(); syncThemeButtons(choice);
+  /* Sets the document theme attribute and the radio buttons, and nothing
+     else. It must not reference the map: the chrome themes, the map does
+     not follow it, and there is no base layer to swap. */
+  syncThemeButtons(choice);
 }
 function storedChoice(){
   try { var t=localStorage.getItem('wafflepost.theme.v1');
@@ -951,8 +1129,10 @@ syncThemeButtons(storedChoice());
 $('revLine').textContent = ATLAS_REV+' \u00b7 '+DATA.length+' exits';
 $('verLine').textContent = 'WafflePost v'+APP_VERSION+' \u00b7 '+ATLAS_REV;
 setVehicleMode('standard');
-render(); fitVisible();
-window.addEventListener('resize',function(){ map.invalidateSize(); });
+/* render() first, then the one-time fit: fitAtlas measures the panel, and
+   an unrendered panel is its 38px tab rather than its real height. Both run
+   in this same script task, before the browser paints a frame. */
+render(); fitAtlas();
 </script>
 </body>
 </html>
