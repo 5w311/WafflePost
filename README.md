@@ -127,10 +127,12 @@ all. An empty key costs the basemap under the pins, not the atlas — the map
 area says what is missing and everything else works.
 
 That degradation is deliberate and guarded, not automatic: `H.service.Platform`
-**throws** on an empty `apikey` ("Argument #0 apikey must be specified"), and
-since the key ships empty, an unguarded construction would abort the whole
-inline script and take the atlas down with the map. `MAP_ON` is what keeps the
-keyless build usable.
+**throws** on an empty `apikey` ("Argument #0 apikey must be specified"), so an
+unguarded construction would abort the whole inline script and take the atlas
+down with the map. `MAP_ON` is what keeps a keyless build usable. Since 3.0.1 a
+key ships, so that path is not the shipped state — it is what a fork gets the
+moment it blanks the key to paste its own, and it is why doing so degrades
+rather than breaks.
 
 The trade was deliberate. One map vendor across WafflePost and FuelPost means
 one set of quirks to know and one place the scar tissue accumulates, instead
@@ -143,15 +145,26 @@ fence, a drainage ditch, or a kerb with no gap in it.
 Route is the one mode that talks to a *routing* API, and it is gated so the
 rest of the app never depends on it.
 
-**Setup, in two steps:**
+**Setup, for a fork:**
 
-1. Paste a HERE key into `HERE_API_KEY` at the top of the app script in
-   `index.html`. Empty is the shipped state, and `test/structure.test.js`
-   fails if a key is ever committed — that test is the thing standing between
-   a local paste and an accidental push.
-2. **Restrict the key to this app's domain in the HERE console before you
-   commit anything.** A client-side map app cannot hide a key; domain
-   restriction is what makes publishing one survivable, and secrecy is not.
+A working key ships in `HERE_API_KEY` at the top of the app script, so a
+clone of this repo runs as-is. To point a fork at your own HERE account,
+replace it and **restrict the new key to your own domains in the HERE console
+first**.
+
+The key being committed is deliberate, and it reversed the earlier rule.
+Through 2.x the key was Route's alone: shipping blank disabled one optional
+tab, and `structure.test.js` failed if a real one was ever committed. From
+3.0.0 the map itself authenticates with it at load, and GitHub Pages serves
+this repo verbatim with no build step to substitute one at publish time — so
+a blank key means the published site can never draw a map. 3.0.1 committed
+one and inverted the test, which now fails if the key goes *missing*.
+
+None of that is a change in what is protected. A client-side map app cannot
+hide a key: it sits in the served JavaScript, readable by anyone who opens
+the tab, whichever way it got there. Domain restriction is what makes
+publishing one survivable, and secrecy never was. If a key needs replacing,
+rotate it in the console rather than trying to scrub it from git history.
 There is no third step any more. `lib/flexible-polyline.js` used to ship as a
 placeholder that threw, with a `cp` command in its header; it now holds HERE's
 own reference decoder, vendored unmodified from
@@ -252,7 +265,7 @@ Same reasoning as FuelPost, different perishable thing:
   that has closed is a wasted exit at 3am. A driver cannot tell stale atlas
   data from current atlas data without it. Bump only when the rows are
   re-audited.
-- **`APP_VERSION`** (`3.0.0`) — the code. Shown in the **legend card**.
+- **`APP_VERSION`** (`3.0.1`) — the code. Shown in the **legend card**.
   Bumped for every shipped change, and stamped onto every `lib/` URL as a
   cache-buster.
 
@@ -270,6 +283,25 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v3.0.1
+
+**Ships a HERE key, because 3.0.0 shipped a site that could not draw a map.**
+The migration moved the basemap onto HERE without moving the key with it: the
+map authenticates at load, GitHub Pages serves this repo verbatim, and there
+is no build step to substitute a key at publish time — so the published site
+showed the "No map key" panel and nothing else could change that. The guard
+was working correctly; there was simply no path for a key to reach production.
+
+`structure.test.js` inverted with it. The old assertion (`HERE_API_KEY` must
+ship empty, "never commit a real one") was written when the key was Route's
+alone and a blank one cost one optional tab. It now fails if the key goes
+*missing* instead. What is protected did not change: a client-side map app
+cannot hide a key either way, and domain restriction is what makes publishing
+one survivable.
+
+`MAP_ON` stays exactly as 3.0.0 left it — it is now what a fork gets the
+moment it blanks the key to paste its own.
 
 ### v3.0.0
 

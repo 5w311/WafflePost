@@ -77,12 +77,18 @@ t.eq(parsed, true, 'the application script parses');
 t.eq(/localStorage/.test(src) && /catch\s*\(e\)/.test(src), true,
      'localStorage access is wrapped - it throws in sandboxed frames');
 
-// The key must ship empty. A committed key is a key in the git history
-// forever, and this test is the thing standing between a local paste and
-// an accidental push.
+// The key ships PRESENT, and this test guards the opposite failure to the one
+// it used to. Until 3.0.0 the key was Route's alone, so shipping blank cost
+// one optional tab and the test stood between a local paste and an accidental
+// push. Now the map authenticates with it at load, GitHub Pages serves this
+// repo verbatim, and there is no build step to inject one - so a blank key
+// means the published site can never draw a map. A client-side map app cannot
+// hide a key in any case; domain restriction in HERE's console is what makes
+// publishing one survivable, not secrecy. See the README.
 var keyDecl = src.match(/^var HERE_API_KEY = '([^']*)';/m);
 t.eq(!!keyDecl, true, 'HERE_API_KEY is declared');
-t.eq(keyDecl[1], '', 'HERE_API_KEY ships empty - never commit a real one');
+t.eq(keyDecl[1].length > 20, true,
+     'a real HERE key ships - the map needs it at load, and Pages has no build step');
 
 // Route mode is the only thing allowed to reach the network.
 var appBlock = blocks.filter(function(b){ return b.indexOf('var DATA = [') !== -1; })[0];

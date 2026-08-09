@@ -382,19 +382,19 @@ var __mods={};
 function require(p){return __mods[p.replace(/^\.\//,'').replace(/\.js$/,'')];}
 var module={exports:{}};
 </script>
-<script src="lib/waffledist.js?v=3.0.0"></script>
+<script src="lib/waffledist.js?v=3.0.1"></script>
 <script>__mods.waffledist=module.exports;module={exports:{}};</script>
-<script src="lib/atlasfilter.js?v=3.0.0"></script>
+<script src="lib/atlasfilter.js?v=3.0.1"></script>
 <script>__mods.atlasfilter=module.exports;module={exports:{}};</script>
-<script src="lib/routewaffles.js?v=3.0.0"></script>
+<script src="lib/routewaffles.js?v=3.0.1"></script>
 <script>__mods.routewaffles=module.exports;module={exports:{}};</script>
-<script src="lib/vehicleprofile.js?v=3.0.0"></script>
+<script src="lib/vehicleprofile.js?v=3.0.1"></script>
 <script>__mods.vehicleprofile=module.exports;module={exports:{}};</script>
-<script src="lib/triptext.js?v=3.0.0"></script>
+<script src="lib/triptext.js?v=3.0.1"></script>
 <script>__mods.triptext=module.exports;module={exports:{}};</script>
-<script src="lib/escape.js?v=3.0.0"></script>
+<script src="lib/escape.js?v=3.0.1"></script>
 <script>__mods.escape=module.exports;module={exports:{}};</script>
-<script src="lib/flexible-polyline.js?v=3.0.0"></script>
+<script src="lib/flexible-polyline.js?v=3.0.1"></script>
 <script>__mods['flexible-polyline']=module.exports;module={exports:{}};</script>
 
 <script>
@@ -412,10 +412,20 @@ var module={exports:{}};
    Platform THROWS on an empty apikey, so the bring-up is guarded. See
    MAP_ON below.
 
-   Restrict the key to this app's own domain in HERE's console before you
-   commit it. A client-side map app cannot hide a key — domain
-   restriction is what makes publishing one survivable, not secrecy. */
-var HERE_API_KEY = '';
+   This key IS committed, deliberately, and 3.0.1 is the change that made
+   it so. GitHub Pages serves this repo verbatim and there is no build step
+   to substitute one at publish time, so a blank key here means the
+   published site can never draw a map — which is what 3.0.0 shipped, and
+   what this fixes. Through 2.x the same blank was harmless: the key was
+   Route's alone, and an empty one disabled one optional tab.
+
+   A client-side map app cannot hide a key regardless. It is in the served
+   JavaScript either way, readable by anyone who opens the tab. Domain
+   restriction in HERE's console is what makes publishing one survivable;
+   secrecy never was. Keep it restricted to this app's own domains, and if
+   it needs replacing, rotate it in the console rather than trying to
+   scrub it from git history. */
+var HERE_API_KEY = '7RDploUiahAnm08IZA9X7YSbb0Qh99pvqV2NCNQX_Hg';
 
 /* ===== two version strings, on purpose ==============================
    ATLAS_REV  - which edition of the walkability audit DATA came from.
@@ -426,7 +436,7 @@ var HERE_API_KEY = '';
    APP_VERSION - the code. Shown in the legend card. Bumped every change,
                 and stamped onto every lib/ URL as a cache-buster. */
 var ATLAS_REV   = 'Atlas Rev 08-2026';
-var APP_VERSION = '3.0.0';
+var APP_VERSION = '3.0.1';
 
 /* ===== DATA ==========================================================
    66 exits, 73 pairings, one honorary. Every row: feet measured by
