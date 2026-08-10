@@ -31,4 +31,21 @@ var none = tt.formatRouteText({from:'A', to:'B', miles:300, profile:'Standard ri
 t.eq(none.indexOf('No walkable Waffle House within 6 mi') !== -1, true,
      'an empty run says so plainly rather than printing an empty list');
 t.eq(tt.formatRouteText(null), '', 'no plan, no text');
+
+// A chosen alternative names itself, so a 968 mi run does not read as a
+// routing error to whoever receives the text.
+var picked = {from:'Dallas, TX', to:'Atlanta, GA', miles:968, profile:'Standard rig',
+              stops:[], tierUsed:6, label:'via I-49, I-65', optionCount:5};
+t.eq(tt.formatRouteText(picked, 'Rev').indexOf('via I-49, I-65  (1 of 5 routes)') !== -1, true,
+     'a chosen alternative names itself and says how many there were');
+// One route is not a choice, and saying "1 of 1" would imply it was.
+var only = {from:'A', to:'B', miles:100, profile:'Standard rig', stops:[], tierUsed:6,
+            label:'via I-40', optionCount:1};
+t.eq(only && tt.formatRouteText(only, 'Rev').indexOf('via I-40') === -1, true,
+     'a single-route plan adds no route line at all');
+// Older plans carry no label; the text must be unchanged for them.
+var unlabelled = {from:'A', to:'B', miles:100, profile:'Standard rig', stops:[], tierUsed:6};
+t.eq(tt.formatRouteText(unlabelled, 'Rev').indexOf('(1 of') === -1, true,
+     'a plan with no label is formatted exactly as before');
+
 t.done('triptext');

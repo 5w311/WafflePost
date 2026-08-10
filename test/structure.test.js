@@ -10,7 +10,7 @@ var ver = (src.match(/^var APP_VERSION = '([\d.]+)';/m) || [])[1];
 t.eq(!!ver, true, 'APP_VERSION is declared at the start of a line');
 
 var libTags = src.match(/<script src="lib\/[^"]+"><\/script>/g) || [];
-t.eq(libTags.length, 9, 'all nine lib modules are loaded');
+t.eq(libTags.length, 10, 'all ten lib modules are loaded');
 libTags.forEach(function(tag){
   t.eq(tag.indexOf('?v=' + ver) !== -1, true, 'cache-stamped with APP_VERSION: ' + tag);
   // defer would break the shim: the inline __mods captures between scripts
@@ -92,8 +92,12 @@ t.eq(keyDecl[1].length > 20, true,
 
 // Route mode is still the only thing allowed to reach the network, and the
 // count is pinned so a new call site is a deliberate act rather than a
-// surprise on someone's data plan. Five, all in the Route drawer:
+// surprise on someone's data plan. Note this counts CALL SITES, not calls per
+// plan - six sites, all in the Route drawer:
 //   geocode, routing            - once per plan
+//   routing retry               - a SITE, not a call: only reached when the
+//                                 first routing request already 400'd, so it
+//                                 adds nothing on the happy path
 //   autosuggest                 - per keystroke, debounced 300ms / 3-char min
 //   lookup                      - only for a suggestion carrying no position
 //   revgeocode                  - only on tapping "use my current location"
@@ -103,5 +107,11 @@ t.eq(keyDecl[1].length > 20, true,
 // they are.
 var appBlock = blocks.filter(function(b){ return b.indexOf('var DATA = [') !== -1; })[0];
 var fetches = (appBlock.match(/fetch\(/g) || []).length;
-t.eq(fetches, 5, 'exactly five network calls exist, all in Route');
+t.eq(fetches, 6, 'exactly six network call sites exist, all in Route');
+
+// alternatives > 6 is HTTP 400 (E605015), and so is a non-numeric value -
+// either takes ROUTING down entirely, not just the extras. The count must be
+// a literal in the source, never derived from config, state or user input.
+t.eq(/var ALTERNATIVES = [1-6];/.test(src), true,
+     'the alternatives count is a hardcoded literal inside HERE\'s legal range');
 t.done('structure');

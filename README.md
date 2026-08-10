@@ -29,6 +29,7 @@ lib/triptext.js           formats a stop or a planned run for share/save
 lib/escape.js             HTML-escapes strings before they reach innerHTML
 lib/autosuggest.js        address-suggestion helpers, vendored from FuelPost
 lib/location.js           GPS fix labelling/precision, vendored from FuelPost
+lib/routeoptions.js       alternative-route naming, scoring and de-duplication
 lib/flexible-polyline.js  HERE's reference decoder, vendored unmodified (MIT)
 test/*.test.js            plain-node tests, no framework
 test/_assert.js           three assertions; that is the whole framework
@@ -267,7 +268,7 @@ Same reasoning as FuelPost, different perishable thing:
   that has closed is a wasted exit at 3am. A driver cannot tell stale atlas
   data from current atlas data without it. Bump only when the rows are
   re-audited.
-- **`APP_VERSION`** (`3.1.0`) — the code. Shown in the **legend card**.
+- **`APP_VERSION`** (`3.2.0`) — the code. Shown in the **legend card**.
   Bumped for every shipped change, and stamped onto every `lib/` URL as a
   cache-buster.
 
@@ -285,6 +286,56 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v3.2.0
+
+**Alternative routes, ranked by what this app is actually for.** The routing
+request now asks HERE for alternatives, and every option that comes back is
+scored against all 67 atlas rows before the chooser renders. Each card leads
+with its walkable-pair count, because on this app a different route is not
+merely faster or slower — *it passes different Waffle Houses*.
+
+That is not a slogan; it is measurable. Atlanta → Nashville returns two options
+that each pass **four** walkable pairs and share **none** of them
+(Cartersville/Ringgold/Murfreesboro/La Vergne versus
+Temple/Good Hope/Priceville/Columbia). Dallas → Atlanta is starker still: HERE's
+own pick (I-20, 782 mi) passes 5, while I-49/I-65 at 968 mi passes **13**.
+
+**HERE's ordering is kept, deliberately.** The list is not re-sorted by pair
+count. A fuel gap is disqualifying — FuelPost sorts on it for that reason —
+but "fewer waffles" is not, and promoting a +186 mi route to the top of a list
+a driver plans real runs from is bad driving advice. Instead the difference is
+made legible: the pair count is the largest thing on every card, every later
+card carries its true mileage cost (`+186 mi`), and a `most waffles` badge
+appears only when a slower option genuinely beats the fastest one.
+
+**The unchosen routes are drawn, faded.** FuelPost deliberately does not do
+this; its options differ on a fuel-network fact invisible on a map. These
+differ *geographically*, and the map is the only place "these two routes are
+disjoint" is legible at a glance.
+
+**One shared detour tier across all options.** `stopsAlongRoute` widens
+[1, 3, 6] independently per polyline and returns the first tier that finds
+anything — so scoring options separately would print "4 pairs" beside
+"3 pairs" with the first measured at 1 mile and the second at 6. New
+`lib/routeoptions.js` picks the tightest tier that finds a pair on *any*
+option and scores them all at it, so an option with nothing close honestly
+shows zero. Every route on every lane tested resolved at tier 1, so this would
+never have shown up in casual testing.
+
+`projectStops` gained a per-segment bounding-box reject: 67 rows against
+~8,000 segments is half a million distance calls per route, and alternatives
+multiply that by the option count. Measured 3.3× faster on five
+cross-country-scale routes, verified output-identical across 507 differential
+comparisons including ties, zero-length segments and polar latitudes.
+
+Switching options is a pure re-render — every alternative is decoded, measured
+and scored when the run is routed, so a tap costs no network at all.
+
+Also fixed: the endpoint pins now come from the geocoded addresses rather than
+being re-derived from the polyline's first and last vertices, which are the
+points HERE snapped the route to. With one route that drift was invisible;
+with a chooser it would have moved on every switch.
 
 ### v3.1.0
 

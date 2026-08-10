@@ -286,6 +286,30 @@ html[data-theme=dark] .mile{color:#E8B96B}
 .summary .big{font-size:21px;font-weight:900;letter-spacing:-.02em}
 .summary .sub2{font-size:12.5px;color:var(--sub);margin-top:2px}
 .leg{font-size:11.5px;color:var(--sub);padding:3px 14px 9px}
+
+/* Route options: the same control as the vehicle picker — .seg's border,
+   radius and aria-pressed semantics — but stacked, because an option needs
+   three lines and not a 70px slice of a phone.
+
+   The selected state is the yellow .act.primary treatment rather than .seg's
+   own --char fill, and that is a deliberate divergence: --char is #14110E in
+   BOTH themes while --bg is #14110E in dark, so a filled .seg button in dark
+   mode has the same background as an unfilled one AND a darker border,
+   leaving its selected state resting on text colour alone. Survivable on a
+   three-across control, not on the one card a driver is choosing from.
+   --sign and --char are identical in both themes, so this needs no dark
+   override. */
+.seg.opts{flex-direction:column;gap:6px;margin:0 14px 10px}
+.seg.opts button{flex:none;text-align:left;padding:8px 11px;color:var(--ink)}
+.seg.opts button[aria-pressed=true]{background:var(--sign);border-color:var(--sign);color:var(--char)}
+/* 19px/900 echoes .summary .big (21px/900): the card's headline is the same
+   number in the same voice as the panel headline it is about to become. */
+.opt-n{display:block;font-size:19px;font-weight:900;letter-spacing:-.02em}
+.opt-via{display:block;font-size:12.5px;font-weight:700}
+.opt-mi{display:block;font-size:11.5px;color:var(--sub);margin-top:1px}
+.seg.opts button[aria-pressed=true] .opt-mi{color:var(--char);opacity:.75}
+.seg.opts button[aria-pressed=true] .pill{background:transparent;
+  border-color:rgba(20,17,14,.4);color:var(--char)}
 .empty{padding:26px 18px;text-align:center;color:var(--sub);font-size:14px}
 .empty b{display:block;color:var(--ink);font-size:15px;margin-bottom:5px}
 .hidden{display:none!important}
@@ -443,24 +467,26 @@ var __mods={};
 function require(p){return __mods[p.replace(/^\.\//,'').replace(/\.js$/,'')];}
 var module={exports:{}};
 </script>
-<script src="lib/waffledist.js?v=3.1.0"></script>
+<script src="lib/waffledist.js?v=3.2.0"></script>
 <script>__mods.waffledist=module.exports;module={exports:{}};</script>
-<script src="lib/atlasfilter.js?v=3.1.0"></script>
+<script src="lib/atlasfilter.js?v=3.2.0"></script>
 <script>__mods.atlasfilter=module.exports;module={exports:{}};</script>
-<script src="lib/routewaffles.js?v=3.1.0"></script>
+<script src="lib/routewaffles.js?v=3.2.0"></script>
 <script>__mods.routewaffles=module.exports;module={exports:{}};</script>
-<script src="lib/vehicleprofile.js?v=3.1.0"></script>
+<script src="lib/vehicleprofile.js?v=3.2.0"></script>
 <script>__mods.vehicleprofile=module.exports;module={exports:{}};</script>
-<script src="lib/triptext.js?v=3.1.0"></script>
+<script src="lib/triptext.js?v=3.2.0"></script>
 <script>__mods.triptext=module.exports;module={exports:{}};</script>
-<script src="lib/escape.js?v=3.1.0"></script>
+<script src="lib/escape.js?v=3.2.0"></script>
 <script>__mods.escape=module.exports;module={exports:{}};</script>
-<script src="lib/flexible-polyline.js?v=3.1.0"></script>
+<script src="lib/flexible-polyline.js?v=3.2.0"></script>
 <script>__mods['flexible-polyline']=module.exports;module={exports:{}};</script>
-<script src="lib/autosuggest.js?v=3.1.0"></script>
+<script src="lib/autosuggest.js?v=3.2.0"></script>
 <script>__mods.autosuggest=module.exports;module={exports:{}};</script>
-<script src="lib/location.js?v=3.1.0"></script>
+<script src="lib/location.js?v=3.2.0"></script>
 <script>__mods.location=module.exports;module={exports:{}};</script>
+<script src="lib/routeoptions.js?v=3.2.0"></script>
+<script>__mods.routeoptions=module.exports;module={exports:{}};</script>
 
 <script>
 /* ===== HERE API key =================================================
@@ -501,7 +527,7 @@ var HERE_API_KEY = '7RDploUiahAnm08IZA9X7YSbb0Qh99pvqV2NCNQX_Hg';
    APP_VERSION - the code. Shown in the legend card. Bumped every change,
                 and stamped onto every lib/ URL as a cache-buster. */
 var ATLAS_REV   = 'Atlas Rev 08-2026';
-var APP_VERSION = '3.1.0';
+var APP_VERSION = '3.2.0';
 
 /* ===== DATA ==========================================================
    66 exits, 73 pairings, one honorary. Every row: feet measured by
@@ -609,6 +635,7 @@ var wd   = require('./waffledist'),
     vp   = require('./vehicleprofile'),
     tt   = require('./triptext'),
     ags  = require('./autosuggest'),
+    ro   = require('./routeoptions'),
     gps  = require('./location'),
     esc  = require('./escape').escapeHtml;
 
@@ -618,6 +645,13 @@ var state = {
   doublesOnly:false, hideFlagged:false, freeParking:false, scale:false, diner:false,
   vehicle:{mode:'standard', heightIn:'', widthIn:'', lengthFt:'', grossLb:'',
            hazmat:vp.HAZMAT_CLASSES.slice()},
+  /* options[] is every alternative HERE returned, each fully scored against
+     the atlas at plan time; optionIdx is the one showing. trip holds what does
+     NOT vary between them (the geocoded ends, the labels, the profile).
+     route and plan stay exactly the shape they have always been - the SELECTED
+     option's view of the world - so render, routeHtml, openSheet and
+     shareRoute read what they always read. */
+  options:null, optionIdx:0, trip:null,
   route:null, plan:null, routeErr:null, routeBusy:false
 };
 var $ = function(id){ return document.getElementById(id); };
@@ -888,10 +922,55 @@ function render(){
     el.addEventListener('click', function(){ openSheet(DATA[+el.dataset.i]); });
   });
   var sr=$('shareRoute'); if (sr) sr.addEventListener('click', shareRoute);
+  /* Route options. Their own class and their own binding: .row above is wired
+     to openSheet, and an option card carrying that class would open a stop
+     sheet on tap. The identity guard is not cosmetic - re-tapping the current
+     option would re-run the bounds fit and yank a map the driver has panned. */
+  Array.prototype.forEach.call(body.querySelectorAll('.opt'), function(el){
+    el.addEventListener('click', function(){
+      var i = +el.dataset.opt;
+      if (i !== state.optionIdx) selectRouteOption(i);
+    });
+  });
 
   var n2 = af.activeFilterCount(state);
   $('fDot').textContent = n2;
   $('fDot').classList.toggle('hidden', n2===0);
+}
+
+/* The route chooser. Absent, not empty, when there is only one route: on a
+   corridor-locked lane HERE genuinely returns one, and the correct outcome
+   there is that nothing about this feature is visible at all.
+
+   HERE's order is kept. It sorts by DURATION, and this list is not re-sorted
+   by walkable pairs however tempting that is: a fuel gap is disqualifying,
+   but "fewer waffles" is not, and promoting a 968 mi route over a 782 mi one
+   to slot 1 is bad driving advice from an app a driver plans real runs with.
+   The difference is made legible instead - the pair count is the biggest
+   thing on every card, every later card carries its true mileage cost, and
+   one badge calls out a better-than-fastest option only when that is
+   literally true. */
+function optionsHtml(){
+  var opts = state.options;
+  if (!opts || opts.length < 2) return '';
+  var fastest = opts[0], best = 0;
+  opts.forEach(function(o,i){ if (o.stops.length > opts[best].stops.length) best = i; });
+
+  var h = '<div class="leg">'+opts.length+' routes for this run — they do not pass '+
+          'the same Waffle Houses. Tap one to see its pairs.</div>'+
+          '<div class="seg opts" role="group" aria-label="Route options">';
+  opts.forEach(function(o,i){
+    var n = o.stops.length, extra = Math.round(o.miles - fastest.miles);
+    var meta = Math.round(o.miles).toLocaleString('en-US')+' mi';
+    if (i===0) meta += ' · fastest';
+    else if (extra>0) meta += ' · +'+extra.toLocaleString('en-US')+' mi';
+    if (i===best && best!==0) meta += ' <span class="pill">most waffles</span>';
+    h += '<button type="button" class="opt" data-opt="'+i+'" aria-pressed="'+
+         (i===state.optionIdx)+'"><span class="opt-n">'+n+' '+(n===1?'pair':'pairs')+
+         '</span><span class="opt-via">'+esc(o.label)+'</span>'+
+         '<span class="opt-mi">'+meta+'</span></button>';
+  });
+  return h+'</div>';
 }
 
 /* ---- route panel ---- */
@@ -916,14 +995,22 @@ function routeHtml(){
        '<div class="sub2">'+esc(p.fromLabel)+' &rarr; '+esc(p.toLabel)+' &middot; '+
        Math.round(p.miles).toLocaleString('en-US')+' mi &middot; '+esc(p.profile)+'</div></div>';
 
+  /* The chooser goes ABOVE the empty-run branch deliberately: an option with
+     no pairs is exactly the one a driver needs to switch away from, and
+     returning early would strand them on it with no way back. */
+  h += optionsHtml();
+  var many = state.options && state.options.length > 1;
+
   if (!p.stops.length) {
     h += '<div class="empty"><b>None within '+p.tierUsed+' mi of this route</b>'+
-         'The atlas holds 67 exits nationwide and this run does not pass one. '+
-         'That is a finding, not missing data.</div>';
+         (many ? 'This option does not pass one. Another above does — tap it.'
+               : 'The atlas holds 67 exits nationwide and this run does not pass one. '+
+                 'That is a finding, not missing data.')+'</div>';
     return h;
   }
   if (p.widened) {
-    h += '<div class="leg">Nothing sat within 1 mi of this route, so the search widened to '+
+    h += '<div class="leg">Nothing sat within 1 mi of '+
+         (many ? 'any of these routes' : 'this route')+', so the search widened to '+
          p.tierUsed+' mi off it.</div>';
   }
   p.stops.forEach(function(s){
@@ -1002,21 +1089,58 @@ function geocode(q){
       return {lat:j.items[0].position.lat, lon:j.items[0].position.lng, label:j.items[0].title};
     });
 }
+/* How many EXTRA routes to ask HERE for: the response carries up to N+1.
+   Four, not six, and never derived from config or user input:
+     - The list is prefix-stable, so N is just how deep we look. Dallas to
+       Atlanta, the 13-pair route is at index 4 - ask for 3 and the single
+       best demonstration of what this app is for does not come back at all.
+     - Index 5 on that lane adds a route that is both longer and poorer.
+       Not worth +52KB to a driver on truck-stop cellular.
+     - alternatives=7 is a hard 400 (E605015), and so is a non-numeric value.
+       A bad value here does not lose the extras, it loses ROUTING. */
+var ALTERNATIVES = 4;
+
 function truckRoute(a,b,vehicleParams){
-  var params = {transportMode:'truck', origin:a.lat+','+a.lon, destination:b.lat+','+b.lon,
-                return:'polyline,summary'};
-  Object.keys(vehicleParams).forEach(function(k){ params[k]=vehicleParams[k]; });
-  return fetch(hereUrl('https://router.hereapi.com/v8/routes', params))
+  var base = {transportMode:'truck', origin:a.lat+','+a.lon, destination:b.lat+','+b.lon};
+  function url(extra){
+    var p = {};
+    Object.keys(base).forEach(function(k){ p[k]=base[k]; });
+    Object.keys(extra).forEach(function(k){ p[k]=extra[k]; });
+    /* The vehicle profile rides on EVERY variant, including the retry.
+       A request without it comes back with no height, weight or hazmat
+       restriction applied and renders as a perfectly ordinary plan, with
+       nothing on screen telling the driver it is illegal for their truck.
+       There is no further fallback that drops it. */
+    Object.keys(vehicleParams).forEach(function(k){ p[k]=vehicleParams[k]; });
+    return hereUrl('https://router.hereapi.com/v8/routes', p);
+  }
+  var withAlts = url({return:'polyline,summary,routeLabels', alternatives:ALTERNATIVES});
+  var minimal  = url({return:'polyline,summary'});
+
+  return fetch(withAlts)
+    /* Retry once without the alternatives/routeLabels attributes on a 400.
+       This is what keeps the error message below honest: a 400 used to mean
+       only "no legal truck route for this profile", and without the retry it
+       could now also mean "HERE rejected these request attributes" - sending
+       a driver to fix a vehicle profile that was never the problem. */
+    .then(function(r){ return r.status===400 ? fetch(minimal) : r; })
     .then(function(r){ if(!r.ok) throw new Error('Routing failed ('+r.status+
       '). A 400 here usually means no legal truck route for this vehicle profile.'); return r.json(); })
     .then(function(j){
-      if (!j.routes||!j.routes.length) throw new Error('No truck route between those two.');
-      var poly=[];
-      j.routes[0].sections.forEach(function(sec){
-        var d = require('./flexible-polyline').decode(sec.polyline);
-        (d.polyline||d).forEach(function(pt){ poly.push([pt[0],pt[1]]); });
+      var fp = require('./flexible-polyline'), out=[];
+      (j.routes||[]).forEach(function(rt,i){
+        if (!rt.sections || !rt.sections.length) return;
+        /* Per-route section stitch: a route split by a via waypoint has
+           several sections, and reading sections[0] would truncate it. */
+        var poly=[];
+        rt.sections.forEach(function(sec){
+          var d = fp.decode(sec.polyline);
+          (d.polyline||d).forEach(function(pt){ poly.push([pt[0],pt[1]]); });
+        });
+        if (poly.length>=2) out.push({poly:poly, label:ro.labelFor(rt,i)});
       });
-      return poly;
+      if (!out.length) throw new Error('No truck route between those two.');
+      return out;
     });
 }
 
@@ -1028,6 +1152,37 @@ function resolveEnd(id, text){
   var p = picked[id];
   return (p && p.label === $(id).value) ? Promise.resolve(p) : geocode(text);
 }
+/* Stale options outliving the route that produced them is how a driver taps a
+   card and gets the PREVIOUS trip's road drawn under the current trip's
+   addresses. Cleared before planning and again on failure. */
+function clearRouteOptions(){
+  state.options=null; state.optionIdx=0; state.trip=null;
+  state.route=null; state.plan=null;
+}
+
+/* Switching options is a pure re-render: every alternative was decoded,
+   measured and scored against the atlas when the run was routed, so nothing
+   is fetched and nothing is recomputed here. */
+function selectRouteOption(idx){
+  var o = state.options && state.options[idx];
+  if (!o || !state.trip) return;
+  state.optionIdx = idx;
+  state.route = {poly:o.poly, miles:o.miles, stops:o.stops};
+  state.plan = {
+    fromLabel:state.trip.fromLabel, toLabel:state.trip.toLabel,
+    from:state.trip.fromLabel, to:state.trip.toLabel,
+    miles:o.miles, stops:o.stops, tierUsed:o.tierUsed, widened:o.widened,
+    profile:state.trip.profile, label:o.label, optionCount:state.options.length
+  };
+  /* Panel FIRST, map second - the same rule planRoute follows. drawRoute ends
+     in syncMapPadding() and a bounds fit, and syncMapPadding measures the
+     panel's LIVE height. Two options can differ by a dozen rows, so drawing
+     first would fit this route around the previous option's panel. That bug
+     only ever shows on the second option tapped, never the first. */
+  render();
+  drawRoute(state.options, idx, state.trip.ends);
+}
+
 function planRoute(){
   if (!HERE_API_KEY) return;
   var from=$('rFrom').value.trim(), to=$('rTo').value.trim();
@@ -1039,45 +1194,69 @@ function planRoute(){
   var check = vp.validate(state.vehicle);
   if (!check.ok) { showErr(check.errors.join('. ')); return; }
 
-  showErr(''); state.routeBusy=true; state.routeErr=null; setDrawer(false); render();
+  showErr(''); clearRouteOptions();
+  state.routeBusy=true; state.routeErr=null; setDrawer(false); render();
 
   Promise.all([resolveEnd('rFrom', from), resolveEnd('rTo', to)])
     .then(function(ends){
       return truckRoute(ends[0], ends[1], vp.toHereParams(state.vehicle))
-        .then(function(poly){ return {ends:ends, poly:poly}; });
+        .then(function(routes){ return {ends:ends, routes:routes}; });
     })
     .then(function(res){
-      var found = rw.stopsAlongRoute(res.poly, DATA);
-      var miles = rw.routeMiles(res.poly);
-      state.route = {poly:res.poly, miles:miles, stops:found.stops};
-      state.plan = {
-        fromLabel:res.ends[0].label, toLabel:res.ends[1].label,
-        from:res.ends[0].label, to:res.ends[1].label,
-        miles:miles, stops:found.stops, tierUsed:found.tierUsed, widened:found.widened,
-        profile:vp.label(state.vehicle)
-      };
+      /* Every option is scored at ONE shared detour tier. Scoring each one
+         independently would let a "4 pairs" card sit next to a "3 pairs" card
+         with the first measured at 1 mile and the second at 6 - two different
+         questions printed as one comparison. See lib/routeoptions.js. */
+      var polys = res.routes.map(function(r){ return r.poly; });
+      var scored = ro.projectAll(polys, DATA);
+      var opts = res.routes.map(function(r,i){
+        return {poly:r.poly, label:r.label, miles:rw.routeMiles(r.poly),
+                stops:scored.perRoute[i], tierUsed:scored.tierUsed, widened:scored.widened};
+      });
+      /* HERE returns cosmetically different near-duplicates; two options that
+         are the same length AND pass the same waffles are one choice. */
+      state.options = ro.dedupe(opts);
+      state.trip = {ends:res.ends, fromLabel:res.ends[0].label,
+                    toLabel:res.ends[1].label, profile:vp.label(state.vehicle)};
       state.routeBusy=false;
       setDrawer(true);   // collapse to the summary tab once a plan renders
-      /* Render BEFORE drawing: drawRoute fits with the panel's measured
-         height as bottom padding, and it must measure this plan's panel,
-         not the one the previous plan left on screen. */
-      render();
-      drawRoute(res.poly, res.ends);
+      /* selectRouteOption does the render-then-draw in the required order. */
+      selectRouteOption(0);
     })
     .catch(function(e){
-      state.routeBusy=false; state.route=null; state.plan=null;
+      state.routeBusy=false; clearRouteOptions();
       state.routeErr = e.message||'Could not plan that run.';
       setDrawer(false);  // expand again so the field that needs fixing is on screen
       render();
     });
 }
 
-function drawRoute(poly, ends){
-  if (!routeGroup) return;
-  routeGroup.removeAll();
+function lineFor(poly){
   var ls = new H.geo.LineString();
   poly.forEach(function(pt){ ls.pushPoint({lat:pt[0], lng:pt[1]}); });
-  var line = new H.map.Polyline(ls,
+  return ls;
+}
+function drawRoute(options, idx, ends){
+  if (!routeGroup) return;
+  routeGroup.removeAll();
+  /* The unchosen routes are drawn, faded. FuelPost deliberately does not do
+     this - its options differ on a fuel-network fact that is invisible on a
+     map. WafflePost's differ GEOGRAPHICALLY: Atlanta to Nashville returns two
+     options that each pass four walkable pairs and share none of them, and
+     the map is the only surface where that becomes legible at a glance.
+
+     HERE draws later objects on top, so add order IS z-order: ghosts first,
+     then the chosen line, then the endpoint pins last so nothing covers them.
+     Same syrup hue at a third of the alpha and a thinner stroke, so they read
+     as one data type at two weights rather than two different things. */
+  var sel = null;
+  options.forEach(function(o,i){
+    if (i===idx) { sel = lineFor(o.poly); return; }
+    routeGroup.addObject(new H.map.Polyline(lineFor(o.poly),
+      {style:{lineWidth:3,strokeColor:'rgba(122,74,33,.22)',lineJoin:'round'}}));
+  });
+  if (!sel) return;
+  var line = new H.map.Polyline(sel,
     {style:{lineWidth:4,strokeColor:'rgba(122,74,33,.85)',lineJoin:'round'}});
   routeGroup.addObject(line);
   /* Endpoint pins are per plan, so they are not worth caching. Same wrapper
@@ -1102,6 +1281,10 @@ function drawRoute(poly, ends){
      end lands behind the panel. */
   map.getViewPort().resize();
   syncMapPadding();
+  /* Fit the CHOSEN route, never the union of all of them. Fitting a 968 mi
+     alternative would shrink the 782 mi route the driver actually picked to
+     make room for a road they rejected. Ghosts running off the edge is the
+     correct outcome: the selected route is the subject. */
   map.getViewModel().setLookAtData({bounds:line.getBoundingBox()});
 }
 function showErr(msg){
@@ -1417,10 +1600,11 @@ function setMode(m){
   /* Returning to Atlas clears the route but does NOT refit — the startup
      fit was the one and only automatic camera move. */
   if (m==='atlas') { if (routeGroup) routeGroup.removeAll(); }
-  else if (state.route) drawRoute(state.route.poly, [
-    {lat:state.route.poly[0][0], lon:state.route.poly[0][1]},
-    {lat:state.route.poly[state.route.poly.length-1][0],
-     lon:state.route.poly[state.route.poly.length-1][1]}]);
+  /* Redraws from state.trip.ends, which are the GEOCODED addresses. This used
+     to re-derive them from the polyline's first and last vertices - the points
+     HERE snapped the route to, which sit on the road rather than at the dock
+     door. With alternatives that drift would move on every option switch. */
+  else if (state.options && state.trip) drawRoute(state.options, state.optionIdx, state.trip.ends);
 }
 $('mAtlas').addEventListener('click',function(){ setMode('atlas'); });
 $('mRoute').addEventListener('click',function(){ setMode('route'); });
