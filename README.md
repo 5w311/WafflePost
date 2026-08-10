@@ -83,11 +83,16 @@ is exactly one such row and that it carries its evidence in `note`.
 ## Addresses are derived, coordinates are audited
 
 Each row carries an `addr` string — the Waffle House's street address — and it
-is what the stop sheet and the share text print. Coordinates have not gone
+is what the stop sheet's info section prints. Coordinates have not gone
 anywhere: they still place the pin, project the row onto a route, and are what
 `feet` was measured between. The address is the human-readable face of the
-same point, because `34.11486, -86.86387` is not something a driver reads to a
-dispatcher or types into a nav app.
+same point, because `34.11486, -86.86387` is not something a driver reads off
+a screen to a dispatcher.
+
+The **share text keeps the coordinates**, deliberately. That text is pasted
+into other things rather than read, and a coordinate pair is the one form that
+drops into any nav app or dispatch field without being re-geocoded into an
+approximation of itself.
 
 **The coordinate marks the Waffle House, not the truck stop.** That was
 verified rather than assumed: a POI search at the stored coordinate returns
@@ -319,9 +324,13 @@ choice simply does not persist, which is the correct degradation.
 
 **Addresses instead of coordinates, where a human reads them.** Every row
 gains an `addr` string — the Waffle House's street address — and the stop
-sheet and share text print it where they used to print `34.11486, -86.86387`.
-A decimal pair is not something a driver reads to a dispatcher or types into
-a nav app.
+sheet's info section prints it where it used to print `34.11486, -86.86387`.
+A decimal pair is not something a driver reads off a screen to a dispatcher.
+
+The change is scoped to that one section. The **share text keeps
+coordinates**: it is pasted into other things rather than read aloud, and a
+coordinate pair drops into any nav app or dispatch field without being
+re-geocoded into an approximation of itself.
 
 Coordinates stay, and stay load-bearing. They place all 67 pins, they project
 each row onto a route polyline in `lib/routewaffles.js`, and they are what
