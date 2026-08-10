@@ -46,6 +46,17 @@ body{background:var(--bg);color:var(--ink);
   font:15px/1.45 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   font-variant-numeric:tabular-nums;display:flex;flex-direction:column}
 button,input,select{font:inherit;color:inherit;font-variant-numeric:tabular-nums}
+/* 16px on anything a driver can type or pick into, and the reason is iOS, not
+   taste: Safari zooms the whole page in when a focused form control computes
+   under 16px, and the body font is 15. Every text box in this app was one
+   pixel short of the threshold, so tapping the search field or an address
+   nudged the map out from under the pins mid-typing.
+   The other way to stop it is maximum-scale=1 on the viewport meta, and that
+   is the wrong trade: it kills pinch-zoom for everyone, including a driver
+   trying to read a lot layout at night, to fix a problem one font-size solves.
+   Buttons are exempt because iOS only zooms for text entry, and .seg's three
+   across need the smaller type to fit. */
+input,select,textarea{font-size:16px}
 :focus-visible{outline:3px solid var(--sign);outline-offset:2px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 
@@ -91,10 +102,18 @@ header{background:var(--char);color:#fff;display:flex;align-items:center;gap:10p
 .drawer-body{padding:10px 12px;display:flex;flex-direction:column;gap:8px;
   max-height:70vh;overflow-y:auto}
 .drawer.collapsed .drawer-body{display:none}
-.drawer-tab{display:none;align-items:center;gap:8px;padding:9px 12px;cursor:pointer;
+/* Always visible, and it toggles BOTH ways - the same handle the results
+   panel below has. It used to appear only while collapsed, which left the
+   expanded form with no way to get out of the driver's way: a plan collapsed
+   it automatically, but re-opening the form to fix one address stranded it
+   open over the map until the next successful plan. */
+.drawer-tab{display:flex;align-items:center;gap:8px;padding:9px 12px;cursor:pointer;
   font-size:12.5px;color:var(--sub)}
-.drawer.collapsed .drawer-tab{display:flex}
 .drawer-tab b{color:var(--ink)}
+.drawer-tab .chev{margin-left:auto;color:var(--sub);transition:transform .2s}
+/* Points down when expanded (tap to close), flips up when collapsed - the
+   same direction as .panel's chevron so the two handles read alike. */
+.drawer.collapsed .chev{transform:rotate(180deg)}
 .fld{position:relative}
 .fld>label{display:block;font-size:11px;color:var(--sub);margin-bottom:3px}
 /* The row is the containing block for everything that sits inside the field:
@@ -343,9 +362,9 @@ html[data-theme=dark] .mile{color:#E8B96B}
 </div>
 
 <div class="drawer hidden" id="drawer">
-  <div class="drawer-tab" id="drawerTab" role="button" tabindex="0">
+  <div class="drawer-tab" id="drawerTab" role="button" tabindex="0" aria-expanded="true">
     <b id="drawerSummary">Trip</b><span id="drawerProfile"></span>
-    <span style="margin-left:auto">&#9662;</span>
+    <span class="chev" aria-hidden="true">&#9662;</span>
   </div>
   <div class="drawer-body">
     <div class="fld">
@@ -467,26 +486,28 @@ var __mods={};
 function require(p){return __mods[p.replace(/^\.\//,'').replace(/\.js$/,'')];}
 var module={exports:{}};
 </script>
-<script src="lib/waffledist.js?v=3.2.0"></script>
+<script src="lib/waffledist.js?v=3.3.0"></script>
 <script>__mods.waffledist=module.exports;module={exports:{}};</script>
-<script src="lib/atlasfilter.js?v=3.2.0"></script>
+<script src="lib/atlasfilter.js?v=3.3.0"></script>
 <script>__mods.atlasfilter=module.exports;module={exports:{}};</script>
-<script src="lib/routewaffles.js?v=3.2.0"></script>
+<script src="lib/routewaffles.js?v=3.3.0"></script>
 <script>__mods.routewaffles=module.exports;module={exports:{}};</script>
-<script src="lib/vehicleprofile.js?v=3.2.0"></script>
+<script src="lib/vehicleprofile.js?v=3.3.0"></script>
 <script>__mods.vehicleprofile=module.exports;module={exports:{}};</script>
-<script src="lib/triptext.js?v=3.2.0"></script>
+<script src="lib/triptext.js?v=3.3.0"></script>
 <script>__mods.triptext=module.exports;module={exports:{}};</script>
-<script src="lib/escape.js?v=3.2.0"></script>
+<script src="lib/escape.js?v=3.3.0"></script>
 <script>__mods.escape=module.exports;module={exports:{}};</script>
-<script src="lib/flexible-polyline.js?v=3.2.0"></script>
+<script src="lib/flexible-polyline.js?v=3.3.0"></script>
 <script>__mods['flexible-polyline']=module.exports;module={exports:{}};</script>
-<script src="lib/autosuggest.js?v=3.2.0"></script>
+<script src="lib/autosuggest.js?v=3.3.0"></script>
 <script>__mods.autosuggest=module.exports;module={exports:{}};</script>
-<script src="lib/location.js?v=3.2.0"></script>
+<script src="lib/location.js?v=3.3.0"></script>
 <script>__mods.location=module.exports;module={exports:{}};</script>
-<script src="lib/routeoptions.js?v=3.2.0"></script>
+<script src="lib/routeoptions.js?v=3.3.0"></script>
 <script>__mods.routeoptions=module.exports;module={exports:{}};</script>
+<script src="lib/baselayer.js?v=3.3.0"></script>
+<script>__mods.baselayer=module.exports;module={exports:{}};</script>
 
 <script>
 /* ===== HERE API key =================================================
@@ -527,7 +548,7 @@ var HERE_API_KEY = '7RDploUiahAnm08IZA9X7YSbb0Qh99pvqV2NCNQX_Hg';
    APP_VERSION - the code. Shown in the legend card. Bumped every change,
                 and stamped onto every lib/ URL as a cache-buster. */
 var ATLAS_REV   = 'Atlas Rev 08-2026';
-var APP_VERSION = '3.2.0';
+var APP_VERSION = '3.3.0';
 
 /* ===== DATA ==========================================================
    66 exits, 73 pairings, one honorary. Every row: feet measured by
@@ -636,6 +657,7 @@ var wd   = require('./waffledist'),
     tt   = require('./triptext'),
     ags  = require('./autosuggest'),
     ro   = require('./routeoptions'),
+    bl   = require('./baselayer'),
     gps  = require('./location'),
     esc  = require('./escape').escapeHtml;
 
@@ -682,6 +704,67 @@ var MAP_ON = !!HERE_API_KEY;
 /* Declared ahead of the guarded bring-up so every consumer below has a
    defined name whether or not a key was pasted. */
 var map = null, ui = null, markers = {}, markerGroup = null, routeGroup = null;
+/* Assigned inside the guarded bring-up below, so both stay null on a keyless
+   build and every consumer can check one thing. */
+var themedLayers = null, installMapSettings = null;
+
+/* The RESOLVED theme, read back off the attribute the head script and
+   applyTheme both write - deliberately not recomputed from localStorage and
+   matchMedia. The head script's catch branch forces 'light' when storage
+   throws (sandboxed frame, private mode), so a recomputed answer could
+   disagree with the chrome actually on screen, and the map would then be
+   fighting the page. The attribute is the single source of truth. */
+function docTheme(){
+  return document.documentElement.getAttribute('data-theme')==='dark' ? 'dark' : 'light';
+}
+
+/* Every base-layer change this app makes goes through here - the theme toggle
+   and the backstop alike - deferred and idempotent rather than an immediate
+   setBaseLayer.
+
+   DEFERRED, and the HARP engine is why: one setBaseLayer starts an async
+   teardown and rebuild - it disposes the old tile source, evicts the icon,
+   image and texture caches, flips the canvas clear colour and marks every
+   tile dirty - and fires two overlapping theme merges against one shared
+   style map while doing it. Landing a second swap inside that window is what
+   the sibling app reported twice on real phones. 60ms makes two taps
+   sequential instead of stacked.
+   COALESCED: rescheduled on every call, so a double-tap resolves to one swap
+   at the latest target.
+   IDEMPOTENT, and the check is INSIDE the timer on purpose: whatever got
+   there first - the driver's own tap on HERE's layer switcher, an earlier
+   scheduled call - wins, and this backs off rather than overriding it. */
+var baseLayerTimer = null;
+function setNormalBaseLayer(layer){
+  clearTimeout(baseLayerTimer);
+  baseLayerTimer = setTimeout(function(){
+    if (!map || map.getBaseLayer() === layer) return;
+    /* Re-applied as a hedge, not as a fix: reading the SDK, a themed swap
+       leaves the viewport alone (both road layers span the same zoom range,
+       so nothing is clamped). It costs two calls and it is the right shape if
+       a layer with a narrower zoom range ever routes through here. */
+    var c = map.getCenter(), z = map.getZoom();
+    map.setBaseLayer(layer);
+    map.setCenter(c); map.setZoom(z);
+  }, 60);
+}
+
+/* The map's half of a theme change. */
+function themeMap(){
+  if (!map || !themedLayers) return;    /* keyless build: nothing to theme */
+  var theme = docTheme();
+  /* UNCONDITIONAL: the "Map view" entry has to name the right themed layer
+     for whenever it IS tapped, even while the map sits on Satellite and the
+     base layer is not being touched at all. */
+  installMapSettings(theme);
+  /* CONDITIONAL, and this conditional is the entire feature. Ask what the map
+     is actually showing before changing it: if the driver is on Satellite,
+     nextBaseLayer returns null and the theme leaves it alone. Calling
+     setNormalBaseLayer unconditionally here is the exact bug that took the
+     sibling app five releases to stop shipping. */
+  var next = bl.nextBaseLayer(map.getBaseLayer(), theme, themedLayers);
+  if (next) setNormalBaseLayer(next);
+}
 
 /* The panel sits absolutely over the map's bottom edge (up to 62% of it),
    and HERE fits to the full element - which centres a fitted route in area
@@ -780,17 +863,29 @@ if (MAP_ON) {
   var platform = new H.service.Platform({apikey:HERE_API_KEY});
   var defaultLayers = platform.createDefaultLayers({engineType:HERE_ENGINE});
 
-  /* ONE fixed base layer, set at construction and never changed again.
-     The app's Light/Dark/System control themes the CHROME only; the map does
-     not follow it. That is deliberate, and it is what lets this file carry no
-     mapnight constant, no setBaseLayer choke point, no baselayerchange
-     listener and no centre/zoom preservation across a layer switch. The pin
-     colours were chosen to read on either tile style, so nothing about them
-     depends on which one is up. If the bright day map ever reads badly in a
-     cab at night, the fix is to construct with vector.normal.mapnight here -
-     one constant, still no theme machinery. */
+  /* The two themed road layers. 3.0.0 shipped one fixed layer and no theme
+     machinery at all, deliberately, to sidestep the satellite-versus-dark
+     interaction that took the sibling app five releases. 3.3.0 takes the
+     feature on - the bright day map genuinely does read badly in a cab at
+     night - having first read what those five releases actually cost. The
+     answer is smaller than its reputation: four of them chased a timing race
+     that was never there, and the real defect was a single missing
+     conditional. That conditional is lib/baselayer.js, and everything else
+     here is ordinary plumbing around it.
+
+     mapnight is a real peer of map under HARP (it is created in the same
+     createDefaultLayers branch); under WEBGL it does not exist at all, which
+     is one more reason the engine is pinned to HARP in both places above. */
+  var THEMED_LAYERS = {
+    light: defaultLayers.vector.normal.map,
+    dark:  defaultLayers.vector.normal.mapnight
+  };
+
+  /* Constructed on the theme the head script already resolved, so there is no
+     layer swap on first paint and nothing to correct at boot. */
+  var initialTheme = docTheme();
   map = new H.Map(document.getElementById('map'),
-    defaultLayers.vector.normal.map,
+    initialTheme==='dark' ? THEMED_LAYERS.dark : THEMED_LAYERS.light,
     {engineType:HERE_ENGINE,
      /* Pre-fit fallback only: the marker build below fits to the whole atlas
         in this same script task, before the browser paints a frame. */
@@ -803,30 +898,59 @@ if (MAP_ON) {
      feet and miles, so the bar has to read the same way. */
   ui.setUnitSystem(H.ui.UnitSystem.IMPERIAL);
 
-  /* The layer switcher is built here rather than taken from createDefault,
-     from H.ui.MapSettingsControl's public config object. `baseLayers` names
-     the entries; OMITTING the optional `layers` array is what drops the
-     traffic checkboxes, which are not part of what this app does.
-     Built once and never rebuilt - nothing in this app changes it, because
-     the base layer never follows the theme. Satellite earns its place here
-     specifically: this app's claim is that a walk is walkable, and a road map
-     does not show a fence, a drainage ditch, or a kerb with no gap in it. */
-  ui.removeControl('mapsettings');
-  ui.addControl('mapsettings', new H.ui.MapSettingsControl({
-    baseLayers:[
-      {label:'Map view', layer:defaultLayers.vector.normal.map},
-      {label:'Satellite', layer:defaultLayers.raster.satellite.map}
-    ],
-    alignment:H.ui.LayoutAlignment.BOTTOM_RIGHT
-  }));
-  /* Re-adding the scale bar AFTER the button is load-bearing, not tidying.
-     `alignment` picks the anchor; position WITHIN it is DOM child order, and
-     bottom-right is a horizontal row shared by both. createDefault leaves it
-     [scalebar, button]; removing and re-adding only the button makes it
-     [button, scalebar], which slides the button to roughly the centre of a
-     phone screen. */
-  var scalebar = ui.removeControl('scalebar');
-  if (scalebar) ui.addControl('scalebar', scalebar);
+  /* The layer switcher is built from H.ui.MapSettingsControl's public config
+     object rather than taken from createDefault, because createDefault's own
+     "Map view" entry is hardcoded to the light layer with no theme awareness.
+     `baseLayers` names the entries; OMITTING the optional `layers` array is
+     what drops the traffic checkboxes, which are not part of what this app
+     does. Satellite earns its place specifically: this app's claim is that a
+     walk is walkable, and a road map does not show a fence, a drainage ditch,
+     or a kerb with no gap in it.
+
+     Rebuilt on every theme change, because re-pointing an entry is the only
+     thing the public API cannot do in place. The control matches the map's
+     current layer by IDENTITY to decide what to highlight, so a control whose
+     "Map view" still names the day layer while the map is on mapnight
+     highlights NOTHING - both radios come up blank. That is the visible
+     symptom to design against, and it is why the rebuild happens even while
+     the map is sitting on Satellite and no layer is being touched. */
+  function buildMapSettings(theme){
+    return new H.ui.MapSettingsControl({
+      baseLayers:[
+        {label:'Map view', layer: theme==='dark' ? THEMED_LAYERS.dark : THEMED_LAYERS.light},
+        {label:'Satellite', layer:defaultLayers.raster.satellite.map}
+      ],
+      alignment:H.ui.LayoutAlignment.BOTTOM_RIGHT
+    });
+  }
+  installMapSettings = function(theme){
+    ui.removeControl('mapsettings');
+    ui.addControl('mapsettings', buildMapSettings(theme));
+    /* Re-adding the scale bar AFTER the button is load-bearing, not tidying.
+       `alignment` picks the anchor; position WITHIN it is DOM child order, and
+       the bottom-right anchor PREPENDS each control it is handed. createDefault
+       leaves it [scalebar, button]; removing and re-adding only the button
+       makes it [button, scalebar], which slides the button to roughly the
+       centre of a phone screen. Re-adding the scale bar restores the order.
+       This now runs on every theme change, so getting it wrong would move the
+       button every time rather than once. */
+    var scalebar = ui.removeControl('scalebar');
+    if (scalebar) ui.addControl('scalebar', scalebar);
+  };
+  /* After setUnitSystem above, not before: a control added earlier comes up
+     metric, because it reads the UI's unit system when it is attached. */
+  installMapSettings(initialTheme);
+
+  /* Backstop. With the control owning a correctly themed entry this should
+     never fire a correction; it is here so that any OTHER route to the base
+     layer - a future feature, an SDK default - still lands on the themed one.
+     Self-terminating: the correction it schedules produces another event
+     whose next pass asks nextBaseLayer for nothing. */
+  map.addEventListener('baselayerchange', function(){
+    var next = bl.nextBaseLayer(map.getBaseLayer(), docTheme(), THEMED_LAYERS);
+    if (next) setNormalBaseLayer(next);
+  });
+  themedLayers = THEMED_LAYERS;
 
   window.addEventListener('resize', mapResized);
   new ResizeObserver(mapResized).observe(document.getElementById('map'));
@@ -1339,15 +1463,21 @@ $('rGo').addEventListener('click', planRoute);
 /* ---- drawer ---- */
 function setDrawer(collapsed){
   $('drawer').classList.toggle('collapsed', !!collapsed);
+  $('drawerTab').setAttribute('aria-expanded', String(!collapsed));
   var f=$('rFrom').value.trim(), t=$('rTo').value.trim();
   $('drawerSummary').textContent = (f&&t) ? (f+' \u2192 '+t) : 'Trip';
   /* No resize call here: the ResizeObserver on the map element sees the
      drawer's height change and handles it, debounced, along with every
      other cause. */
 }
-$('drawerTab').addEventListener('click', function(){ setDrawer(false); });
+/* Toggles rather than only expanding. planRoute still drives it automatically
+   - collapsed once a plan renders, expanded again on an error so the field
+   that needs fixing is on screen - and this hands the driver the same control
+   by hand, including closing a form they opened and decided not to change. */
+function toggleDrawer(){ setDrawer(!$('drawer').classList.contains('collapsed')); }
+$('drawerTab').addEventListener('click', toggleDrawer);
 $('drawerTab').addEventListener('keydown', function(e){
-  if (e.key==='Enter'||e.key===' ') { e.preventDefault(); setDrawer(false); }
+  if (e.key==='Enter'||e.key===' ') { e.preventDefault(); toggleDrawer(); }
 });
 /* ---- pickup / delivery fields ======================================
    The same shape FuelPost's carry: a labelled combobox with HERE
@@ -1644,10 +1774,15 @@ function applyTheme(choice){
   } catch(e) { /* sandboxed frame: the choice just does not persist */ }
   document.documentElement.setAttribute('data-theme',
     choice==='system' ? (matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light') : choice);
-  /* Sets the document theme attribute and the radio buttons, and nothing
-     else. It must not reference the map: the chrome themes, the map does
-     not follow it, and there is no base layer to swap. */
   syncThemeButtons(choice);
+  /* Chrome first, map last, and in that order deliberately: the attribute and
+     the radio buttons are synchronous and cannot fail, so nothing the map
+     does can strand the toggle showing a theme the page is not in.
+     themeMap() re-reads the attribute rather than taking `choice`, because
+     `choice` is one of light/dark/SYSTEM and 'system' is not a theme -
+     handing it straight to the layer decision would quietly mean "light" for
+     every driver who never touched the control. */
+  themeMap();
 }
 function storedChoice(){
   try { var t=localStorage.getItem('wafflepost.theme.v1');
