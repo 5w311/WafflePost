@@ -30,6 +30,7 @@ lib/escape.js             HTML-escapes strings before they reach innerHTML
 lib/autosuggest.js        address-suggestion helpers, vendored from FuelPost
 lib/location.js           GPS fix labelling/precision, vendored from FuelPost
 lib/routeoptions.js       alternative-route naming, scoring and de-duplication
+lib/baselayer.js          which base layer a theme wants, or null for leave-it-alone
 lib/flexible-polyline.js  HERE's reference decoder, vendored unmodified (MIT)
 test/*.test.js            plain-node tests, no framework
 test/_assert.js           three assertions; that is the whole framework
@@ -268,7 +269,7 @@ Same reasoning as FuelPost, different perishable thing:
   that has closed is a wasted exit at 3am. A driver cannot tell stale atlas
   data from current atlas data without it. Bump only when the rows are
   re-audited.
-- **`APP_VERSION`** (`3.2.0`) — the code. Shown in the **legend card**.
+- **`APP_VERSION`** (`3.3.0`) — the code. Shown in the **legend card**.
   Bumped for every shipped change, and stamped onto every `lib/` URL as a
   cache-buster.
 
@@ -286,6 +287,60 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v3.3.0
+
+**The map follows the theme now, reversing v3.0.0's most deliberate decision.**
+That release shipped one fixed base layer and no theme machinery at all,
+specifically to sidestep the satellite-versus-dark-mode interaction that took
+FuelPost five releases — and it said so, naming the exact cost: no `mapnight`,
+no `setBaseLayer` choke point, no `baselayerchange` listener, no control
+rebuild. The reason for taking it on anyway is the one that release itself
+predicted: the bright day map reads badly in a cab at night.
+
+What made it affordable was reading what those five releases actually cost.
+**Four of them chased a timing race that was never there.** FuelPost's own
+release notes record v1.11.6–v1.11.9 adding deferral, then idempotency, then
+internal bookkeeping, against a defect that was none of those things: the
+theme handler swapped the base layer without ever asking what the map was
+currently showing. Switch the theme while looking at Satellite and it yanked
+you back to the road map.
+
+So the whole feature is one conditional, in `lib/baselayer.js`:
+`nextBaseLayer()` returns `null` — leave it alone — for anything that is not
+one of the two themed road layers. It is an **allow-list by identity**, never
+a deny-list naming satellite, because a check for "is this satellite" needs
+updating every time HERE adds a layer and is wrong until someone notices.
+Returning `null` when the layer is already correct is also what makes the
+`baselayerchange` backstop self-terminating rather than a feedback loop.
+
+The rest is ordinary plumbing, kept because the SDK earns it: a **deferred,
+coalesced, idempotent** choke point (HARP rebuilds its entire theme
+asynchronously on a swap — disposing the tile source, evicting every texture
+cache, flipping the canvas clear colour — and landing a second swap inside
+that window is what the sibling app reported twice on real phones), and an
+**unconditional control rebuild** on every theme change, because the layer
+switcher matches the map's current layer by identity and a stale entry makes
+it highlight *nothing at all*. The scale-bar re-add now runs on every rebuild
+rather than once, so getting its order wrong would move the button every time.
+
+Verified in a browser across every path, including the two that fire with no
+user action: an OS dusk transition while "System" is selected swaps the map,
+and an OS dusk transition **while the driver is on Satellite leaves them on
+Satellite**.
+
+**The trip drawer collapses both ways.** Its tab only ever expanded — a plan
+collapsed the form automatically, but reopening it to fix one address stranded
+it open over the map until the next successful plan. It now toggles like the
+results panel beside it, with the same chevron, and collapsing hands ~275px of
+height back to the map.
+
+**Typing no longer zooms the app on iOS.** Safari zooms the page whenever a
+focused form control computes under 16px, and the body font is 15 — so every
+text box in the app was one pixel short of the threshold. Form controls are
+now 16px. The other fix, `maximum-scale=1` on the viewport meta, was rejected:
+it kills pinch-zoom for everyone, including a driver trying to read a lot
+layout at night, to solve what one font-size solves.
 
 ### v3.2.0
 

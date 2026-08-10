@@ -10,7 +10,7 @@ var ver = (src.match(/^var APP_VERSION = '([\d.]+)';/m) || [])[1];
 t.eq(!!ver, true, 'APP_VERSION is declared at the start of a line');
 
 var libTags = src.match(/<script src="lib\/[^"]+"><\/script>/g) || [];
-t.eq(libTags.length, 10, 'all ten lib modules are loaded');
+t.eq(libTags.length, 11, 'all eleven lib modules are loaded');
 libTags.forEach(function(tag){
   t.eq(tag.indexOf('?v=' + ver) !== -1, true, 'cache-stamped with APP_VERSION: ' + tag);
   // defer would break the shim: the inline __mods captures between scripts
@@ -114,4 +114,20 @@ t.eq(fetches, 6, 'exactly six network call sites exist, all in Route');
 // a literal in the source, never derived from config, state or user input.
 t.eq(/var ALTERNATIVES = [1-6];/.test(src), true,
      'the alternatives count is a hardcoded literal inside HERE\'s legal range');
+
+// The map's base layer moves through ONE choke point, which is deferred,
+// coalesced and idempotent because the HARP engine rebuilds its whole theme
+// asynchronously on every swap. A second call site would be able to land a
+// swap inside that window - the failure the sibling app hit twice on real
+// phones. HERE's own layer switcher is the only other thing allowed to move
+// it, and that is the driver's choice, not ours.
+t.eq((appBlock.match(/\.setBaseLayer\(/g) || []).length, 1,
+     'exactly one setBaseLayer call site: the deferred choke point');
+// And the theme must ask before it swaps. Calling setNormalBaseLayer without
+// consulting nextBaseLayer is the single missing conditional that took the
+// sibling app five releases - it yanks a driver off Satellite on a theme
+// change. lib/baselayer.js holds the decision; this pins that it is consulted.
+t.eq(/bl\.nextBaseLayer\(/.test(appBlock), true,
+     'the theme consults nextBaseLayer before touching the base layer');
+
 t.done('structure');
