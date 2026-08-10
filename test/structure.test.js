@@ -10,7 +10,7 @@ var ver = (src.match(/^var APP_VERSION = '([\d.]+)';/m) || [])[1];
 t.eq(!!ver, true, 'APP_VERSION is declared at the start of a line');
 
 var libTags = src.match(/<script src="lib\/[^"]+"><\/script>/g) || [];
-t.eq(libTags.length, 7, 'all seven lib modules are loaded');
+t.eq(libTags.length, 9, 'all nine lib modules are loaded');
 libTags.forEach(function(tag){
   t.eq(tag.indexOf('?v=' + ver) !== -1, true, 'cache-stamped with APP_VERSION: ' + tag);
   // defer would break the shim: the inline __mods captures between scripts
@@ -90,8 +90,18 @@ t.eq(!!keyDecl, true, 'HERE_API_KEY is declared');
 t.eq(keyDecl[1].length > 20, true,
      'a real HERE key ships - the map needs it at load, and Pages has no build step');
 
-// Route mode is the only thing allowed to reach the network.
+// Route mode is still the only thing allowed to reach the network, and the
+// count is pinned so a new call site is a deliberate act rather than a
+// surprise on someone's data plan. Five, all in the Route drawer:
+//   geocode, routing            - once per plan
+//   autosuggest                 - per keystroke, debounced 300ms / 3-char min
+//   lookup                      - only for a suggestion carrying no position
+//   revgeocode                  - only on tapping "use my current location"
+// The Atlas tab still calls nothing; every row, distance and filter is
+// computed from DATA. Raising this number is a call-volume decision on a
+// public key - see lib/autosuggest.js for why the debounce values are what
+// they are.
 var appBlock = blocks.filter(function(b){ return b.indexOf('var DATA = [') !== -1; })[0];
 var fetches = (appBlock.match(/fetch\(/g) || []).length;
-t.eq(fetches, 2, 'exactly two network calls exist: geocode and routing');
+t.eq(fetches, 5, 'exactly five network calls exist, all in Route');
 t.done('structure');

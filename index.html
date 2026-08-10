@@ -96,10 +96,51 @@ header{background:var(--char);color:#fff;display:flex;align-items:center;gap:10p
 .drawer.collapsed .drawer-tab{display:flex}
 .drawer-tab b{color:var(--ink)}
 .fld{position:relative}
+.fld>label{display:block;font-size:11px;color:var(--sub);margin-bottom:3px}
+/* The row is the containing block for everything that sits inside the field:
+   the clear button, the locate button, and the suggestion dropdown. It has to
+   be a separate element from .fld, which now also holds the label and the two
+   notes below — anchoring the dropdown to .fld would drop it past those. */
+.fldrow{position:relative}
 .fld input{width:100%;padding:10px 30px 10px 11px;border:1px solid var(--line);
   border-radius:9px;background:var(--bg);color:var(--ink)}
 .fld .clr{display:none}
 .fld .clr.on{display:block}
+/* The clear button always takes the outermost right slot; the locate button
+   moves one slot inward to make room, but only while the clear is actually
+   showing (.has-clear), so there is no dead gap where a hidden button would
+   have gone. */
+.fldrow.locate input{padding-right:36px}
+.fldrow.locate.has-clear input{padding-right:62px}
+.locbtn{position:absolute;right:4px;top:50%;transform:translateY(-50%);border:0;
+  background:none;width:28px;height:28px;border-radius:8px;display:grid;
+  place-items:center;cursor:pointer;color:var(--syrup);padding:0}
+.fldrow.locate.has-clear .locbtn{right:31px}
+.locbtn svg{width:17px;height:17px}
+.locbtn.busy{opacity:.5}
+.locbtn.busy svg{animation:locspin 1.1s linear infinite}
+@keyframes locspin{to{transform:rotate(360deg)}}
+html[data-theme=dark] .locbtn{color:#E8B96B}
+/* Persistent marker that the pickup came from GPS rather than typed text. */
+.gpsnote{font-size:11px;font-weight:700;color:var(--syrup);margin-top:4px}
+html[data-theme=dark] .gpsnote{color:#E8B96B}
+.gpsnote[hidden],.geo-error[hidden]{display:none}
+.geo-error{font-size:11.5px;color:var(--danger-text);border:1px solid currentColor;
+  border-radius:9px;padding:7px 9px;margin-top:5px;line-height:1.4}
+/* Address autosuggest dropdown. Plain position:absolute under the input — no
+   JS-computed coordinates, so it pans with the field for free when the
+   on-screen keyboard moves the visual viewport. .drawer-body is
+   overflow-y:auto for the tall-form case, which would clip this; see
+   setSuggestClipping, which lifts that only while a list is actually open. */
+.suggest-list{position:absolute;left:0;right:0;top:100%;margin-top:4px;
+  background:var(--surface);border:1px solid var(--line);border-radius:10px;
+  box-shadow:0 4px 12px rgba(0,0,0,.18);z-index:410;max-height:160px;overflow-y:auto}
+.suggest-list[hidden]{display:none}
+.suggest-item{display:block;width:100%;text-align:left;padding:9px 12px;border:0;
+  border-top:1px solid var(--line);background:none;font:inherit;font-size:12.5px;
+  color:var(--ink);line-height:1.35;cursor:pointer}
+.suggest-item:first-child{border-top:none}
+.suggest-item:hover{background:var(--bg)}
 .seg{display:flex;gap:5px}
 .seg button{flex:1;min-width:0;padding:8px 4px;border:1px solid var(--line);background:var(--bg);
   border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;color:var(--sub)}
@@ -284,12 +325,32 @@ html[data-theme=dark] .mile{color:#E8B96B}
   </div>
   <div class="drawer-body">
     <div class="fld">
-      <input id="rFrom" placeholder="Pickup address" aria-label="Pickup address" autocomplete="off">
-      <button class="clr" data-for="rFrom" aria-label="Clear pickup">&times;</button>
+      <label for="rFrom">Pickup &mdash; street, city, state, zip</label>
+      <div class="fldrow locate">
+        <input id="rFrom" role="combobox" aria-autocomplete="list" aria-expanded="false"
+               aria-controls="rFromSuggest" placeholder="e.g. 2000 Distribution Way, Memphis, TN 38118"
+               autocomplete="off" autocapitalize="words">
+        <button class="clr" data-for="rFrom" aria-label="Clear pickup">&times;</button>
+        <button class="locbtn" id="rFromLocate" type="button"
+                title="Use my current location" aria-label="Use my current location">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/>
+            <path d="M12 1.5v3.2M12 19.3v3.2M1.5 12h3.2M19.3 12h3.2"/></svg>
+        </button>
+        <div class="suggest-list" id="rFromSuggest" hidden></div>
+      </div>
+      <div class="gpsnote" id="rFromGpsNote" hidden>Using your current location</div>
+      <div class="geo-error" id="rFromGeoError" hidden></div>
     </div>
     <div class="fld">
-      <input id="rTo" placeholder="Delivery address" aria-label="Delivery address" autocomplete="off">
-      <button class="clr" data-for="rTo" aria-label="Clear delivery">&times;</button>
+      <label for="rTo">Delivery &mdash; street, city, state, zip</label>
+      <div class="fldrow">
+        <input id="rTo" role="combobox" aria-autocomplete="list" aria-expanded="false"
+               aria-controls="rToSuggest" placeholder="e.g. 4500 Commerce Dr, Fort Worth, TX 76106"
+               autocomplete="off" autocapitalize="words">
+        <button class="clr" data-for="rTo" aria-label="Clear delivery">&times;</button>
+        <div class="suggest-list" id="rToSuggest" hidden></div>
+      </div>
     </div>
 
     <div class="seg" role="group" aria-label="Vehicle">
@@ -382,20 +443,24 @@ var __mods={};
 function require(p){return __mods[p.replace(/^\.\//,'').replace(/\.js$/,'')];}
 var module={exports:{}};
 </script>
-<script src="lib/waffledist.js?v=3.0.1"></script>
+<script src="lib/waffledist.js?v=3.1.0"></script>
 <script>__mods.waffledist=module.exports;module={exports:{}};</script>
-<script src="lib/atlasfilter.js?v=3.0.1"></script>
+<script src="lib/atlasfilter.js?v=3.1.0"></script>
 <script>__mods.atlasfilter=module.exports;module={exports:{}};</script>
-<script src="lib/routewaffles.js?v=3.0.1"></script>
+<script src="lib/routewaffles.js?v=3.1.0"></script>
 <script>__mods.routewaffles=module.exports;module={exports:{}};</script>
-<script src="lib/vehicleprofile.js?v=3.0.1"></script>
+<script src="lib/vehicleprofile.js?v=3.1.0"></script>
 <script>__mods.vehicleprofile=module.exports;module={exports:{}};</script>
-<script src="lib/triptext.js?v=3.0.1"></script>
+<script src="lib/triptext.js?v=3.1.0"></script>
 <script>__mods.triptext=module.exports;module={exports:{}};</script>
-<script src="lib/escape.js?v=3.0.1"></script>
+<script src="lib/escape.js?v=3.1.0"></script>
 <script>__mods.escape=module.exports;module={exports:{}};</script>
-<script src="lib/flexible-polyline.js?v=3.0.1"></script>
+<script src="lib/flexible-polyline.js?v=3.1.0"></script>
 <script>__mods['flexible-polyline']=module.exports;module={exports:{}};</script>
+<script src="lib/autosuggest.js?v=3.1.0"></script>
+<script>__mods.autosuggest=module.exports;module={exports:{}};</script>
+<script src="lib/location.js?v=3.1.0"></script>
+<script>__mods.location=module.exports;module={exports:{}};</script>
 
 <script>
 /* ===== HERE API key =================================================
@@ -436,7 +501,7 @@ var HERE_API_KEY = '7RDploUiahAnm08IZA9X7YSbb0Qh99pvqV2NCNQX_Hg';
    APP_VERSION - the code. Shown in the legend card. Bumped every change,
                 and stamped onto every lib/ URL as a cache-buster. */
 var ATLAS_REV   = 'Atlas Rev 08-2026';
-var APP_VERSION = '3.0.1';
+var APP_VERSION = '3.1.0';
 
 /* ===== DATA ==========================================================
    66 exits, 73 pairings, one honorary. Every row: feet measured by
@@ -543,6 +608,8 @@ var wd   = require('./waffledist'),
     rw   = require('./routewaffles'),
     vp   = require('./vehicleprofile'),
     tt   = require('./triptext'),
+    ags  = require('./autosuggest'),
+    gps  = require('./location'),
     esc  = require('./escape').escapeHtml;
 
 var state = {
@@ -953,6 +1020,14 @@ function truckRoute(a,b,vehicleParams){
     });
 }
 
+/* A tapped suggestion or a GPS fill already resolved that end to real
+   coordinates, so its forward geocode is skipped. The label check is belt and
+   braces: picked[] is already cleared on input, and this makes it impossible
+   for stale coordinates to outlive the text they belong to. */
+function resolveEnd(id, text){
+  var p = picked[id];
+  return (p && p.label === $(id).value) ? Promise.resolve(p) : geocode(text);
+}
 function planRoute(){
   if (!HERE_API_KEY) return;
   var from=$('rFrom').value.trim(), to=$('rTo').value.trim();
@@ -966,7 +1041,7 @@ function planRoute(){
 
   showErr(''); state.routeBusy=true; state.routeErr=null; setDrawer(false); render();
 
-  Promise.all([geocode(from), geocode(to)])
+  Promise.all([resolveEnd('rFrom', from), resolveEnd('rTo', to)])
     .then(function(ends){
       return truckRoute(ends[0], ends[1], vp.toHereParams(state.vehicle))
         .then(function(poly){ return {ends:ends, poly:poly}; });
@@ -1091,15 +1166,206 @@ $('drawerTab').addEventListener('click', function(){ setDrawer(false); });
 $('drawerTab').addEventListener('keydown', function(e){
   if (e.key==='Enter'||e.key===' ') { e.preventDefault(); setDrawer(false); }
 });
+/* ---- pickup / delivery fields ======================================
+   The same shape FuelPost's carry: a labelled combobox with HERE
+   Autosuggest under it, a per-field clear, and "use my current location"
+   on pickup. lib/autosuggest.js and lib/location.js are vendored from
+   there unmodified, so the decidable parts have one implementation
+   between the two apps rather than two that can drift.
+
+   Tapping a suggestion, or filling from GPS, resolves that end to real
+   coordinates there and then, so planRoute skips the forward geocode for
+   it — picking a specific suggestion is exactly what resolves the
+   ambiguity a geocode would otherwise have to guess at. Editing the text
+   afterwards drops that resolution and hands the field back to
+   geocode-on-plan. */
+var SUG = {rFrom:{list:'rFromSuggest'}, rTo:{list:'rToSuggest'}};
+/* Where autosuggest looks from when there is nothing better. HERE rejects a
+   context-free autosuggest call outright — `in=countryCode` is a filter, not
+   a context — so this is unconditional. It mirrors the map's own initial
+   centre above, the atlas's own centre of gravity being this app's "no
+   better information" viewpoint. If one moves, move both. */
+var SUGGEST_FALLBACK_AT = '32.5000,-85.5000';
+var sugTimer={rFrom:0,rTo:0}, sugToken={rFrom:0,rTo:0},
+    sugItems={rFrom:[],rTo:[]}, sugCache={}, picked={rFrom:null,rTo:null};
+
+/* .drawer-body is overflow-y:auto so a tall form scrolls, which would clip
+   an absolutely positioned dropdown. Lifted only while a list is actually
+   open, so the scrolling is intact the rest of the time. */
+function setSuggestClipping(clipped){
+  document.querySelector('.drawer-body').style.overflow = clipped ? '' : 'visible';
+}
+function syncField(id){
+  var inp=$(id), row=inp.parentNode, on=!!inp.value;
+  row.querySelector('.clr').classList.toggle('on', on);
+  row.classList.toggle('has-clear', on);
+}
+function hideSuggest(id){
+  var list=$(SUG[id].list);
+  list.hidden=true; list.innerHTML=''; sugItems[id]=[];
+  $(id).setAttribute('aria-expanded','false');
+  if ($('rFromSuggest').hidden && $('rToSuggest').hidden) setSuggestClipping(true);
+}
+function queueSuggest(id){
+  clearTimeout(sugTimer[id]);
+  var text=$(id).value;
+  if (!ags.shouldFireQuery(text)) { hideSuggest(id); return; }
+  /* 300ms and the module's 3-char minimum together are what keep call volume
+     sane: this fires per keystroke where geocode and routing fire once per
+     plan, and the key is public. Don't lower either without weighing that. */
+  sugTimer[id]=setTimeout(function(){ fireSuggest(id, text.trim()); }, 300);
+}
+function fireSuggest(id, q){
+  var at=SUGGEST_FALLBACK_AT, key=q+'@'+at;
+  /* Claim a token even on the cache path. The debounce is 300ms and a slow
+     response can outlive it, so an older in-flight request would otherwise
+     still match when it lands and overwrite this fresher result. */
+  var myToken = ++sugToken[id];
+  if (sugCache[key]) { renderSuggest(id, sugCache[key]); return; }
+  fetch(hereUrl('https://autosuggest.search.hereapi.com/v1/autosuggest',
+                {q:q, limit:5, in:'countryCode:USA', at:at}))
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(j){
+      var items = (j && Array.isArray(j.items)) ? j.items : null;
+      /* A successful empty response is a real answer and is cached; an empty
+         list standing in for a failure is not, so the next keystroke retries. */
+      if (items) sugCache[key]=items;
+      if (myToken!==sugToken[id]) return;   // superseded by a newer keystroke
+      renderSuggest(id, items||[]);
+    })
+    .catch(function(){ if (myToken===sugToken[id]) hideSuggest(id); });
+}
+function renderSuggest(id, items){
+  var list=$(SUG[id].list);
+  if (!items.length) { hideSuggest(id); return; }
+  sugItems[id]=items;
+  /* The same label resolution the module uses, so what the dropdown shows is
+     always what the field ends up holding. */
+  list.innerHTML = items.map(function(it,i){
+    var label=(it.address&&it.address.label)||it.title||'';
+    return '<button type="button" class="suggest-item" role="option" '+
+           'aria-selected="false" data-idx="'+i+'">'+esc(label)+'</button>';
+  }).join('');
+  list.setAttribute('role','listbox');
+  setSuggestClipping(false);
+  list.hidden=false;
+  $(id).setAttribute('aria-expanded','true');
+  /* Roles only. Arrow-key navigation is deliberately out of scope for a
+     phone-first app; this is about screen-reader legibility. */
+  Array.prototype.forEach.call(list.querySelectorAll('.suggest-item'), function(btn){
+    /* mousedown fires before the input's blur; preventDefault keeps focus on
+       the field. Without it the tap blurs the input and the list closes
+       before the tap ever registers as a click on it. */
+    btn.addEventListener('mousedown', function(e){ e.preventDefault(); });
+    btn.addEventListener('click', function(){ selectSuggestion(id, +btn.dataset.idx); });
+  });
+}
+function applyCandidate(id, cand){
+  $(id).value=cand.label;
+  picked[id]={lat:cand.lat, lon:cand.lng, label:cand.label};
+  if (id==='rFrom') $('rFromGpsNote').hidden=true;   // a tapped suggestion, not a fix
+  syncField(id);
+}
+function selectSuggestion(id, idx){
+  var item=sugItems[id][idx];
+  hideSuggest(id);
+  if (!item) return;
+  var cand=ags.candidateFromSuggestItem(item);
+  if (!cand) return;   // malformed: leave the typed text, geocode-on-plan still has it
+  if (!cand.needsLookup) { applyCandidate(id, cand); return; }
+  /* categoryQuery/chainQuery items carry no position of their own. Rare for
+     an address field, so this is a safety net rather than the main path. */
+  fetch(hereUrl('https://lookup.search.hereapi.com/v1/lookup', {id:cand.id}))
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(j){
+      var res = j && ags.candidateFromSuggestItem(j);
+      /* Still no position: never silently plan against one. Falls through to
+         the typed text, which geocode-on-plan resolves. */
+      if (res && !res.needsLookup) applyCandidate(id, res);
+    })
+    .catch(function(){});
+}
+
 Array.prototype.forEach.call(document.querySelectorAll('.fld .clr'), function(btn){
   btn.addEventListener('click', function(){
-    var inp=$(btn.dataset.for); inp.value=''; btn.classList.remove('on'); inp.focus();
+    var id=btn.dataset.for;
+    $(id).value=''; picked[id]=null;
+    if (id==='rFrom') { $('rFromGpsNote').hidden=true; hideGeoError(); }
+    hideSuggest(id); syncField(id); $(id).focus();
   });
 });
 ['rFrom','rTo'].forEach(function(id){
   $(id).addEventListener('input', function(){
-    this.parentNode.querySelector('.clr').classList.toggle('on', !!this.value);
+    /* Editing after a suggestion or a GPS fill is the driver overriding it:
+       drop the resolved coordinates and let geocode-on-plan take that end. */
+    picked[id]=null;
+    if (id==='rFrom') $('rFromGpsNote').hidden=true;
+    syncField(id); queueSuggest(id);
   });
+  /* Second safety net behind the mousedown above: close on blur, delayed so
+     a tap on a suggestion still lands first. */
+  $(id).addEventListener('blur', function(){ setTimeout(function(){ hideSuggest(id); }, 150); });
+});
+document.addEventListener('click', function(e){
+  ['rFrom','rTo'].forEach(function(id){
+    var list=$(SUG[id].list);
+    if (!list.hidden && e.target!==$(id) && !list.contains(e.target)) hideSuggest(id);
+  });
+});
+
+/* ---- "use my current location" (pickup only) ----
+   A one-shot position read. This app tracks nothing continuously and shows
+   no position dot, so there is no watch to start and nothing to switch off:
+   one explicit tap asking for one address, right now. */
+var GEO_OPTIONS = {enableHighAccuracy:true, maximumAge:15000, timeout:20000};
+function geoErrorMessage(err){
+  if (!window.isSecureContext) return 'Location needs a secure (https) connection. This works on the deployed site.';
+  if (!navigator.geolocation) return 'Location is not supported on this device.';
+  if (err) {
+    if (err.code===err.PERMISSION_DENIED)
+      return 'Location permission denied. Enable it for this site in your browser settings, then tap again to retry.';
+    if (err.code===err.POSITION_UNAVAILABLE)
+      return 'Could not determine your position. Try again in a moment.';
+    if (err.code===err.TIMEOUT) return 'Location request timed out. Try again.';
+  }
+  return 'Could not get your location. Try again.';
+}
+function showGeoError(m){ var e=$('rFromGeoError'); e.textContent=m; e.hidden=false; }
+function hideGeoError(){ $('rFromGeoError').hidden=true; }
+function setLocateBusy(b){
+  $('rFromLocate').classList.toggle('busy', b);
+  $('rFromLocate').disabled = b;
+}
+function reverseGeocode(lat, lon){
+  return fetch(hereUrl('https://revgeocode.search.hereapi.com/v1/revgeocode', {at:lat+','+lon}))
+    .then(function(r){ if(!r.ok) throw new Error('Reverse geocode failed ('+r.status+')'); return r.json(); })
+    .then(function(j){
+      var label = j.items&&j.items[0]&&j.items[0].address&&j.items[0].address.label;
+      if (!label) throw new Error('No reverse geocode match.');
+      return label;
+    });
+}
+function setPickupFromGps(lat, lon, label){
+  $('rFrom').value=label;
+  picked.rFrom={lat:lat, lon:lon, label:label};
+  $('rFromGpsNote').hidden=false;
+  hideGeoError(); hideSuggest('rFrom'); syncField('rFrom');
+}
+$('rFromLocate').addEventListener('click', function(){
+  hideGeoError();
+  if (!window.isSecureContext || !navigator.geolocation) { showGeoError(geoErrorMessage(null)); return; }
+  setLocateBusy(true);
+  navigator.geolocation.getCurrentPosition(function(pos){
+    var lat=pos.coords.latitude, lon=pos.coords.longitude;
+    /* Reverse geocoding failing does not mean the fix failed — fall back to
+       the coordinates rather than leaving the field unusable. */
+    reverseGeocode(lat, lon)
+      .then(function(l){ setPickupFromGps(lat, lon, l); })
+      .catch(function(){ setPickupFromGps(lat, lon, gps.formatGpsFallbackLabel(lat, lon)); })
+      .then(function(){ setLocateBusy(false); });
+  }, function(err){
+    setLocateBusy(false); showGeoError(geoErrorMessage(err));
+  }, GEO_OPTIONS);
 });
 
 /* ---- atlas filters ---- */
