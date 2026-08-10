@@ -428,7 +428,7 @@ html[data-theme=dark] .mile{color:#E8B96B}
     <h3 style="margin-top:12px">What do you need tonight?</h3>
     <label class="chk"><input type="checkbox" id="fFree">Confirmed free parking</label>
     <label class="chk"><input type="checkbox" id="fScale">Confirmed CAT scale</label>
-    <label class="chk"><input type="checkbox" id="fDiner">Sit-down diner at the stop</label>
+    <label class="chk"><input type="checkbox" id="fDiner">Confirmed sit-down diner</label>
     <label class="chk"><input type="checkbox" id="fDouble">Two or more truck stops</label>
     <label class="chk"><input type="checkbox" id="fHide">Hide flagged stops</label>
     <p class="fine">The three "confirmed" filters match only what the audit actually
@@ -486,27 +486,27 @@ var __mods={};
 function require(p){return __mods[p.replace(/^\.\//,'').replace(/\.js$/,'')];}
 var module={exports:{}};
 </script>
-<script src="lib/waffledist.js?v=3.4.0"></script>
+<script src="lib/waffledist.js?v=3.4.1"></script>
 <script>__mods.waffledist=module.exports;module={exports:{}};</script>
-<script src="lib/atlasfilter.js?v=3.4.0"></script>
+<script src="lib/atlasfilter.js?v=3.4.1"></script>
 <script>__mods.atlasfilter=module.exports;module={exports:{}};</script>
-<script src="lib/routewaffles.js?v=3.4.0"></script>
+<script src="lib/routewaffles.js?v=3.4.1"></script>
 <script>__mods.routewaffles=module.exports;module={exports:{}};</script>
-<script src="lib/vehicleprofile.js?v=3.4.0"></script>
+<script src="lib/vehicleprofile.js?v=3.4.1"></script>
 <script>__mods.vehicleprofile=module.exports;module={exports:{}};</script>
-<script src="lib/triptext.js?v=3.4.0"></script>
+<script src="lib/triptext.js?v=3.4.1"></script>
 <script>__mods.triptext=module.exports;module={exports:{}};</script>
-<script src="lib/escape.js?v=3.4.0"></script>
+<script src="lib/escape.js?v=3.4.1"></script>
 <script>__mods.escape=module.exports;module={exports:{}};</script>
-<script src="lib/flexible-polyline.js?v=3.4.0"></script>
+<script src="lib/flexible-polyline.js?v=3.4.1"></script>
 <script>__mods['flexible-polyline']=module.exports;module={exports:{}};</script>
-<script src="lib/autosuggest.js?v=3.4.0"></script>
+<script src="lib/autosuggest.js?v=3.4.1"></script>
 <script>__mods.autosuggest=module.exports;module={exports:{}};</script>
-<script src="lib/location.js?v=3.4.0"></script>
+<script src="lib/location.js?v=3.4.1"></script>
 <script>__mods.location=module.exports;module={exports:{}};</script>
-<script src="lib/routeoptions.js?v=3.4.0"></script>
+<script src="lib/routeoptions.js?v=3.4.1"></script>
 <script>__mods.routeoptions=module.exports;module={exports:{}};</script>
-<script src="lib/baselayer.js?v=3.4.0"></script>
+<script src="lib/baselayer.js?v=3.4.1"></script>
 <script>__mods.baselayer=module.exports;module={exports:{}};</script>
 
 <script>
@@ -548,7 +548,7 @@ var HERE_API_KEY = '7RDploUiahAnm08IZA9X7YSbb0Qh99pvqV2NCNQX_Hg';
    APP_VERSION - the code. Shown in the legend card. Bumped every change,
                 and stamped onto every lib/ URL as a cache-buster. */
 var ATLAS_REV   = 'Atlas Rev 08-2026';
-var APP_VERSION = '3.4.0';
+var APP_VERSION = '3.4.1';
 
 /* ===== DATA ==========================================================
    66 exits, 73 pairings, one honorary. Every row: feet measured by
@@ -1201,9 +1201,10 @@ function share(text){
 function shareRoute(){ if (state.plan) share(tt.formatRouteText(state.plan, ATLAS_REV)); }
 
 /* ===== HERE calls ===================================================
-   Two GETs, both key-gated. Everything downstream of them is pure and
-   lives in lib/, so the untestable surface of this app is these forty
-   lines and nothing else. */
+   Geocode and routing, both key-gated, plus a retry that only fires on a
+   400. Three more sites live further down this file - autosuggest, lookup
+   and revgeocode, on the address fields. Everything downstream of all six
+   is pure and lives in lib/. structure.test.js pins the count at six. */
 function hereUrl(base, params){
   params.apiKey = HERE_API_KEY;
   return base+'?'+Object.keys(params).map(function(k){

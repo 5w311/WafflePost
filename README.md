@@ -13,9 +13,11 @@ Two tabs:
 - **Atlas** — map and list of all 67 exits, filterable by corridor, state,
   truck stop chain, walk distance and free text. Every row, distance and
   filter is computed locally; only the basemap under the pins is fetched.
-- **Route** — pickup, delivery, vehicle profile. Get a truck route from HERE
-  and every Waffle House on the atlas that sits near it, in the order you pass
-  them, with the mile marker and how far off the road each one is.
+- **Route** — pickup and delivery with address autosuggest and a "use my
+  current location" button on pickup, plus a vehicle profile. Get up to five
+  truck routes from HERE, each scored by how many walkable Waffle Houses it
+  passes, and for the option you pick, every atlas row near it in the order
+  you pass them, with the mile marker and how far off the road each one is.
 
 ## Layout
 
@@ -33,8 +35,8 @@ lib/routeoptions.js       alternative-route naming, scoring and de-duplication
 lib/baselayer.js          which base layer a theme wants, or null for leave-it-alone
 lib/flexible-polyline.js  HERE's reference decoder, vendored unmodified (MIT)
 test/*.test.js            plain-node tests, no framework
-test/_assert.js           three assertions; that is the whole framework
-test/run.js               runs every test file and reports a combined total
+test/_assert.js           two assertions and a reporter; that is the whole framework
+test/run.js               runs every test file and fails the run if any file fails
 data/atlas.csv            the audit's own source table, with coordinates and addresses
 ```
 
@@ -45,9 +47,12 @@ behind a shim.
 **The shim is three lines longer than FuelPost's, on purpose.** FuelPost's
 `lib/` files are mostly independent, so a bare `module.exports` capture between
 script tags is enough; the one module that `require`s another needed its own
-function-scope fetch. Here every module except `escape.js` depends on
-`waffledist.js`, so the page defines a two-line `require()` that reads from a
-`__mods` object populated between script tags. It resolves `./name` and
+function-scope fetch. Here four of the eleven modules `require` another —
+`atlasfilter`, `routewaffles` and `triptext` pull from `waffledist`, and
+`routeoptions` pulls from `routewaffles` — and the app script `require`s
+`flexible-polyline` at its call site inside `truckRoute`, so the page defines a
+two-line `require()` that reads from a `__mods` object populated between script
+tags. It resolves `./name` and
 `./name.js` and nothing else, which is all this dependency graph is. No
 bundler, no build step, and the same rule as FuelPost applies: **do not add
 `defer` to the lib scripts.** The inline captures between them are not
@@ -70,15 +75,17 @@ different things:
 - **67 exits** — rows in `DATA`. 66 walkable plus one honorary member.
 - **78 pairings listed** — every truck stop named, including the second,
   third and fourth stop at exits that have them.
-- **73 pairings within 0.4 mi** — the headline number. The other 5 are
-  alternates that sit past the line and are labelled *(past the line)* in the
-  stop sheet rather than dropped, because at 3am a 3,274 ft walk you know
-  about beats a 1,498 ft walk into a full lot.
+- **73 pairings within 0.4 mi** — the headline number. The other 5 sit past
+  the line. Four are alternates, labelled *(past the line)* in the stop sheet
+  rather than dropped, because at 3am a 3,274 ft walk you know about beats a
+  1,498 ft walk into a full lot. The fifth is Bishopville's own primary stop
+  at 2,392 ft — the honorary row below, which carries no such label because
+  the tag is only emitted on alternates.
 
 `WALKABLE_FT` is 2,112 — 0.4 mi. One row (Bishopville SC, 0.45 mi) sits past
 it and is admitted anyway as **honorary**, on the strength of a driver review
 saying in plain words that truckers walk it. `test/data.test.js` asserts there
-is exactly one such row and that it carries its evidence in `note`.
+is exactly one such row and that it carries its evidence in a flag or a `note`.
 
 ## Addresses are derived, coordinates are audited
 
@@ -176,10 +183,58 @@ of two — and it buys satellite imagery, which this app has a specific use for:
 its whole claim is that a walk is walkable, and a road map does not show a
 fence, a drainage ditch, or a kerb with no gap in it.
 
+### The map follows the theme, and never overrules the driver
+
+Light / Dark / System theme the map as well as the chrome: `vector.normal.map`
+under light, `vector.normal.mapnight` under dark, swapped on every theme
+change — including an OS dusk transition with "System" selected, which needs
+no tap at all. v3.0.0 deliberately shipped one fixed layer to sidestep exactly
+this; the bright day map genuinely reading badly in a cab at night is why
+v3.3.0 took it on anyway.
+
+The whole feature is one conditional, in `lib/baselayer.js`. `nextBaseLayer()`
+returns `null` — leave it alone — for any layer that is not one of the two
+themed road layers, so a driver looking at Satellite when the sun goes down
+**stays on Satellite**. It is an allow-list by identity, never a deny-list
+naming satellite, because a check for "is this satellite" needs updating every
+time HERE adds a layer and is wrong until someone notices. Returning `null`
+when the layer is already correct is also what makes the `baselayerchange`
+backstop self-terminating rather than a feedback loop.
+
+Everything else is plumbing the SDK earns. Every base-layer change goes through
+one deferred (60ms), coalesced, idempotent choke point, because HARP rebuilds
+its whole theme asynchronously on a swap — disposing the tile source, evicting
+every texture cache, flipping the canvas clear colour — and landing a second
+swap inside that window is the failure the sibling app reported twice on real
+phones. The idempotency check sits *inside* the timer on purpose: whoever got
+there first wins, including the driver's own tap on the layer switcher.
+`test/structure.test.js` pins that there is exactly one `setBaseLayer` call
+site and that the theme asks `nextBaseLayer` before using it.
+
+**Satellite is a control, not just a rationale.** The layer switcher sits at
+the bottom right of the map and offers exactly two entries, *Map view* and
+*Satellite*. It is built from `H.ui.MapSettingsControl`'s public config object
+rather than taken from `createDefault`, whose own "Map view" entry is
+hardcoded to the light layer with no theme awareness; naming `baseLayers` and
+omitting the optional `layers` array is what leaves the traffic checkboxes
+out, and traffic is not part of what this app does. The scale bar beside it
+reads in miles, and is re-added *after* the button, because that anchor
+prepends and the reversed order slides the button to roughly the centre of a
+phone screen. The control is rebuilt on every theme change — it matches the
+map's current layer by identity, so a control still naming the day layer while
+the map is on `mapnight` highlights *nothing at all* — and that rebuild
+happens even while the map sits on Satellite and no layer is being touched.
+
+The engine is pinned to HARP in both `createDefaultLayers` and the `H.Map`
+options, and Satellite is part of why: under the WEBGL fallback HERE's own
+switcher renders it greyed out and unpickable, and `mapnight` does not exist
+at all.
+
 ## Route mode
 
-Route is the one mode that talks to a *routing* API, and it is gated so the
-rest of the app never depends on it.
+Route is the only mode that reaches the network at all — geocode, routing,
+autosuggest, lookup and reverse-geocode — and it is gated so the rest of the
+app never depends on it. The Atlas tab fetches nothing but its basemap.
 
 **Setup, for a fork:**
 
@@ -214,12 +269,89 @@ and this repo has no way to call HERE and check. FuelPost's copy has been
 reading live responses in production for many versions. One decoder between
 the two apps, not two that can drift.
 
+### The trip drawer
+
+Route's form lives in a drawer above the map, under a tab that toggles it both
+ways — the same chevron, in the same direction, as the results panel below it.
+Planning collapses it to a summary tab reading `pickup → delivery` alongside
+the vehicle profile; an error expands it again so the field that needs fixing
+is on screen. Tapping the tab, or Enter/Space on it, does the same by hand,
+which is the part the automatic behaviour alone could not cover: reopening the
+form to fix one address used to strand it open over the map until the next
+successful plan. Collapsed, it hands the whole form's height back to the map.
+
+Nothing calls `resize()` when the drawer moves. A `ResizeObserver` on the map
+element sees the height change and handles it, debounced 120ms, along with
+every other cause — HERE's canvas cannot see its own container change size,
+and hand-wiring a call at each height-changing site means missing the next
+one. The one exception is the route fit, which resizes synchronously first
+because the drawer collapses in the same frame and the debounced pass would
+otherwise fit against a viewport HERE still believes is ~200px shorter.
+
+**Form controls are 16px, and that is not a style choice.** Safari zooms the
+page whenever a focused control computes under 16px, and the body font is 15 —
+so every text box in the app was one pixel short of the threshold. Do not
+normalise them back to the body size. The other fix, `maximum-scale=1` on the
+viewport meta, was rejected: it kills pinch-zoom for everyone, including a
+driver trying to read a lot layout at night, to solve what one font-size
+solves. Buttons are exempt, because iOS only zooms for text entry.
+
+### The pickup and delivery fields
+
+Each end is a labelled combobox with HERE Autosuggest under it and a per-field
+clear. Three characters arm a 300ms debounce, then `/autosuggest` returns five
+US results (`in=countryCode:USA`) biased at `32.5, -85.5` — the atlas's own
+centre of gravity, and the same point the map opens on. HERE rejects a
+context-free autosuggest call outright, so that `at` is unconditional rather
+than a fallback; if one moves, move both.
+
+Both numbers are call-volume decisions rather than UX ones: autosuggest fires
+per keystroke where geocode and routing fire once per plan, and the key is
+public. Responses are cached per query, and each request carries a token so a
+slow reply landing after a newer keystroke is discarded instead of overwriting
+it.
+
+**Tapping a suggestion resolves that end.** It arrives with a position, so
+`planRoute` skips the forward geocode for that field entirely — picking a
+specific suggestion is exactly what resolves the ambiguity a geocode would
+otherwise have to guess at. Editing the text afterwards drops the resolution
+and hands the field back to geocode-on-plan. A suggestion with no position of
+its own (HERE's `categoryQuery` and `chainQuery` items) costs one `/lookup`
+call; if that still yields no position the typed text simply stands.
+
+Roles only, no arrow-key navigation: this is about screen-reader legibility on
+a phone-first app, and it matches what FuelPost ships. The dropdown is plain
+`position:absolute` under the input — no JS-computed coordinates, so it pans
+with the field when the on-screen keyboard moves the visual viewport — and
+`.drawer-body`'s `overflow-y:auto` is lifted only while a list is open.
+
+**"Use my current location", on pickup only.** The crosshair inside the pickup
+field takes one position fix — high accuracy, 20s timeout, a 15s-old fix
+accepted — reverse-geocodes it to a street address, fills the field and marks
+it *Using your current location*. This app tracks nothing continuously and
+shows no position dot, so there is no watch to start and nothing to switch
+off: one tap, one fix, one address. Like a tapped suggestion, a GPS fill
+resolves that end and skips the forward geocode. Delivery has no such button —
+you are not standing at it.
+
+Two failures are handled separately because they are different failures. A
+reverse geocode that fails does not mean the fix failed, so the field falls
+back to `Current location (33.7490, -84.3880)` rather than being left unusable
+— coordinates still route. A fix that fails names its own cause: permission
+denied, with what to do about it; position unavailable; timed out; or a
+non-secure origin. "Could not get your location" tells a driver nothing about
+which of those it was. `lib/location.js` holds the decidable parts and is
+vendored from FuelPost unmodified.
+
 ### What it shows
 
 Every atlas row near the route, in the order you pass them: the mile marker,
 how far off the road it sits, and the same walk strip the Atlas list uses. No
-plan, no recommendation, no ranking — the driver knows which stop suits the
-load, and this only knows which ones exist.
+plan, no recommendation, no ranking of stops — the driver knows which stop
+suits the load, and this only knows which ones exist. Routes are a different
+question: when HERE returns more than one, they are compared, and the panel
+leads with a chooser. See *Alternative routes* below — but even there the list
+keeps HERE's order and only labels the difference.
 
 **There is deliberately no range input.** No "how far do you run", no tank
 gauge, no hours-of-service arithmetic. Those belong to a fuel plan, where the
@@ -229,9 +361,65 @@ assumed hours would dress a guess up as a plan.
 
 **Detour tiers are `[1, 3, 6]` miles**, deliberately much tighter than
 FuelPost's `[8, 15, 30, 50]`. Nobody drives thirty miles off route for
-hashbrowns. The tight tier is tried first and only widens if it found nothing
-at all, and the panel says so when it widened — a run with three pairs within
-a mile should never have its list padded with stops six miles off the road.
+hashbrowns. The tight tier is tried first and widens only if it found nothing
+at all — a run with three pairs within a mile should never have its list
+padded with stops six miles off the road.
+
+**One shared tier across every option.** `stopsAlongRoute` widens [1, 3, 6]
+independently per polyline, which applied once per route option would print
+"4 pairs" beside "3 pairs" with the first measured at 1 mile and the second at
+6: two different questions rendered as one comparison, with nothing on screen
+saying so. So `projectAll` in `lib/routeoptions.js` picks the tightest tier
+that finds a pair on *any* option and scores them all at it, and an option
+with nothing close honestly shows zero rather than being quietly widened until
+it has something to show. The panel says when the search widened, and whether
+nothing sat within a mile of *this route* or of *any of these routes*.
+
+### Alternative routes
+
+The routing request asks HERE for up to 4 alternatives, so up to five routes
+come back. `ALTERNATIVES` is a hardcoded literal, never derived from config,
+state or input: `alternatives=7` is a hard 400, and so is a non-numeric value
+— a bad number here does not lose the extras, it loses routing.
+`structure.test.js` pins it inside the legal range. Four rather than six is how
+deep it is worth looking: on Dallas → Atlanta the 13-pair route sits at index
+4, so asking for three would drop the single best demonstration of what this
+app is for, while index 5 on that lane is both longer and poorer.
+
+Every option that comes back is decoded, measured and scored against all 67
+atlas rows when the run is planned, so switching between them is a pure
+re-render and costs no network at all.
+
+Each card leads with its walkable-pair count, because on this app a different
+route is not merely faster or slower — *it passes different Waffle Houses*.
+Atlanta → Nashville returns two options that each pass four pairs and share
+none of them; Dallas → Atlanta returns HERE's own pick at 782 mi passing 5,
+and an I-49/I-65 line at 968 mi passing 13. (Measured at release; HERE's road
+data drifts.)
+
+**HERE's ordering is kept.** The list is not re-sorted by pair count. A fuel
+gap is disqualifying — FuelPost sorts on it for that reason — but "fewer
+waffles" is not, and promoting a +186 mi route to the top of a list a driver
+plans real runs from is bad driving advice. The difference is made legible
+instead: the pair count is the largest thing on every card, every later card
+carries its true mileage cost (`+186 mi`), and a `most waffles` badge appears
+only when a slower option genuinely beats the fastest one. With one route the
+chooser is absent, not empty. With more than one it renders *above* the
+empty-run message, because an option that passes nothing is exactly the one a
+driver needs to switch away from.
+
+`lib/routeoptions.js` names each option from HERE's route labels (`via I-24,
+I-75` — two road numbers, because a third is noise) and drops near-duplicates,
+but only when they are the same driving decision: near-identical length *and*
+the same set of atlas rows. A route 186 miles longer past the same exits is
+still a real choice, and one the driver gets to refuse for themselves.
+
+**The unchosen routes are drawn, faded.** FuelPost deliberately does not do
+this; its options differ on a fuel-network fact invisible on a map. These
+differ *geographically*, and the map is the only place "these two routes are
+disjoint" is legible at a glance. The fit is to the chosen route only —
+fitting the union would shrink the road the driver actually picked to make
+room for one they rejected, and ghosts running off the edge is correct.
 
 ### Vehicle profile
 
@@ -268,12 +456,29 @@ Three decisions that look like details and are not, all pinned by
   exactly the input that produces a confident illegal route, and a warning next
   to a route that still drew would be read as a route.
 
-**The untestable surface is forty lines.** Two GET calls, geocode and routing.
+**Six network call sites, all in Route, all degrading soft.** Geocode and
+routing fire once per plan. A routing retry fires only when the first request
+already 400'd. Autosuggest fires per keystroke behind the debounce, lookup
+only for a suggestion that carries no position of its own, and revgeocode only
+on tapping "use my current location". `test/structure.test.js` asserts there
+are exactly six `fetch(` call sites in the app script, so that surface cannot
+quietly grow — raising the number is a call-volume decision on a public key,
+not a refactor. The Atlas tab still calls nothing beyond its basemap.
+
+None of the four optional calls can take a plan down. Autosuggest failing
+closes the dropdown and the field falls back to geocode-on-plan; lookup
+failing leaves the typed text, which geocode-on-plan resolves; revgeocode
+failing still fills the pickup, with coordinates instead of a street address.
+The retry exists to keep the error message honest: a 400 used to mean only
+"no legal truck route for this vehicle profile", and without a retry that
+drops `alternatives` and `routeLabels` it could now also mean "HERE rejected
+these request attributes" — sending a driver to fix a profile that was never
+the problem.
+
 Everything downstream — projecting stops onto the polyline, the mile markers,
-the detour tiers, the vehicle parameters — is pure, lives in `lib/`, and is
-covered by tests that run under plain `node` with no key and no
-network. `test/structure.test.js` asserts there are exactly two `fetch(` calls
-in the app script, so that surface cannot quietly grow.
+the detour tiers, the option scoring, the vehicle parameters — is pure, lives
+in `lib/`, and is covered by tests that run under plain `node` with no key and
+no network.
 
 ## Tests
 
@@ -288,8 +493,14 @@ point is to catch a real row going in wrong. It checks every row for a
 plausible corridor, a two-letter state, a known brand, known flags,
 coordinates inside a continental-US bounding box (which catches the
 sign-flipped or transposed coordinate that would otherwise look reasonable),
-that the primary stop is the closest one at its exit, and that `DATA` is
-stored shortest-walk-first so the file itself reads as the leaderboard.
+that the primary stop is the closest one at its exit, that every row's
+address starts with a house number and names the row's own state, and that
+`DATA` is stored shortest-walk-first so the file itself reads as the
+leaderboard.
+
+`run.js` prints one `ok <name> N passed` line per file and then `all green`,
+or names the files that failed. It does not sum the assertions — at v3.4.1
+they come to 965 across twelve files, counted by hand.
 
 ## Two version strings, on purpose
 
@@ -301,7 +512,7 @@ Same reasoning as FuelPost, different perishable thing:
   that has closed is a wasted exit at 3am. A driver cannot tell stale atlas
   data from current atlas data without it. Bump only when the rows are
   re-audited.
-- **`APP_VERSION`** (`3.4.0`) — the code. Shown in the **legend card**.
+- **`APP_VERSION`** (`3.4.1`) — the code. Shown in the **legend card**.
   Bumped for every shipped change, and stamped onto every `lib/` URL as a
   cache-buster.
 
@@ -311,7 +522,9 @@ Same reasoning as FuelPost, different perishable thing:
 discipline FuelPost set: version the key itself, store only genuinely explicit
 choices (no stored value already means "follow system"), treat anything read
 back that is not one of the expected values as absent, and bump to `.v2`
-rather than reuse the key if what "unset" resolves to ever changes.
+rather than reuse the key if what "unset" resolves to ever changes. Since
+v3.3.0 that key moves the basemap as well as the chrome — see *The map follows
+the theme* above.
 
 One addition: **every `localStorage` access here is wrapped in try/catch.**
 Sandboxed iframes and private browsing throw on access rather than returning
@@ -319,6 +532,29 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v3.4.1
+
+**A README audit, and the two code lines it caught.** Six releases had left the
+body describing an app that no longer existed: it claimed two network calls
+where there are six, said every `lib/` module depends on `waffledist` when four
+of eleven `require` anything at all, credited `run.js` with a combined total it
+has never printed, and counted five past-the-line pairings as alternates when
+one of them is Bishopville's own primary. The map theming, the trip drawer, the
+address fields and alternative routes existed only in this changelog, so a
+reader had to reconstruct current behaviour from release notes. Those are now
+body sections.
+
+Two fixes landed in code rather than prose. The `HERE calls` comment carried
+the same "two GETs" claim the README did. And the filter panel's fine print
+calls them "the three 'confirmed' filters" while only two of the three toggles
+said *Confirmed* — the label was the inconsistent half, so `fDiner` now reads
+**Confirmed sit-down diner**. That is the only user-visible change here, and
+the reason this is a version bump rather than a docs commit.
+
+Also corrected: `lib/routewaffles.js` claimed 185ms → 52ms across six routes
+for the bounding-box reject. The benchmark that was actually run measured five
+routes at roughly 150ms → 47ms. The comment now says what was measured.
 
 ### v3.4.0
 
@@ -445,7 +681,8 @@ never have shown up in casual testing.
 ~8,000 segments is half a million distance calls per route, and alternatives
 multiply that by the option count. Measured 3.3× faster on five
 cross-country-scale routes, verified output-identical across 507 differential
-comparisons including ties, zero-length segments and polar latitudes.
+comparisons including ties, zero-length segments and polar latitudes — in a
+scratch harness that was not committed, so there is no test file to find.
 
 Switching options is a pure re-render — every alternative is decoded, measured
 and scored when the run is routed, so a tap costs no network at all.
@@ -553,7 +790,8 @@ unmodified, replacing the placeholder that threw — with `test/polyline.test.js
 (25 assertions) against HERE's published test vector. Route mode can decode
 geometry for the first time.
 
-The seven `lib/` modules are untouched and none gained a map dependency.
+Apart from the polyline decoder above, the seven `lib/` modules are untouched,
+and none gained a map dependency.
 `ATLAS_REV` is unchanged; no atlas data moved.
 
 ### v2.0.0
