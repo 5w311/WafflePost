@@ -32,6 +32,22 @@ DATA.forEach(function(r){
   t.eq(r.lat > 24 && r.lat < 50, true, r.city + ' latitude is inside CONUS');
   t.eq(r.lon > -125 && r.lon < -66, true, r.city + ' longitude is inside CONUS');
 
+  // The address describes the SAME point as lat/lon - the Waffle House, not
+  // the truck stop - and is what the stop sheet and share text now print
+  // instead of the coordinate pair. Coordinates stay because they draw the
+  // pin, project the row onto a route, and are what `feet` was measured
+  // between; the address is the human-readable face of the same point.
+  t.eq(typeof r.addr === 'string' && r.addr.length > 8, true,
+       r.city + ' has a street address');
+  // Starts with a house number: the generator strips leading business names,
+  // and a bare POI name ("Blink Charging") slipping through means a bad row.
+  t.eq(/^\d/.test(r.addr), true, r.city + ' address starts with a house number');
+  // The state in the address must match the row's own state. This is the
+  // check that catches an address reverse-geocoded onto the wrong side of a
+  // state line, which is otherwise entirely plausible-looking.
+  t.eq(new RegExp(',\\s*' + r.state + '\\s+\\d{5}').test(r.addr), true,
+       r.city + ' address is in ' + r.state + ': ' + r.addr);
+
   (r.flags || []).forEach(function(f){
     t.eq(OK_FLAGS.indexOf(f) !== -1, true, r.city + ' flag "' + f + '" is a known flag');
   });

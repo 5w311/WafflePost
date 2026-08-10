@@ -35,7 +35,7 @@ lib/flexible-polyline.js  HERE's reference decoder, vendored unmodified (MIT)
 test/*.test.js            plain-node tests, no framework
 test/_assert.js           three assertions; that is the whole framework
 test/run.js               runs every test file and reports a combined total
-data/atlas.csv            the audit's own source table, with coordinates
+data/atlas.csv            the audit's own source table, with coordinates and addresses
 ```
 
 `lib/` is CommonJS so the tests run under plain `node` with no install and no
@@ -79,6 +79,38 @@ different things:
 it and is admitted anyway as **honorary**, on the strength of a driver review
 saying in plain words that truckers walk it. `test/data.test.js` asserts there
 is exactly one such row and that it carries its evidence in `note`.
+
+## Addresses are derived, coordinates are audited
+
+Each row carries an `addr` string — the Waffle House's street address — and it
+is what the stop sheet's info section prints. Coordinates have not gone
+anywhere: they still place the pin, project the row onto a route, and are what
+`feet` was measured between. The address is the human-readable face of the
+same point, because `34.11486, -86.86387` is not something a driver reads off
+a screen to a dispatcher.
+
+The **share text keeps the coordinates**, deliberately. That text is pasted
+into other things rather than read, and a coordinate pair is the one form that
+drops into any nav app or dispatch field without being re-geocoded into an
+approximation of itself.
+
+**The coordinate marks the Waffle House, not the truck stop.** That was
+verified rather than assumed: a POI search at the stored coordinate returns
+the Waffle House itself at a median of 6 metres, and on the two rows whose
+`note` happens to quote a street number the address agrees with it — Marianna
+FL's note says *"the store is 2215"* and the address is 2215 Highway 71;
+LaPlace LA's says *"4301 Main St and 4304 Main St"* and the address is 4304.
+
+Their provenance is weaker than everything around them, and that matters here
+in the same way the amenity flags do. The coordinates and `feet` were audited
+by hand, exit by exit. The addresses were **generated**: 44 of the 67 came
+from a POI match on the Waffle House itself, the other 23 from the street
+address at the coordinate. Every one was checked to start with a house number
+and to name the row's own state — which catches the reverse-geocode landing
+across a state line, the error that would otherwise look entirely plausible —
+and `test/data.test.js` pins both checks. But none of them was verified
+against the ground the way the coordinates were. Treat a surprising address as
+suspect before you treat the coordinate as wrong.
 
 ## Tier bands
 
@@ -269,7 +301,7 @@ Same reasoning as FuelPost, different perishable thing:
   that has closed is a wasted exit at 3am. A driver cannot tell stale atlas
   data from current atlas data without it. Bump only when the rows are
   re-audited.
-- **`APP_VERSION`** (`3.3.0`) — the code. Shown in the **legend card**.
+- **`APP_VERSION`** (`3.4.0`) — the code. Shown in the **legend card**.
   Bumped for every shipped change, and stamped onto every `lib/` URL as a
   cache-buster.
 
@@ -287,6 +319,37 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v3.4.0
+
+**Addresses instead of coordinates, where a human reads them.** Every row
+gains an `addr` string — the Waffle House's street address — and the stop
+sheet's info section prints it where it used to print `34.11486, -86.86387`.
+A decimal pair is not something a driver reads off a screen to a dispatcher.
+
+The change is scoped to that one section. The **share text keeps
+coordinates**: it is pasted into other things rather than read aloud, and a
+coordinate pair drops into any nav app or dispatch field without being
+re-geocoded into an approximation of itself.
+
+Coordinates stay, and stay load-bearing. They place all 67 pins, they project
+each row onto a route polyline in `lib/routewaffles.js`, and they are what
+`feet` was measured between — the audit's own method was to compute the
+distance from verified coordinates rather than trust an exit guide's distance
+column. Replacing them would have cost the pins, all of Route mode, and the
+verifiability of the headline number on every row, so `addr` sits alongside
+them rather than in place of them.
+
+**The coordinate marks the Waffle House, not the truck stop** — verified, not
+assumed. See *Addresses are derived, coordinates are audited* above for how,
+and for why these 67 strings carry weaker provenance than anything around
+them. `test/data.test.js` gains three checks per row (201 assertions): the
+address exists, starts with a house number, and names the row's own state.
+
+`data/atlas.csv` gains a `waffle_house_address` column. Its rows were matched
+to `DATA` **by coordinate, not by position** — the two 429 ft rows (Hubbard OH
+and Ocala FL) are ordered differently in the two files, and a positional splice
+would have quietly swapped their addresses.
 
 ### v3.3.0
 
