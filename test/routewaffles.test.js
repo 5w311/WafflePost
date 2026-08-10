@@ -44,4 +44,22 @@ var none = rw.stopsAlongRoute(poly, [rows[2]]);
 t.eq(none.stops.length, 0, 'a genuinely off-route stop is never conjured in');
 t.eq(rw.projectStops([], rows, 5).length, 0, 'an empty polyline is not an error');
 t.eq(rw.projectStops([[30,-90]], rows, 5).length, 0, 'nor is a single-point one');
+
+// projectStops skips segments whose bounding box cannot hold a stop within
+// maxDetourMi. The pads are deliberately generous, but a future tightening
+// could start dropping rows that are legitimately just inside the tolerance -
+// silently, since it would only ever remove results. These pin both sides of
+// the boundary. One degree of latitude is ~69 miles, so 0.0145 deg is ~1 mi.
+var straight = [[35.0, -90.0], [35.0, -89.0]];          // due east along 35N
+var justIn  = [{city:'In',  state:'XX', exit:'1', feet:100, lat:35.0 + 0.0130, lon:-89.5}];
+var justOut = [{city:'Out', state:'XX', exit:'2', feet:100, lat:35.0 + 0.0300, lon:-89.5}];
+t.eq(rw.projectStops(straight, justIn, 1).length, 1,
+     'a row just inside the detour tolerance survives the bounding-box skip');
+t.eq(rw.projectStops(straight, justOut, 1).length, 0,
+     'a row outside it is still excluded');
+// Same row, wider tolerance: the pad scales with maxDetourMi rather than
+// being a constant that happens to work at tier 1.
+t.eq(rw.projectStops(straight, justOut, 3).length, 1,
+     'and reappears when the tolerance genuinely covers it');
+
 t.done('routewaffles');
