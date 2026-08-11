@@ -38,6 +38,9 @@ test/*.test.js            plain-node tests, no framework
 test/_assert.js           two assertions and a reporter; that is the whole framework
 test/run.js               runs every test file and fails the run if any file fails
 data/atlas.csv            the audit's own source table, with coordinates and addresses
+apple-touch-icon.png      home screen icon, 180x180 - the header tile, baked
+favicon-32.png            browser tab, 32x32
+favicon-16.png            browser tab, 16x16
 ```
 
 `lib/` is CommonJS so the tests run under plain `node` with no install and no
@@ -52,9 +55,8 @@ function-scope fetch. Here four of the eleven modules `require` another —
 `routeoptions` pulls from `routewaffles` — and the app script `require`s
 `flexible-polyline` at its call site inside `truckRoute`, so the page defines a
 two-line `require()` that reads from a `__mods` object populated between script
-tags. It resolves `./name` and
-`./name.js` and nothing else, which is all this dependency graph is. No
-bundler, no build step, and the same rule as FuelPost applies: **do not add
+tags. It resolves `./name` and `./name.js` and nothing else, which is all this
+dependency graph is. No bundler, no build step, and the same rule as FuelPost applies: **do not add
 `defer` to the lib scripts.** The inline captures between them are not
 deferred, so every module would silently become `{}` with no error thrown
 anywhere. `test/structure.test.js` fails if `defer` or `async` appears on one.
@@ -512,7 +514,7 @@ Same reasoning as FuelPost, different perishable thing:
   that has closed is a wasted exit at 3am. A driver cannot tell stale atlas
   data from current atlas data without it. Bump only when the rows are
   re-audited.
-- **`APP_VERSION`** (`3.4.1`) — the code. Shown in the **legend card**.
+- **`APP_VERSION`** (`3.5.0`) — the code. Shown in the **legend card**.
   Bumped for every shipped change, and stamped onto every `lib/` URL as a
   cache-buster.
 
@@ -532,6 +534,39 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v3.5.0
+
+**The header tile is the home screen icon now.** Adding the app to a home
+screen used to produce a generic icon or a screenshot of the page, because the
+repo shipped no icon of any kind — no `apple-touch-icon`, no favicon, no image
+assets at all. It now ships three PNGs: 180x180 for the home screen, 32 and 16
+for the browser tab.
+
+They are **baked, not reused**, and that is forced rather than chosen. The W
+next to the wordmark is drawn live in whatever the device calls `system-ui` —
+SF Pro on iOS, Roboto on Android, Segoe on Windows — so there is no single
+"real" header W to export. The icons render Liberation Sans, Arial's metric
+twin and the closest stand-in available, at 76% of the tile so the glyph fills
+about 71% of the width and 52% of the height. Both were measured off the
+rendered pixels rather than eyeballed: the header's own `letter-spacing:-.04em`
+adds trailing space after a single character and pushed the W 2.5px right of
+centre, which the icons drop.
+
+**Square, opaque, and with no corner radius of its own.** iOS masks
+`apple-touch-icon` with its own superellipse: a source that rounds its own
+corners shows dark wedges through that mask, and any transparency is
+composited onto black. `.tile`'s 5px radius is a header detail; on a home
+screen the OS owns the shape.
+
+**No manifest**, so this is not the first step of a PWA. Android falls back to
+`apple-touch-icon` for "add to home screen", which is what was asked for, and a
+manifest brings install prompts and a `display` mode this app has no use for.
+
+`structure.test.js` asserts each link is declared **and** that the file it
+points at exists. A missing icon is the quietest possible failure — the
+browser 404s, shows something generic, and nothing else breaks — so the test
+was checked by deleting the file and watching it fail.
 
 ### v3.4.1
 

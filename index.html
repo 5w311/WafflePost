@@ -5,6 +5,27 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>WafflePost</title>
 <meta name="description" content="Every Waffle House in America you can walk to from a truck stop.">
+
+<!-- Home screen and browser tab: the same sign-yellow tile with a black W
+     that sits next to the wordmark in the header, rendered out as PNG.
+     Baked rather than reused, because the header's W is drawn in whatever
+     the DEVICE calls system-ui - SF Pro on iOS, Roboto on Android - and an
+     icon has to be one fixed image. Liberation Sans is the metric twin of
+     Arial and the closest stand-in available.
+
+     Deliberately square and fully opaque, with no corner radius of its own:
+     iOS masks apple-touch-icon with its own superellipse, so a source that
+     rounds its own corners shows dark wedges through that mask, and any
+     transparency is composited onto black. The 5px radius on .tile is a
+     header detail; on the home screen the OS owns the shape.
+
+     No manifest. Android falls back to apple-touch-icon for "add to home
+     screen", which is all that was asked for, and a manifest is the first
+     step of the PWA machinery this app has stayed out of. -->
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+
 <!-- First contact with js.api.here.com is the render-blocking stylesheet
      below, then five SDK scripts. crossorigin is load-bearing, not
      decoration: those are all CORS fetches, and a preconnect hint without
@@ -486,27 +507,27 @@ var __mods={};
 function require(p){return __mods[p.replace(/^\.\//,'').replace(/\.js$/,'')];}
 var module={exports:{}};
 </script>
-<script src="lib/waffledist.js?v=3.4.1"></script>
+<script src="lib/waffledist.js?v=3.5.0"></script>
 <script>__mods.waffledist=module.exports;module={exports:{}};</script>
-<script src="lib/atlasfilter.js?v=3.4.1"></script>
+<script src="lib/atlasfilter.js?v=3.5.0"></script>
 <script>__mods.atlasfilter=module.exports;module={exports:{}};</script>
-<script src="lib/routewaffles.js?v=3.4.1"></script>
+<script src="lib/routewaffles.js?v=3.5.0"></script>
 <script>__mods.routewaffles=module.exports;module={exports:{}};</script>
-<script src="lib/vehicleprofile.js?v=3.4.1"></script>
+<script src="lib/vehicleprofile.js?v=3.5.0"></script>
 <script>__mods.vehicleprofile=module.exports;module={exports:{}};</script>
-<script src="lib/triptext.js?v=3.4.1"></script>
+<script src="lib/triptext.js?v=3.5.0"></script>
 <script>__mods.triptext=module.exports;module={exports:{}};</script>
-<script src="lib/escape.js?v=3.4.1"></script>
+<script src="lib/escape.js?v=3.5.0"></script>
 <script>__mods.escape=module.exports;module={exports:{}};</script>
-<script src="lib/flexible-polyline.js?v=3.4.1"></script>
+<script src="lib/flexible-polyline.js?v=3.5.0"></script>
 <script>__mods['flexible-polyline']=module.exports;module={exports:{}};</script>
-<script src="lib/autosuggest.js?v=3.4.1"></script>
+<script src="lib/autosuggest.js?v=3.5.0"></script>
 <script>__mods.autosuggest=module.exports;module={exports:{}};</script>
-<script src="lib/location.js?v=3.4.1"></script>
+<script src="lib/location.js?v=3.5.0"></script>
 <script>__mods.location=module.exports;module={exports:{}};</script>
-<script src="lib/routeoptions.js?v=3.4.1"></script>
+<script src="lib/routeoptions.js?v=3.5.0"></script>
 <script>__mods.routeoptions=module.exports;module={exports:{}};</script>
-<script src="lib/baselayer.js?v=3.4.1"></script>
+<script src="lib/baselayer.js?v=3.5.0"></script>
 <script>__mods.baselayer=module.exports;module={exports:{}};</script>
 
 <script>
@@ -548,7 +569,7 @@ var HERE_API_KEY = '7RDploUiahAnm08IZA9X7YSbb0Qh99pvqV2NCNQX_Hg';
    APP_VERSION - the code. Shown in the legend card. Bumped every change,
                 and stamped onto every lib/ URL as a cache-buster. */
 var ATLAS_REV   = 'Atlas Rev 08-2026';
-var APP_VERSION = '3.4.1';
+var APP_VERSION = '3.5.0';
 
 /* ===== DATA ==========================================================
    66 exits, 73 pairings, one honorary. Every row: feet measured by

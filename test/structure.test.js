@@ -46,6 +46,21 @@ t.eq(/cdnjs\.cloudflare\.com|basemaps\.cartocdn\.com/.test(src), false,
 t.eq(/\bL\.(map|marker|divIcon|polyline|tileLayer|featureGroup|layerGroup|control)\b/.test(src),
      false, 'no Leaflet API calls remain');
 
+// Home screen and tab icons. A missing file here fails silently in the worst
+// way: the browser asks for it, gets a 404, and quietly shows a generic icon
+// or a screenshot of the page. Nothing in the app breaks, so nobody notices
+// until someone adds it to a home screen. So assert both halves - the link is
+// declared AND the file it points at is really there.
+[['apple-touch-icon', /<link rel="apple-touch-icon" href="([^"]+)">/],
+ ['favicon 32',       /<link rel="icon" type="image\/png" sizes="32x32" href="([^"]+)">/],
+ ['favicon 16',       /<link rel="icon" type="image\/png" sizes="16x16" href="([^"]+)">/]
+].forEach(function(pair){
+  var m = src.match(pair[1]);
+  t.eq(!!m, true, pair[0] + ' is declared in the head');
+  if (m) t.eq(fs.existsSync(path.join(__dirname, '..', m[1])), true,
+              pair[0] + ' file exists: ' + m[1]);
+});
+
 t.eq((src.match(/^var ATLAS_REV   = /m) || []).length, 1, 'one ATLAS_REV declaration');
 t.eq(src.indexOf('id="revLine"') !== -1, true, 'the atlas revision has a home in the header');
 
