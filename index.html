@@ -33,8 +33,32 @@
      env(safe-area-inset-top) and the panel for the bottom - so the URL bar
      was only ever taking map away from a driver. Still no service worker
      and no offline caching: the manifest names the app and its icons, and
-     stops there. -->
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
+     stops there.
+
+     THE ICON RECOLOURS ITSELF IN DARK MODE, AND THAT CANNOT BE FIXED HERE.
+     iOS 18 and later let the home screen restyle every icon on it - Edit >
+     Customize > Default / Dark / Clear / Tinted - and the default,
+     Automatic, follows the system appearance. A web clip is a single flat
+     raster with no variant slots, so iOS generates the dark and tinted
+     versions itself from this PNG. The only off switch is that per-device
+     setting; no markup, manifest field or asset makes an icon opt out.
+
+     DO NOT "FIX" IT WITH A SECOND LINK. The obvious attempt is
+       <link rel="apple-touch-icon" media="(prefers-color-scheme: dark)" ...>
+     and it makes things worse rather than nothing. WebKit's icon collector
+     never evaluates `media` for touch icons (it does for
+     apple-touch-startup-image, which is where the idea comes from), so both
+     links stay live candidates and selection falls through to declared
+     size. Hence the explicit sizes below: without it this link falls back
+     to WebKit's 60px default, and a dark variant declaring 180x180 would
+     outrank it and become the icon in LIGHT mode too. Declare both at the
+     same size instead and the tie-break is unspecified - a coin flip.
+
+     A dark variant would also contradict the app: --sign and --char are
+     identical in both themes on purpose, so the header tile is
+     pixel-identical light and dark. The icon staying put is the same
+     decision. -->
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
 <link rel="manifest" href="manifest.json">
@@ -525,27 +549,27 @@ var __mods={};
 function require(p){return __mods[p.replace(/^\.\//,'').replace(/\.js$/,'')];}
 var module={exports:{}};
 </script>
-<script src="lib/waffledist.js?v=3.6.0"></script>
+<script src="lib/waffledist.js?v=3.6.1"></script>
 <script>__mods.waffledist=module.exports;module={exports:{}};</script>
-<script src="lib/atlasfilter.js?v=3.6.0"></script>
+<script src="lib/atlasfilter.js?v=3.6.1"></script>
 <script>__mods.atlasfilter=module.exports;module={exports:{}};</script>
-<script src="lib/routewaffles.js?v=3.6.0"></script>
+<script src="lib/routewaffles.js?v=3.6.1"></script>
 <script>__mods.routewaffles=module.exports;module={exports:{}};</script>
-<script src="lib/vehicleprofile.js?v=3.6.0"></script>
+<script src="lib/vehicleprofile.js?v=3.6.1"></script>
 <script>__mods.vehicleprofile=module.exports;module={exports:{}};</script>
-<script src="lib/triptext.js?v=3.6.0"></script>
+<script src="lib/triptext.js?v=3.6.1"></script>
 <script>__mods.triptext=module.exports;module={exports:{}};</script>
-<script src="lib/escape.js?v=3.6.0"></script>
+<script src="lib/escape.js?v=3.6.1"></script>
 <script>__mods.escape=module.exports;module={exports:{}};</script>
-<script src="lib/flexible-polyline.js?v=3.6.0"></script>
+<script src="lib/flexible-polyline.js?v=3.6.1"></script>
 <script>__mods['flexible-polyline']=module.exports;module={exports:{}};</script>
-<script src="lib/autosuggest.js?v=3.6.0"></script>
+<script src="lib/autosuggest.js?v=3.6.1"></script>
 <script>__mods.autosuggest=module.exports;module={exports:{}};</script>
-<script src="lib/location.js?v=3.6.0"></script>
+<script src="lib/location.js?v=3.6.1"></script>
 <script>__mods.location=module.exports;module={exports:{}};</script>
-<script src="lib/routeoptions.js?v=3.6.0"></script>
+<script src="lib/routeoptions.js?v=3.6.1"></script>
 <script>__mods.routeoptions=module.exports;module={exports:{}};</script>
-<script src="lib/baselayer.js?v=3.6.0"></script>
+<script src="lib/baselayer.js?v=3.6.1"></script>
 <script>__mods.baselayer=module.exports;module={exports:{}};</script>
 
 <script>
@@ -587,7 +611,7 @@ var HERE_API_KEY = '7RDploUiahAnm08IZA9X7YSbb0Qh99pvqV2NCNQX_Hg';
    APP_VERSION - the code. Shown in the legend card. Bumped every change,
                 and stamped onto every lib/ URL as a cache-buster. */
 var ATLAS_REV   = 'Atlas Rev 08-2026';
-var APP_VERSION = '3.6.0';
+var APP_VERSION = '3.6.1';
 
 /* ===== DATA ==========================================================
    66 exits, 73 pairings, one honorary. Every row: feet measured by

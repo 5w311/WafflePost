@@ -51,7 +51,12 @@ t.eq(/\bL\.(map|marker|divIcon|polyline|tileLayer|featureGroup|layerGroup|contro
 // or a screenshot of the page. Nothing in the app breaks, so nobody notices
 // until someone adds it to a home screen. So assert both halves - the link is
 // declared AND the file it points at is really there.
-[['apple-touch-icon', /<link rel="apple-touch-icon" href="([^"]+)">/],
+// The apple-touch-icon MUST carry an explicit sizes. WebKit ignores `media`
+// on touch icons and falls back to declared size when choosing between
+// candidates, defaulting to 60px for a link that omits it - so an unsized
+// link here is what would let any second touch icon outrank the real one.
+// See the head comment; this is the assertion that keeps that reasoning true.
+[['apple-touch-icon', /<link rel="apple-touch-icon" sizes="180x180" href="([^"]+)">/],
  ['favicon 32',       /<link rel="icon" type="image\/png" sizes="32x32" href="([^"]+)">/],
  ['favicon 16',       /<link rel="icon" type="image\/png" sizes="16x16" href="([^"]+)">/],
  ['manifest',         /<link rel="manifest" href="([^"]+)">/]
