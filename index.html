@@ -33,15 +33,52 @@
      env(safe-area-inset-top) and the panel for the bottom - so the URL bar
      was only ever taking map away from a driver. Still no service worker
      and no offline caching: the manifest names the app and its icons, and
-     stops there.
+     stops there. It is also what makes iOS treat this as an INSTALLED web
+     app rather than a bookmark, which is the subject of the next paragraph.
 
-     THE ICON RECOLOURS ITSELF IN DARK MODE, AND THAT CANNOT BE FIXED HERE.
-     iOS 18 and later let the home screen restyle every icon on it - Edit >
-     Customize > Default / Dark / Clear / Tinted - and the default,
-     Automatic, follows the system appearance. A web clip is a single flat
-     raster with no variant slots, so iOS generates the dark and tinted
-     versions itself from this PNG. The only off switch is that per-device
-     setting; no markup, manifest field or asset makes an icon opt out.
+     THE ICON RECOLOURS ITSELF IN DARK MODE. THAT IS A TRADE WE HAVE NOT
+     MADE, NOT A WALL.
+
+     Confirmed on device: iOS 18 and later let the home screen restyle every
+     icon on it - Edit > Customize > Default / Dark / Clear / Tinted - and
+     the default, Automatic, follows the system appearance. Setting Light
+     restores the yellow icon, so the darkening is that setting acting on
+     this app, not a bad asset. The PNGs were checked separately and are
+     right: 180x180, RGB with no alpha, every sampled pixel #FFC72C. A flat
+     raster has no variant slots, so iOS generates the dark and tinted
+     versions itself from this PNG.
+
+     The likely lever is the manifest link below, and this is a HYPOTHESIS,
+     not a finding. The evidence is a comparison: FuelPost declares no
+     manifest at all, only an apple-touch-icon link, and its icon does NOT
+     darken - same phone, same Home Screen, same setting. WafflePost
+     declares a manifest with display:standalone and darkens. That is the
+     only structural difference between the two, and it maps to a real iOS
+     distinction: no manifest means the page is added as a bookmark web
+     clip, a manifest with display:standalone means it is installed as a web
+     app. Reports from the iOS 18 rollout describe bookmark clips as
+     unaffected by Dark while installed web apps get a system-generated dark
+     icon. Nobody has removed the link here, redeployed and looked, so treat
+     every sentence in this paragraph as unverified.
+
+     It has not been done because of what it costs. index.html carries no
+     apple-mobile-web-app-capable meta, so display:standalone in the
+     manifest is the ONLY thing suppressing the URL bar. Dropping the
+     manifest link would return the yellow icon and return the URL bar, on
+     an app whose whole layout assumes standalone - and Android's home
+     screen label goes with it.
+
+     The untested next step, in order: comment out the manifest link,
+     redeploy, DELETE AND RE-ADD the home screen icon (iOS caches web clip
+     icons and will not refetch), and look at it in Dark. If the yellow
+     survives, add apple-mobile-web-app-capable and check whether the URL
+     bar stays gone. If it does, the only remaining cost is Android
+     installability.
+
+     Serving the manifest link to Android only, by sniffing the UA, is
+     rejected rather than unconsidered. It would buy both halves, and it is
+     exactly the kind of cleverness that breaks silently on an iOS point
+     release with nothing on screen to say so.
 
      DO NOT "FIX" IT WITH A SECOND LINK. The obvious attempt is
        <link rel="apple-touch-icon" media="(prefers-color-scheme: dark)" ...>
@@ -549,27 +586,27 @@ var __mods={};
 function require(p){return __mods[p.replace(/^\.\//,'').replace(/\.js$/,'')];}
 var module={exports:{}};
 </script>
-<script src="lib/waffledist.js?v=3.6.1"></script>
+<script src="lib/waffledist.js?v=3.6.2"></script>
 <script>__mods.waffledist=module.exports;module={exports:{}};</script>
-<script src="lib/atlasfilter.js?v=3.6.1"></script>
+<script src="lib/atlasfilter.js?v=3.6.2"></script>
 <script>__mods.atlasfilter=module.exports;module={exports:{}};</script>
-<script src="lib/routewaffles.js?v=3.6.1"></script>
+<script src="lib/routewaffles.js?v=3.6.2"></script>
 <script>__mods.routewaffles=module.exports;module={exports:{}};</script>
-<script src="lib/vehicleprofile.js?v=3.6.1"></script>
+<script src="lib/vehicleprofile.js?v=3.6.2"></script>
 <script>__mods.vehicleprofile=module.exports;module={exports:{}};</script>
-<script src="lib/triptext.js?v=3.6.1"></script>
+<script src="lib/triptext.js?v=3.6.2"></script>
 <script>__mods.triptext=module.exports;module={exports:{}};</script>
-<script src="lib/escape.js?v=3.6.1"></script>
+<script src="lib/escape.js?v=3.6.2"></script>
 <script>__mods.escape=module.exports;module={exports:{}};</script>
-<script src="lib/flexible-polyline.js?v=3.6.1"></script>
+<script src="lib/flexible-polyline.js?v=3.6.2"></script>
 <script>__mods['flexible-polyline']=module.exports;module={exports:{}};</script>
-<script src="lib/autosuggest.js?v=3.6.1"></script>
+<script src="lib/autosuggest.js?v=3.6.2"></script>
 <script>__mods.autosuggest=module.exports;module={exports:{}};</script>
-<script src="lib/location.js?v=3.6.1"></script>
+<script src="lib/location.js?v=3.6.2"></script>
 <script>__mods.location=module.exports;module={exports:{}};</script>
-<script src="lib/routeoptions.js?v=3.6.1"></script>
+<script src="lib/routeoptions.js?v=3.6.2"></script>
 <script>__mods.routeoptions=module.exports;module={exports:{}};</script>
-<script src="lib/baselayer.js?v=3.6.1"></script>
+<script src="lib/baselayer.js?v=3.6.2"></script>
 <script>__mods.baselayer=module.exports;module={exports:{}};</script>
 
 <script>
@@ -611,7 +648,7 @@ var HERE_API_KEY = '7RDploUiahAnm08IZA9X7YSbb0Qh99pvqV2NCNQX_Hg';
    APP_VERSION - the code. Shown in the legend card. Bumped every change,
                 and stamped onto every lib/ URL as a cache-buster. */
 var ATLAS_REV   = 'Atlas Rev 08-2026';
-var APP_VERSION = '3.6.1';
+var APP_VERSION = '3.6.2';
 
 /* ===== DATA ==========================================================
    66 exits, 73 pairings, one honorary. Every row: feet measured by
