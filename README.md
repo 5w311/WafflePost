@@ -38,9 +38,13 @@ test/*.test.js            plain-node tests, no framework
 test/_assert.js           two assertions and a reporter; that is the whole framework
 test/run.js               runs every test file and fails the run if any file fails
 data/atlas.csv            the audit's own source table, with coordinates and addresses
-apple-touch-icon.png      home screen icon, 180x180 - the header tile, baked
+apple-touch-icon.png      iOS home screen, 180x180 - the header tile, baked
+icon-192.png              Android home screen
+icon-512.png              Android, large
+icon-maskable-512.png     Android, padded for a launcher that crops to a circle
 favicon-32.png            browser tab, 32x32
 favicon-16.png            browser tab, 16x16
+manifest.json             app name, icons, standalone display - no service worker
 ```
 
 `lib/` is CommonJS so the tests run under plain `node` with no install and no
@@ -56,8 +60,8 @@ function-scope fetch. Here four of the eleven modules `require` another —
 `flexible-polyline` at its call site inside `truckRoute`, so the page defines a
 two-line `require()` that reads from a `__mods` object populated between script
 tags. It resolves `./name` and `./name.js` and nothing else, which is all this
-dependency graph is. No bundler, no build step, and the same rule as FuelPost applies: **do not add
-`defer` to the lib scripts.** The inline captures between them are not
+dependency graph is. No bundler, no build step, and the same rule as FuelPost
+applies: **do not add `defer` to the lib scripts.** The inline captures between them are not
 deferred, so every module would silently become `{}` with no error thrown
 anywhere. `test/structure.test.js` fails if `defer` or `async` appears on one.
 
@@ -514,7 +518,7 @@ Same reasoning as FuelPost, different perishable thing:
   that has closed is a wasted exit at 3am. A driver cannot tell stale atlas
   data from current atlas data without it. Bump only when the rows are
   re-audited.
-- **`APP_VERSION`** (`3.5.0`) — the code. Shown in the **legend card**.
+- **`APP_VERSION`** (`3.6.0`) — the code. Shown in the **legend card**.
   Bumped for every shipped change, and stamped onto every `lib/` URL as a
   cache-buster.
 
@@ -534,6 +538,40 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v3.6.0
+
+**A manifest, which v3.5.0 declined to add one release earlier.** That entry
+is still below and still says "no manifest, so this is not the first step of a
+PWA" — true when written. The line it was protecting was the original brief's
+*no PWA, no service worker, no offline tile caching*, and the manifest crosses
+only the first inch of it: an app name, icons, and a display mode. There is
+still no service worker and nothing is cached offline.
+
+What it buys is the **home screen label on Android**. Left to itself Android
+uses `<title>`, which cannot be controlled independently of the browser tab;
+`short_name` is the only way to say what goes under the icon. It also lets
+Android pick a properly sized icon rather than upscaling the iOS one.
+
+**A maskable variant, because Android crops.** A launcher that masks to a
+circle will clip a full-bleed glyph at the corners. The plain 192 and 512
+stay full size for launchers that do not crop; the maskable 512 draws the W
+smaller so its diagonal fits the centre-80% safe zone — measured at 0.745 of
+the icon width against a 0.80 limit, rather than assumed. The first attempt
+came out at 0.804, just over, and was redrawn.
+
+**`display: standalone`**, deliberately. This app was already built like one:
+`html` and `body` are `overflow:hidden`, the header pads for
+`env(safe-area-inset-top)` and the panel for the bottom. The URL bar was only
+ever taking map away from a driver.
+
+`theme_color` is `#14110E`, the header black. `--char` is declared once and
+never themed, so that single static value is correct in both light and dark
+rather than a compromise between them.
+
+`structure.test.js` now parses the manifest and follows **every** icon `src`,
+because a bad path inside it costs Android the icon and says nothing. Checked
+by pointing one at a missing file and watching it fail.
 
 ### v3.5.0
 
