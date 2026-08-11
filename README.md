@@ -61,8 +61,8 @@ function-scope fetch. Here four of the eleven modules `require` another —
 two-line `require()` that reads from a `__mods` object populated between script
 tags. It resolves `./name` and `./name.js` and nothing else, which is all this
 dependency graph is. No bundler, no build step, and the same rule as FuelPost
-applies: **do not add `defer` to the lib scripts.** The inline captures between them are not
-deferred, so every module would silently become `{}` with no error thrown
+applies: **do not add `defer` to the lib scripts.** The inline captures between
+them are not deferred, so every module would silently become `{}` with no error thrown
 anywhere. `test/structure.test.js` fails if `defer` or `async` appears on one.
 
 ## Where the data came from
@@ -518,7 +518,7 @@ Same reasoning as FuelPost, different perishable thing:
   that has closed is a wasted exit at 3am. A driver cannot tell stale atlas
   data from current atlas data without it. Bump only when the rows are
   re-audited.
-- **`APP_VERSION`** (`3.6.0`) — the code. Shown in the **legend card**.
+- **`APP_VERSION`** (`3.6.1`) — the code. Shown in the **legend card**.
   Bumped for every shipped change, and stamped onto every `lib/` URL as a
   cache-buster.
 
@@ -538,6 +538,35 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v3.6.1
+
+**The home screen icon recolours itself in dark mode, and nothing in this
+repo can stop it.** Reported on iOS 26 and investigated properly rather than
+guessed at. iOS 18 and later let the home screen restyle every icon on it —
+Edit > Customize > Default / Dark / Clear / Tinted — and the default,
+Automatic, follows the system appearance. A web clip is a single flat raster
+with no variant slots, so iOS generates the dark and tinted versions itself.
+There is no markup, manifest field or asset that opts out; the only control
+is that per-device setting, and it belongs to the user, not the app.
+
+The app's own header tile was ruled out first, by pixels rather than by
+reading: `--sign` and `--char` are declared once in `:root` and the dark
+block never redefines them, and a screenshot of `.tile` under both schemes
+diffs to an empty bounding box. It is identical light and dark.
+
+**What did change is a trap being written down.** The obvious fix is a
+second link with `media="(prefers-color-scheme: dark)"`, and it makes things
+actively worse rather than doing nothing. WebKit never evaluates `media` for
+touch icons — it does for `apple-touch-startup-image`, which is where the
+idea comes from — so both links stay live candidates and selection falls
+through to declared size. The old link declared no `sizes` at all, so it sat
+on WebKit's 60px default, and a dark variant declaring 180x180 would have
+outranked it and become the icon in **light** mode too.
+
+So the link now carries `sizes="180x180"`, `structure.test.js` pins it, and
+the head comment records why. That is hygiene, not a fix — the icon still
+follows the phone's appearance setting, because on iOS it must.
 
 ### v3.6.0
 
