@@ -53,13 +53,45 @@ t.eq(/\bL\.(map|marker|divIcon|polyline|tileLayer|featureGroup|layerGroup|contro
 // declared AND the file it points at is really there.
 [['apple-touch-icon', /<link rel="apple-touch-icon" href="([^"]+)">/],
  ['favicon 32',       /<link rel="icon" type="image\/png" sizes="32x32" href="([^"]+)">/],
- ['favicon 16',       /<link rel="icon" type="image\/png" sizes="16x16" href="([^"]+)">/]
+ ['favicon 16',       /<link rel="icon" type="image\/png" sizes="16x16" href="([^"]+)">/],
+ ['manifest',         /<link rel="manifest" href="([^"]+)">/]
 ].forEach(function(pair){
   var m = src.match(pair[1]);
   t.eq(!!m, true, pair[0] + ' is declared in the head');
   if (m) t.eq(fs.existsSync(path.join(__dirname, '..', m[1])), true,
               pair[0] + ' file exists: ' + m[1]);
 });
+
+// The manifest fails the same quiet way, one level deeper: a bad icon path
+// inside it costs Android the home screen icon and says nothing. Parse it and
+// follow every src.
+var mfRef = (src.match(/<link rel="manifest" href="([^"]+)">/) || [])[1];
+if (mfRef) {
+  var mfPath = path.join(__dirname, '..', mfRef);
+  var mf = null;
+  try { mf = JSON.parse(fs.readFileSync(mfPath, 'utf8')); } catch (e) {
+    console.log('  manifest parse error: ' + e.message);
+  }
+  t.eq(!!mf, true, 'the manifest is valid JSON');
+  if (mf) {
+    // short_name is what Android prints under the icon; without it the label
+    // falls back to <title>, which is the thing the manifest was added to fix.
+    t.eq(typeof mf.short_name === 'string' && mf.short_name.length > 0, true,
+         'the manifest names the app for the home screen');
+    t.eq(Array.isArray(mf.icons) && mf.icons.length > 0, true, 'the manifest lists icons');
+    (mf.icons || []).forEach(function (ic) {
+      t.eq(fs.existsSync(path.join(__dirname, '..', ic.src)), true,
+           'manifest icon exists: ' + ic.src);
+    });
+    // Android wants 192 and 512; a maskable variant keeps a circular launcher
+    // mask from clipping the glyph.
+    var sizes = (mf.icons || []).map(function (i) { return i.sizes; });
+    t.eq(sizes.indexOf('192x192') !== -1, true, 'a 192x192 icon is declared');
+    t.eq(sizes.indexOf('512x512') !== -1, true, 'a 512x512 icon is declared');
+    t.eq((mf.icons || []).some(function (i) { return i.purpose === 'maskable'; }), true,
+         'a maskable icon is declared');
+  }
+}
 
 t.eq((src.match(/^var ATLAS_REV   = /m) || []).length, 1, 'one ATLAS_REV declaration');
 t.eq(src.indexOf('id="revLine"') !== -1, true, 'the atlas revision has a home in the header');

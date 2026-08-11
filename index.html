@@ -19,12 +19,30 @@
      transparency is composited onto black. The 5px radius on .tile is a
      header detail; on the home screen the OS owns the shape.
 
-     No manifest. Android falls back to apple-touch-icon for "add to home
-     screen", which is all that was asked for, and a manifest is the first
-     step of the PWA machinery this app has stayed out of. -->
+     iOS reads apple-touch-icon and nothing else here. Android reads the
+     manifest below, which is where its home screen LABEL comes from - left
+     to itself it uses <title>, and a manifest is the only way to control
+     that. It carries icons at the two sizes Android asks for plus a
+     maskable variant, because a launcher that crops to a circle will clip a
+     full-bleed glyph: the maskable W is drawn smaller so its diagonal fits
+     inside the centre-80% safe zone (measured at 0.745 of the icon, where
+     0.80 is the limit), while the plain ones stay full size.
+
+     display:standalone, deliberately. This app was already built like one -
+     html and body are overflow:hidden, the header pads for
+     env(safe-area-inset-top) and the panel for the bottom - so the URL bar
+     was only ever taking map away from a driver. Still no service worker
+     and no offline caching: the manifest names the app and its icons, and
+     stops there. -->
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+<link rel="manifest" href="manifest.json">
+<!-- Colours the browser UI on Android, and the status bar in standalone.
+     --char is declared once and never themed, so the header is #14110E in
+     both light and dark; a single static value is correct here, not a
+     compromise. -->
+<meta name="theme-color" content="#14110E">
 
 <!-- First contact with js.api.here.com is the render-blocking stylesheet
      below, then five SDK scripts. crossorigin is load-bearing, not
@@ -507,27 +525,27 @@ var __mods={};
 function require(p){return __mods[p.replace(/^\.\//,'').replace(/\.js$/,'')];}
 var module={exports:{}};
 </script>
-<script src="lib/waffledist.js?v=3.5.0"></script>
+<script src="lib/waffledist.js?v=3.6.0"></script>
 <script>__mods.waffledist=module.exports;module={exports:{}};</script>
-<script src="lib/atlasfilter.js?v=3.5.0"></script>
+<script src="lib/atlasfilter.js?v=3.6.0"></script>
 <script>__mods.atlasfilter=module.exports;module={exports:{}};</script>
-<script src="lib/routewaffles.js?v=3.5.0"></script>
+<script src="lib/routewaffles.js?v=3.6.0"></script>
 <script>__mods.routewaffles=module.exports;module={exports:{}};</script>
-<script src="lib/vehicleprofile.js?v=3.5.0"></script>
+<script src="lib/vehicleprofile.js?v=3.6.0"></script>
 <script>__mods.vehicleprofile=module.exports;module={exports:{}};</script>
-<script src="lib/triptext.js?v=3.5.0"></script>
+<script src="lib/triptext.js?v=3.6.0"></script>
 <script>__mods.triptext=module.exports;module={exports:{}};</script>
-<script src="lib/escape.js?v=3.5.0"></script>
+<script src="lib/escape.js?v=3.6.0"></script>
 <script>__mods.escape=module.exports;module={exports:{}};</script>
-<script src="lib/flexible-polyline.js?v=3.5.0"></script>
+<script src="lib/flexible-polyline.js?v=3.6.0"></script>
 <script>__mods['flexible-polyline']=module.exports;module={exports:{}};</script>
-<script src="lib/autosuggest.js?v=3.5.0"></script>
+<script src="lib/autosuggest.js?v=3.6.0"></script>
 <script>__mods.autosuggest=module.exports;module={exports:{}};</script>
-<script src="lib/location.js?v=3.5.0"></script>
+<script src="lib/location.js?v=3.6.0"></script>
 <script>__mods.location=module.exports;module={exports:{}};</script>
-<script src="lib/routeoptions.js?v=3.5.0"></script>
+<script src="lib/routeoptions.js?v=3.6.0"></script>
 <script>__mods.routeoptions=module.exports;module={exports:{}};</script>
-<script src="lib/baselayer.js?v=3.5.0"></script>
+<script src="lib/baselayer.js?v=3.6.0"></script>
 <script>__mods.baselayer=module.exports;module={exports:{}};</script>
 
 <script>
@@ -569,7 +587,7 @@ var HERE_API_KEY = '7RDploUiahAnm08IZA9X7YSbb0Qh99pvqV2NCNQX_Hg';
    APP_VERSION - the code. Shown in the legend card. Bumped every change,
                 and stamped onto every lib/ URL as a cache-buster. */
 var ATLAS_REV   = 'Atlas Rev 08-2026';
-var APP_VERSION = '3.5.0';
+var APP_VERSION = '3.6.0';
 
 /* ===== DATA ==========================================================
    66 exits, 73 pairings, one honorary. Every row: feet measured by
