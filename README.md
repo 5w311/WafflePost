@@ -61,9 +61,9 @@ function-scope fetch. Here four of the eleven modules `require` another —
 two-line `require()` that reads from a `__mods` object populated between script
 tags. It resolves `./name` and `./name.js` and nothing else, which is all this
 dependency graph is. No bundler, no build step, and the same rule as FuelPost
-applies: **do not add `defer` to the lib scripts.** The inline captures between
-them are not deferred, so every module would silently become `{}` with no error thrown
-anywhere. `test/structure.test.js` fails if `defer` or `async` appears on one.
+applies: **do not add `defer` to the lib scripts.** The inline captures
+between them are not deferred, so every module would silently become `{}`
+with no error thrown anywhere. `test/structure.test.js` fails if `defer` or `async` appears on one.
 
 ## Where the data came from
 
@@ -102,10 +102,10 @@ anywhere: they still place the pin, project the row onto a route, and are what
 same point, because `34.11486, -86.86387` is not something a driver reads off
 a screen to a dispatcher.
 
-The **share text keeps the coordinates**, deliberately. That text is pasted
-into other things rather than read, and a coordinate pair is the one form that
-drops into any nav app or dispatch field without being re-geocoded into an
-approximation of itself.
+The **share text carries both**, since v3.7.0: the address as the line a
+person reads or feeds a nav app, with the coordinates kept beside it because
+a coordinate pair is the one form that drops into any dispatch field without
+being re-geocoded into an approximation of itself.
 
 **The coordinate marks the Waffle House, not the truck stop.** That was
 verified rather than assumed: a POI search at the stored coordinate returns
@@ -518,7 +518,7 @@ Same reasoning as FuelPost, different perishable thing:
   that has closed is a wasted exit at 3am. A driver cannot tell stale atlas
   data from current atlas data without it. Bump only when the rows are
   re-audited.
-- **`APP_VERSION`** (`3.6.1`) — the code. Shown in the **legend card**.
+- **`APP_VERSION`** (`3.7.0`) — the code. Shown in the **legend card**.
   Bumped for every shipped change, and stamped onto every `lib/` URL as a
   cache-buster.
 
@@ -538,6 +538,30 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v3.7.0
+
+**Clear all, under the Go button.** The per-field × buttons clear one box;
+this clears the trip — both addresses, their resolved coordinates, the GPS
+note, the plan, and the route drawn on the map — and puts the panel back to
+its "What is on this run?" prompt. The vehicle profile is deliberately not
+reset: it describes the rig, not the trip, and a truck does not change
+height between runs.
+
+**The share text carries street addresses now.** The stop share prints the
+address above the coordinates, and each stop in a route share gains its
+address line — it is the line that goes into a truck's nav when the text
+reaches a phone. Coordinates stay beside it, because a coordinate pair is
+still the one form that pastes anywhere without being re-geocoded into an
+approximation of itself. (v3.4.0 scoped addresses to the stop sheet on
+request; this extends them to the share on request.)
+
+**And it no longer stammers.** Both share formatters ended with
+`'Atlas ' + ATLAS_REV`, and `ATLAS_REV` already reads `Atlas Rev 08-2026` —
+so every share message ever sent ended "Atlas Atlas Rev 08-2026". Eleven
+releases, nobody read their own share text. The formatter now trusts the rev
+string to carry its own label, and a test pins that "Atlas Atlas" never
+comes back.
 
 ### v3.6.1
 
