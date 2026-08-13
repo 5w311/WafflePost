@@ -32,6 +32,35 @@ t.eq(none.indexOf('No walkable Waffle House within 6 mi') !== -1, true,
      'an empty run says so plainly rather than printing an empty list');
 t.eq(tt.formatRouteText(null), '', 'no plan, no text');
 
+// The share text carries the street address wherever the row has one - it is
+// the line that goes into a truck's nav when this text reaches a phone - and
+// keeps the coordinates beside it, because a coordinate pair is the one form
+// that pastes anywhere without being re-geocoded into an approximation.
+var addrRow = {feet:170, corridor:'I-65', state:'AL', exit:'304', city:'Good Hope',
+               ts:"Jack's Truck Stop", lat:34.11486, lon:-86.86387,
+               addr:'1707 County Road 437, Cullman, AL 35055', note:''};
+var stopTxt = tt.formatStopText(addrRow, 'Atlas Rev 08-2026');
+t.eq(stopTxt.indexOf('1707 County Road 437, Cullman, AL 35055') !== -1, true,
+     'the stop share carries the street address');
+t.eq(stopTxt.indexOf('34.11486, -86.86387') !== -1, true,
+     'and still carries the coordinates beside it');
+var routeTxt = tt.formatRouteText({from:'A', to:'B', miles:100, profile:'Standard rig',
+  tierUsed:1, stops:[{row:addrRow, routeMile:49, detourMi:0.3}]}, 'Atlas Rev 08-2026');
+t.eq(routeTxt.indexOf('   1707 County Road 437, Cullman, AL 35055') !== -1, true,
+     'each route stop carries its street address');
+// A row without an address (an old fixture, a future row before generation)
+// must not print a blank or the word "undefined".
+var bare = {feet:170, corridor:'I-65', state:'AL', exit:'304', city:'X',
+            ts:'T', lat:34.1, lon:-86.8, note:''};
+t.eq(tt.formatStopText(bare, 'Rev').indexOf('undefined') === -1, true,
+     'a row with no address shares cleanly');
+
+// ATLAS_REV already reads "Atlas Rev 08-2026"; the formatter must not add its
+// own "Atlas " on top. This said "Atlas Atlas Rev 08-2026" for eleven releases.
+t.eq(stopTxt.indexOf('Atlas Atlas') === -1, true, 'stop share does not stammer the rev label');
+t.eq(routeTxt.indexOf('Atlas Atlas') === -1, true, 'route share does not either');
+t.eq(stopTxt.indexOf('Atlas Rev 08-2026') !== -1, true, 'the rev line itself survives');
+
 // A chosen alternative names itself, so a 968 mi run does not read as a
 // routing error to whoever receives the text.
 var picked = {from:'Dallas, TX', to:'Atlanta, GA', miles:968, profile:'Standard rig',

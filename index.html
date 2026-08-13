@@ -513,6 +513,7 @@ html[data-theme=dark] .mile{color:#E8B96B}
 
     <div class="err hidden" id="rErr"></div>
     <button class="go" id="rGo">Find waffles on this route</button>
+    <button class="act" id="rClear" type="button">Clear all</button>
   </div>
 </div>
 
@@ -586,27 +587,27 @@ var __mods={};
 function require(p){return __mods[p.replace(/^\.\//,'').replace(/\.js$/,'')];}
 var module={exports:{}};
 </script>
-<script src="lib/waffledist.js?v=3.6.2"></script>
+<script src="lib/waffledist.js?v=3.7.0"></script>
 <script>__mods.waffledist=module.exports;module={exports:{}};</script>
-<script src="lib/atlasfilter.js?v=3.6.2"></script>
+<script src="lib/atlasfilter.js?v=3.7.0"></script>
 <script>__mods.atlasfilter=module.exports;module={exports:{}};</script>
-<script src="lib/routewaffles.js?v=3.6.2"></script>
+<script src="lib/routewaffles.js?v=3.7.0"></script>
 <script>__mods.routewaffles=module.exports;module={exports:{}};</script>
-<script src="lib/vehicleprofile.js?v=3.6.2"></script>
+<script src="lib/vehicleprofile.js?v=3.7.0"></script>
 <script>__mods.vehicleprofile=module.exports;module={exports:{}};</script>
-<script src="lib/triptext.js?v=3.6.2"></script>
+<script src="lib/triptext.js?v=3.7.0"></script>
 <script>__mods.triptext=module.exports;module={exports:{}};</script>
-<script src="lib/escape.js?v=3.6.2"></script>
+<script src="lib/escape.js?v=3.7.0"></script>
 <script>__mods.escape=module.exports;module={exports:{}};</script>
-<script src="lib/flexible-polyline.js?v=3.6.2"></script>
+<script src="lib/flexible-polyline.js?v=3.7.0"></script>
 <script>__mods['flexible-polyline']=module.exports;module={exports:{}};</script>
-<script src="lib/autosuggest.js?v=3.6.2"></script>
+<script src="lib/autosuggest.js?v=3.7.0"></script>
 <script>__mods.autosuggest=module.exports;module={exports:{}};</script>
-<script src="lib/location.js?v=3.6.2"></script>
+<script src="lib/location.js?v=3.7.0"></script>
 <script>__mods.location=module.exports;module={exports:{}};</script>
-<script src="lib/routeoptions.js?v=3.6.2"></script>
+<script src="lib/routeoptions.js?v=3.7.0"></script>
 <script>__mods.routeoptions=module.exports;module={exports:{}};</script>
-<script src="lib/baselayer.js?v=3.6.2"></script>
+<script src="lib/baselayer.js?v=3.7.0"></script>
 <script>__mods.baselayer=module.exports;module={exports:{}};</script>
 
 <script>
@@ -648,7 +649,7 @@ var HERE_API_KEY = '7RDploUiahAnm08IZA9X7YSbb0Qh99pvqV2NCNQX_Hg';
    APP_VERSION - the code. Shown in the legend card. Bumped every change,
                 and stamped onto every lib/ URL as a cache-buster. */
 var ATLAS_REV   = 'Atlas Rev 08-2026';
-var APP_VERSION = '3.6.2';
+var APP_VERSION = '3.7.0';
 
 /* ===== DATA ==========================================================
    66 exits, 73 pairings, one honorary. Every row: feet measured by
@@ -1566,6 +1567,26 @@ Array.prototype.forEach.call($('vHazFields').querySelectorAll('.haz'), function(
   });
 });
 $('rGo').addEventListener('click', planRoute);
+
+/* Clear all: the whole TRIP - both addresses, their resolved coordinates,
+   the GPS note and error, the plan, and the route drawn on the map. The
+   per-field × buttons clear one box; this is "start the next run".
+   The vehicle profile is deliberately NOT reset: it describes the rig, not
+   the trip, and a driver's truck does not change height between runs. */
+$('rClear').addEventListener('click', function(){
+  ['rFrom','rTo'].forEach(function(id){
+    $(id).value=''; picked[id]=null; hideSuggest(id); syncField(id);
+  });
+  $('rFromGpsNote').hidden = true;
+  hideGeoError();
+  showErr('');
+  clearRouteOptions();
+  if (routeGroup) routeGroup.removeAll();
+  /* Refreshes the collapsed-tab summary back to "Trip"; the drawer is
+     already expanded, since this button lives inside its body. */
+  setDrawer(false);
+  render();
+});
 
 /* ---- drawer ---- */
 function setDrawer(collapsed){
