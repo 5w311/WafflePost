@@ -1,0 +1,83 @@
+WAFFLEPOST REMEASURE - 55 rows
+tolerance 50 ft; walkable line 2112 ft
+
+STALE      Good Hope|304  feet 170 kept - geocode could not resolve "Jack's Truck Stop, Good Hope, AL"
+STALE      Walton|175  feet 189 kept - name-match "Pilot" lands at 21816 ft, past the walkable line; the verified pairing outranks a name match. Field follow-up.
+STALE      Cartersville|293  feet 190 kept - geocode could not resolve "JP Truck Center, Cartersville, GA"
+APPLIED    Hammond|40  205 -> 150 ft (-55)  accepted by decision  via "Pilot" [place]
+STALE      Marianna|142  feet 238 kept - name-match "Pilot" lands at 3291 ft, past the walkable line; the verified pairing outranks a name match. Field follow-up.
+CONFIRMED  Franklin|36  301 -> 301 ft (+0)  via "Pilot" [place]
+STALE      Winnie|829  feet 336 kept - geocode matched "Gulf", which is not JP Truck Stop; a name miss is not a measurement
+CONFIRMED  Theodore|13  383 -> 383 ft (+0)  via "Pilot" [place]
+CONFIRMED  Longview|596  386 -> 386 ft (+0)  via "RaceTrac" [place]
+STALE      Henderson|115  feet 394 kept - geocode could not resolve "Henderson Travel Plaza, Henderson, LA"
+STALE      Kenly|106  feet 398 kept - name-match "Pilot" lands at 2722 ft, past the walkable line; the verified pairing outranks a name match. Field follow-up.
+APPLIED    Ringgold|345  399 -> 716 ft (+317)  accepted by decision  via "11418 Highway 41, Ringgold, GA 30736-8691, United States" [houseNumber]
+STALE      Ellenton|224  feet 417 kept - geocode could not resolve "ONE9 Travel Center #89, Ellenton, FL"
+STALE      Richmond Hill|87  feet 419 kept - geocode could not resolve "TA, Richmond Hill, GA"
+APPLIED    Byron|149  428 -> 608 ft (+180)  accepted by decision  via "Gas N Go" [place]
+APPLIED    Hubbard|234  429 -> 272 ft (-157)  accepted by decision  via "2226 N Main St, Hubbard, OH 44425-3236, United States" [houseNumber]
+STALE      Ocala|341  feet 429 kept - geocode could not resolve "Marion Oaks Pilot, Ocala, FL"
+CONFIRMED  Madison|258  501 -> 501 ft (+0)  via "Fast Track" [place]
+CONFIRMED  St. George|77  506 -> 506 ft (+0)  via "Flying J" [place]
+APPLIED    LaPlace|209  531 -> 390 ft (-141)  accepted by decision  via "4301 Main St, Laplace, LA 70068-5922, United States" [houseNumber]
+APPLIED    Port Wentworth|109  536 -> 479 ft (-57)  accepted by decision  via "Pilot" [place]
+APPLIED    Fort Pierce|129  636 -> 1368 ft (+732)  accepted by decision  via "Love's" [place]
+STALE      Madison|114  feet 646 kept - geocode matched "CAT SCALE", which is not TA; a name miss is not a measurement
+APPLIED    Gulfport|31  671 -> 596 ft (-75)  accepted by decision  via "Flying J" [place]
+STALE      DeFuniak Springs|70  feet 678 kept - name-match "Love's" lands at 2503 ft, past the walkable line; the verified pairing outranks a name match. Field follow-up.
+APPLIED    Wildwood|329  697 -> 1657 ft (+960)  accepted by decision  via "556 E State Road 44, Wildwood, FL 34785, United States" [houseNumber]
+APPLIED    Valdosta|11  699 -> 618 ft (-81)  accepted by decision  via "Pilot" [place]
+APPLIED    Hardeeville|5  738 -> 860 ft (+122)  accepted by decision  via "Pilot" [place]
+APPLIED    Commerce|149  753 -> 687 ft (-66)  accepted by decision  via "Ta Truck Service" [place]
+STALE      Manning|119  feet 791 kept - geocode "179 Manning Hwy, Salters, SC 29590-3767, United States" is 21.1 mi from the Waffle House; wrong place, not a measurement
+CONFIRMED  La Vergne|64  838 -> 838 ft (+0)  via "535 Waldron Rd, La Vergne, TN 37086-2260, United States" [houseNumber]
+STALE      Carmel Church|104  feet 858 kept - geocode could not resolve "24279 Rogers Clark Blvd, Carmel Church, VA"
+APPLIED    Baldwin|343  859 -> 799 ft (-60)  accepted by decision  via "Ta" [place]
+APPLIED    Priceville|334  871 -> 795 ft (-76)  accepted by decision  via "3240 Point Mallard Pkwy SE, Priceville, AL 35603-5720, United States" [houseNumber]
+CONFIRMED  Valdosta|16  889 -> 889 ft (+0)  via "Big Foot Travel Center" [place]
+STALE      Milton|26  feet 892 kept - geocode could not resolve "Love's (Garcon Point), Milton, FL"
+APPLIED    Orange|877  904 -> 252 ft (-652)  accepted by decision  via "Pilot" [place]
+APPLIED    Jennings|64  919 -> 861 ft (-58)  accepted by decision  via "Jennings Travel Center" [place]
+APPLIED    Punta Gorda|161  946 -> 883 ft (-63)  accepted by decision  via "26505 Jones Loop Rd, Punta Gorda, FL 33950-4707, United States" [houseNumber]
+CONFIRMED  London|41  963 -> 963 ft (+0)  via "15 Dogpatch Trading Cntr, London, KY 40741-9279, United States" [houseNumber]
+CONFIRMED  Elkton|109  1041 -> 1041 ft (+0)  via "Flying J" [place]
+CONFIRMED  Columbia|46  1052 -> 1052 ft (+0)  via "Love's" [place]
+APPLIED    Cordele|101  1100 -> 1043 ft (-57)  accepted by decision  via "2201 16th Ave E, Cordele, GA 31015-5376, United States" [houseNumber]
+CONFIRMED  Girard|226  1183 -> 1183 ft (+0)  via "1 Petro Pl, Girard, OH 44420-3123, United States" [houseNumber]
+APPLIED    Beaumont|848  1348 -> 969 ft (-379)  accepted by decision  via "Petro Stopping Centers" [place]
+APPLIED    Temple|19  1442 -> 1282 ft (-160)  accepted by decision  via "Pilot" [place]
+CONFIRMED  Jackson|201  1483 -> 1483 ft (+0)  via "Flying J" [place]
+STALE      Slidell|266  feet 1588 kept - geocode could not resolve "TA, Slidell, LA"
+APPLIED    Port Allen|151  1869 -> 1792 ft (-77)  accepted by decision  via "Love's" [place]
+APPLIED    Marshall|617  1885 -> 1976 ft (+91)  accepted by decision  via "304 I-20 E, Marshall, TX 75672-9753, United States" [houseNumber]
+STALE      Terrell|501  feet 1913 kept - name-match "Terrell Travel Plaza" lands at 14485 ft, past the walkable line; the verified pairing outranks a name match. Field follow-up.
+CONFIRMED  Troutville|150  1950 -> 1950 ft (+0)  via "ONE 9" [place]
+CONFIRMED  Denham Springs|10  2031 -> 2031 ft (+0)  via "2601 S Range Ave, Denham Springs, LA 70726, United States" [houseNumber]
+CONFIRMED  Hope Hull|164  2062 -> 2062 ft (+0)  via "7735 Mobile Hwy, Hope Hull, AL 36043-4505, United States" [houseNumber]
+CONFIRMED  Bishopville|116  2380 -> 2380 ft (+0)  via "Pilot" [place]
+
+ALT STALE  Winnie|829 alt "Bingo Travel Plaza"  feet 935 kept - no address yet; remeasure when one lands
+ALT STALE  Henderson|115 alt "Bayou Belle Truck Stop Casino"  feet 2315 kept - no address yet; remeasure when one lands
+ALT STALE  Fort Pierce|129 alt "Pilot"  feet 1279 kept - no address yet; remeasure when one lands
+ALT STALE  Madison|114 alt "Pilot"  feet 3643 kept - no address yet; remeasure when one lands
+ALT STALE  Temple|19 alt "Flying J"  feet 1442 kept - no address yet; remeasure when one lands
+ALT STALE  Jackson|201 alt "TA"  feet 1725 kept - no address yet; remeasure when one lands
+ALT STALE  Jackson|201 alt "Love's"  feet 2192 kept - no address yet; remeasure when one lands
+ALT STALE  Jackson|201 alt "Pilot"  feet 3274 kept - no address yet; remeasure when one lands
+ALT APPLY  Hammond|40 alt Petro Stopping Center #310  659 -> 506 ft (-153)  via "2100 SW Railroad Ave, Hammond, LA 70403-1442, United States"
+ALT APPLY  Kenly|106 alt Kenly 95 Petro  635 -> 437 ft (-198)  via "923 Johnston Pkwy, Kenly, NC 27542-7502, United States"
+
+COUNTS  confirmed(<=50ft) 16  applied-by-decision 22  needs-decision 0  band-exit 0  stale 17  alt-stale 8
+
+DECISION REVERSED  Hammond|40  150 ft rejected, 205 ft restored - the 150 came from a
+  name-match POI pin, and it would have re-awarded "the shortest walk in America" from
+  Good Hope (170 ft, human-verified) on geocoder precision. Field-verify before any crown moves.
+DECISION REVERSED  Fort Pierce|129  1368 ft rejected, 636 ft restored - the name-match figure
+  lands the primary behind its own alternate (Pilot, 1279 ft), an internal contradiction.
+  Both numbers on this row are now suspect; field follow-up.
+PURGED ON ADDRESS CONTRADICTION  Kingsland|3 and Oak Grove|86 - the re-audit's own truck stop
+  addresses geocode 2.7 mi and 1.1 mi from their Waffle House coordinates at house-number
+  precision. Adjacent-exit pattern inside the re-audit itself; removed by owner decision,
+  revising the brief checksum from 57 exits/67 pairings to 55/65.
+FINAL COUNTS  55 rows: confirmed 16, applied-by-decision 20 (22 less 2 reversed), stale 17, alt-stale 8

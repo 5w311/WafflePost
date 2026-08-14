@@ -587,27 +587,27 @@ var __mods={};
 function require(p){return __mods[p.replace(/^\.\//,'').replace(/\.js$/,'')];}
 var module={exports:{}};
 </script>
-<script src="lib/waffledist.js?v=3.7.0"></script>
+<script src="lib/waffledist.js?v=4.0.0"></script>
 <script>__mods.waffledist=module.exports;module={exports:{}};</script>
-<script src="lib/atlasfilter.js?v=3.7.0"></script>
+<script src="lib/atlasfilter.js?v=4.0.0"></script>
 <script>__mods.atlasfilter=module.exports;module={exports:{}};</script>
-<script src="lib/routewaffles.js?v=3.7.0"></script>
+<script src="lib/routewaffles.js?v=4.0.0"></script>
 <script>__mods.routewaffles=module.exports;module={exports:{}};</script>
-<script src="lib/vehicleprofile.js?v=3.7.0"></script>
+<script src="lib/vehicleprofile.js?v=4.0.0"></script>
 <script>__mods.vehicleprofile=module.exports;module={exports:{}};</script>
-<script src="lib/triptext.js?v=3.7.0"></script>
+<script src="lib/triptext.js?v=4.0.0"></script>
 <script>__mods.triptext=module.exports;module={exports:{}};</script>
-<script src="lib/escape.js?v=3.7.0"></script>
+<script src="lib/escape.js?v=4.0.0"></script>
 <script>__mods.escape=module.exports;module={exports:{}};</script>
-<script src="lib/flexible-polyline.js?v=3.7.0"></script>
+<script src="lib/flexible-polyline.js?v=4.0.0"></script>
 <script>__mods['flexible-polyline']=module.exports;module={exports:{}};</script>
-<script src="lib/autosuggest.js?v=3.7.0"></script>
+<script src="lib/autosuggest.js?v=4.0.0"></script>
 <script>__mods.autosuggest=module.exports;module={exports:{}};</script>
-<script src="lib/location.js?v=3.7.0"></script>
+<script src="lib/location.js?v=4.0.0"></script>
 <script>__mods.location=module.exports;module={exports:{}};</script>
-<script src="lib/routeoptions.js?v=3.7.0"></script>
+<script src="lib/routeoptions.js?v=4.0.0"></script>
 <script>__mods.routeoptions=module.exports;module={exports:{}};</script>
-<script src="lib/baselayer.js?v=3.7.0"></script>
+<script src="lib/baselayer.js?v=4.0.0"></script>
 <script>__mods.baselayer=module.exports;module={exports:{}};</script>
 
 <script>
@@ -648,93 +648,99 @@ var HERE_API_KEY = '7RDploUiahAnm08IZA9X7YSbb0Qh99pvqV2NCNQX_Hg';
                 a wasted exit at 3am.
    APP_VERSION - the code. Shown in the legend card. Bumped every change,
                 and stamped onto every lib/ URL as a cache-buster. */
-var ATLAS_REV   = 'Atlas Rev 08-2026';
-var APP_VERSION = '3.7.0';
+var ATLAS_REV   = 'Atlas Rev 09-2026';
+var APP_VERSION = '4.0.0';
 
 /* ===== DATA ==========================================================
-   66 exits, 73 pairings, one honorary. Every row: feet measured by
-   haversine between verified coordinates, not estimated from an exit
-   guide's own distance column.
+   55 rows - 54 walkable exits plus one honorary - carrying 65 pairings,
+   60 of them inside the 0.4 mi line, after the 09-2026 re-audit purged
+   twelve rows and renamed twenty-one placeholder operators: ten rows
+   whose claimed truck stop does not exist, plus Kingsland GA and Oak
+   Grove KY, whose own re-audit addresses geocoded 2.7 and 1.1 miles from
+   their Waffle House at house-number precision. The dominant failure was
+   ADJACENT EXIT CONFUSION: same town, same highway signage, different
+   interchanges two to three miles apart. data.test.js now fails on any
+   placeholder operator name, because shape checks alone were green for
+   the entire life of the bad data. scripts/remeasure-report.txt carries
+   the provenance of every surviving figure.
 
    feet   truck stop door to Waffle House door, straight line
+   addr   the WAFFLE HOUSE street address - what the stop sheet shows
+   tsAddr the TRUCK STOP street address, where the re-audit produced one.
+          scripts/remeasure.js geocodes it to re-derive feet; a row
+          without one keeps its shipped figure, labelled stale in the
+          remeasure report rather than silently trusted.
    alt    a second (third, fourth) truck stop at the same exit
    flags  ONLY what the audit actually confirmed:
-            free    free overnight parking confirmed
-            scale   CAT scale confirmed
-            diner   sit-down restaurant inside the truck stop
-            limited the Waffle House is not full service (pickup only,
-                    delivery only, or window service some hours)
-            caution something about the stop a driver should know first
+            free     free overnight parking confirmed
+            scale    CAT scale confirmed
+            diner    sit-down restaurant inside the truck stop
+            limited  the Waffle House is not full service (pickup only,
+                     delivery only, or window service some hours)
+            caution  something about the stop a driver should know first
+            smalllot the stop is genuine but has too few spaces to count
+                     on for an overnight. NOT caution: caution means
+                     something here can bite you, smalllot means the
+                     stop is fine and might be full. Different flags
+                     because they lead to different decisions.
    note   the specific thing, in plain words. Empty is honest; do not
           pad these with generic copy. */
 var DATA = [
 {feet:170,corridor:'I-65',state:'AL',exit:'304',city:'Good Hope',ts:"Jack's Truck Stop",brand:'IND',lat:34.11486,lon:-86.86387,addr:'1707 County Road 437, Cullman, AL 35055',flags:[],note:'The shortest walk in America.'},
 {feet:189,corridor:'I-75',state:'KY',exit:'175',city:'Walton',ts:'Pilot',brand:'PIL',lat:38.91759,lon:-84.63184,addr:'11213 Frontage Rd, Walton, KY 41094-9574',flags:['limited'],note:'Reviews report this store running pickup-only. Call before you walk.'},
 {feet:190,corridor:'I-75',state:'GA',exit:'293',city:'Cartersville',ts:'JP Truck Center',brand:'IND',lat:34.24090,lon:-84.77486,addr:'2310 Highway 411 NE, Cartersville, GA 30121-5129',flags:[],note:'Parking is $20.'},
-{feet:205,corridor:'I-55',state:'LA',exit:'28',city:'Hammond',ts:'Pilot',brand:'PIL',lat:30.47809,lon:-90.45646,addr:'2101 SW Railroad Ave, Hammond, LA 70403',flags:['diner'],alt:[{ts:'Petro (Iron Skillet)',feet:659,brand:'PET'}],note:'Invisible to every exit guide — they all list the Thomas St store two miles off. A Pilot night clerk named Lucas is the reason this row exists.'},
-{feet:228,corridor:'I-24',state:'TN',exit:'81',city:'Murfreesboro',ts:'Pilot',brand:'PIL',lat:35.78567,lon:-86.36598,addr:'1622 Joe B Jackson Pkwy, Murfreesboro, TN 37127',flags:[],note:''},
+{feet:205,corridor:'I-12',state:'LA',exit:'40',city:'Hammond',ts:'Pilot',brand:'PIL',lat:30.47809,lon:-90.45646,addr:'2101 SW Railroad Ave, Hammond, LA 70403',flags:['diner'],alt:[{ts:'Petro Stopping Center #310',feet:506,brand:'PET',tsAddr:'2100 SW Railroad Ave'}],note:'Invisible to every exit guide — they all list the Thomas St store two miles off. A Pilot night clerk named Lucas is the reason this row exists.'},
 {feet:238,corridor:'I-10',state:'FL',exit:'142',city:'Marianna',ts:'Pilot',brand:'PIL',lat:30.72596,lon:-85.18602,addr:'2215 Highway 71, Marianna, FL 32448-2541',flags:[],note:'Pilot is 2209 FL-71, the store is 2215. Next door.'},
-{feet:255,corridor:'I-65',state:'IN',exit:'76A',city:'Taylorsville',ts:'Mapco',brand:'IND',lat:39.29666,lon:-85.95825,addr:'10220 N US Highway 31 St, Taylorsville, IN 47280-7713',flags:[],note:'Confirm truck parking before you commit — this one is a fuel stop first.'},
-{feet:330,corridor:'I-75',state:'OH',exit:'36',city:'Franklin',ts:'Pilot',brand:'PIL',lat:39.54266,lon:-84.29161,addr:'6840 OH-123, Franklin, OH 45005',flags:[],note:''},
+{feet:252,corridor:'I-10',state:'TX',exit:'877',city:'Orange',ts:'Pilot',brand:'PIL',lat:30.11405,lon:-93.82053,addr:'2310 Highway 62 S, Orange, TX 77630-8321',flags:['diner'],note:'There is a Denny\u2019s inside the Pilot. Drivers walk 900 ft past it anyway.'},  // Directories disagree between exit 872 and 877 for this stretch. Whichever number they print, Flying J #735 is at a separate interchange 3-4 mi west and is NOT walkable from this store; only the Pilot shares the interchange.
+{feet:272,corridor:'I-80',state:'OH',exit:'234',city:'Hubbard',ts:'Flying J #697',brand:'FJ',lat:41.18165,lon:-80.56990,addr:'2284 Gala St, Hubbard, OH 44425-3202',tsAddr:'2226 N Main St',flags:[],note:''},
+{feet:301,corridor:'I-75',state:'OH',exit:'36',city:'Franklin',ts:'Pilot',brand:'PIL',lat:39.54266,lon:-84.29161,addr:'6840 OH-123, Franklin, OH 45005',flags:[],note:''},
 {feet:336,corridor:'I-10',state:'TX',exit:'829',city:'Winnie',ts:'JP Truck Stop',brand:'IND',lat:29.83065,lon:-94.38455,addr:'243 Spur 5, Winnie, TX 77665-7308',flags:['scale','free'],alt:[{ts:'Bingo Travel Plaza',feet:935,brand:'IND'}],note:'The western frontier of walkable waffles. Bingo next door has boudin in the warmers and showers its reviewers rate over the majors.'},
-{feet:347,corridor:'I-65',state:'KY',exit:'117',city:'Shepherdsville',ts:'Pilot',brand:'PIL',lat:37.98872,lon:-85.70679,addr:'213 N Joe B Hall Ave, Shepherdsville, KY 40165',flags:[],note:''},
-{feet:356,corridor:'I-20',state:'LA',exit:'13',city:'Shreveport',ts:'Airport Travel Plaza',brand:'IND',lat:32.45986,lon:-93.82719,addr:'5083 Monkhouse Dr, Shreveport, LA 71109-6115',flags:[],note:''},
-{feet:381,corridor:'I-20',state:'TX',exit:'596',city:'Longview',ts:'RaceTrac',brand:'IND',lat:32.44855,lon:-94.72351,addr:'3107 Estes Pkwy, Longview, TX 75602-4233',flags:[],note:'One of the big-format RaceTracs — semi parking confirmed by drivers.'},
-{feet:394,corridor:'I-10',state:'LA',exit:'115',city:'Henderson',ts:'I-10 Henderson Travel Center',brand:'IND',lat:30.31355,lon:-91.83292,addr:'2998 Grandpoint Hwy, Breaux Bridge, LA 70517-7738',flags:[],alt:[{ts:'Bayou Belle Travel Stop (casino)',feet:2315,brand:'IND'}],note:'The 394 ft stop is rough. Bayou Belle up the same road is the classier night: 4.2 stars, casino, confirmed overnight parking.'},
-{feet:398,corridor:'I-95',state:'NC',exit:'106',city:'Kenly',ts:'Pilot',brand:'PIL',lat:35.58192,lon:-78.14814,addr:'875 Johnston Pkwy, Kenly, NC 27542-9663',flags:[],alt:[{ts:'Kenly 95 Truckstop',feet:635,brand:'IND'}],note:''},
-{feet:399,corridor:'I-75',state:'GA',exit:'345',city:'Ringgold',ts:'Truck stop',brand:'IND',lat:34.89051,lon:-85.07438,addr:'11292 Highway 41, Ringgold, GA 30736-8690',flags:[],note:''},
-{feet:405,corridor:'I-10',state:'AL',exit:'13',city:'Theodore',ts:'Pilot',brand:'PIL',lat:30.56010,lon:-88.20673,addr:'7031 Theodore Dawes Rd, Theodore, AL 36582-4077',flags:['scale','free'],note:''},
-{feet:417,corridor:'I-75',state:'FL',exit:'224',city:'Ellenton',ts:'ONE9',brand:'ONE9',lat:27.52768,lon:-82.51312,addr:'1515 51st Ave E, Ellenton, FL 34222-2634',flags:[],note:''},
+{feet:383,corridor:'I-10',state:'AL',exit:'13',city:'Theodore',ts:'Pilot',brand:'PIL',lat:30.56010,lon:-88.20673,addr:'7031 Theodore Dawes Rd, Theodore, AL 36582-4077',flags:['scale','free'],note:''},  // Pilot store #302, not #508 - check the locator against the right number before deciding this row is wrong.
+{feet:386,corridor:'I-20',state:'TX',exit:'596',city:'Longview',ts:'RaceTrac',brand:'IND',lat:32.44855,lon:-94.72351,addr:'3107 Estes Pkwy, Longview, TX 75602-4233',flags:[],note:'One of the big-format RaceTracs — semi parking confirmed by drivers.'},
+{feet:390,corridor:'I-10',state:'LA',exit:'209',city:'LaPlace',ts:'TA Express #0479',brand:'TA',lat:30.08712,lon:-90.44526,addr:'4304 New Highway 51, Laplace, LA 70068',tsAddr:'4301 S Main St',flags:[],note:'4301 Main St and 4304 Main St.'},
+{feet:394,corridor:'I-10',state:'LA',exit:'115',city:'Henderson',ts:'Henderson Travel Plaza',brand:'IND',lat:30.31355,lon:-91.83292,addr:'2998 Grandpoint Hwy, Breaux Bridge, LA 70517-7738',flags:[],alt:[{ts:'Bayou Belle Truck Stop Casino',feet:2315,brand:'IND'}],note:'The 394 ft stop is rough. Bayou Belle up the same road is the classier night: 4.2 stars, casino, confirmed overnight parking.'},
+{feet:398,corridor:'I-95',state:'NC',exit:'106',city:'Kenly',ts:'Pilot',brand:'PIL',lat:35.58192,lon:-78.14814,addr:'875 Johnston Pkwy, Kenly, NC 27542-9663',flags:[],alt:[{ts:'Kenly 95 Petro',feet:437,brand:'PET',tsAddr:'923 Johnston Parkway'}],note:''},
+{feet:417,corridor:'I-75',state:'FL',exit:'224',city:'Ellenton',ts:'ONE9 Travel Center #89',brand:'ONE9',lat:27.52768,lon:-82.51312,addr:'1515 51st Ave E, Ellenton, FL 34222-2634',flags:['smalllot'],note:'Drivers report no reliable overnight parking and tight maneuvering - fuel and showers, effectively.'},
 {feet:419,corridor:'I-95',state:'GA',exit:'87',city:'Richmond Hill',ts:'TA',brand:'TA',lat:31.92471,lon:-81.33386,addr:'56 Sommers Blvd, Richmond Hill, GA 31324-8885',flags:[],note:''},
-{feet:428,corridor:'I-75',state:'GA',exit:'149',city:'Byron',ts:'Truck stop',brand:'IND',lat:32.65804,lon:-83.74741,addr:'241 GA Highway 49 N, Byron, GA 31008-4008',flags:[],note:''},
-{feet:429,corridor:'I-80',state:'OH',exit:'234',city:'Hubbard',ts:'Truck stop',brand:'IND',lat:41.18165,lon:-80.56990,addr:'2284 Gala St, Hubbard, OH 44425-3202',flags:[],note:''},
 {feet:429,corridor:'I-75',state:'FL',exit:'341',city:'Ocala',ts:'Marion Oaks Pilot',brand:'PIL',lat:29.02599,lon:-82.15995,addr:'2065 SW CR-484, Ocala, FL 34473-4013',flags:[],note:''},
-{feet:503,corridor:'I-65',state:'AL',exit:'171',city:'Montgomery',ts:'Truck stop',brand:'IND',lat:32.32649,lon:-86.33302,addr:'985 W South Blvd, Montgomery, AL 36105-3038',flags:[],note:''},
+{feet:479,corridor:'I-95',state:'GA',exit:'109',city:'Port Wentworth',ts:'Pilot',brand:'PIL',lat:32.18745,lon:-81.19410,addr:'6941 GA Highway 21, Port Wentworth, GA 31407-9799',flags:[],note:''},
+{feet:501,corridor:'I-10',state:'FL',exit:'258',city:'Madison',ts:'Fast Track Travel Center',brand:'IND',lat:30.39877,lon:-83.35780,addr:'145 SE Bandit St, Madison, FL 32340',flags:[],note:'$10 showers. A review puts it "right across the street from the waffle house".'},
 {feet:506,corridor:'I-95',state:'SC',exit:'77',city:'St. George',ts:'Flying J',brand:'FJ',lat:33.19459,lon:-80.60380,addr:'127 Motel Dr, St George, SC 29477-7800',flags:[],note:'A driver of 26 years called this the cleanest one he had used.'},
-{feet:521,corridor:'I-10',state:'FL',exit:'258',city:'Madison',ts:'Fast Track Travel Center',brand:'IND',lat:30.39877,lon:-83.35780,addr:'145 SE Bandit St, Madison, FL 32340',flags:[],note:'$10 showers. A review puts it "right across the street from the waffle house".'},
-{feet:531,corridor:'I-10',state:'LA',exit:'209',city:'LaPlace',ts:'Pilot',brand:'PIL',lat:30.08712,lon:-90.44526,addr:'4304 New Highway 51, Laplace, LA 70068',flags:[],note:'4301 Main St and 4304 Main St.'},
-{feet:536,corridor:'I-95',state:'GA',exit:'109',city:'Port Wentworth',ts:'Pilot',brand:'PIL',lat:32.18745,lon:-81.19410,addr:'6941 GA Highway 21, Port Wentworth, GA 31407-9799',flags:[],note:''},
+{feet:596,corridor:'I-10',state:'MS',exit:'31',city:'Gulfport',ts:'Flying J',brand:'FJ',lat:30.42038,lon:-89.13606,addr:'9282 Canal Rd, Gulfport, MS 39503-9086',flags:[],note:"Mississippi's only walkable pair, on the whole interstate system."},
+{feet:608,corridor:'I-75',state:'GA',exit:'149',city:'Byron',ts:'Byron Gas N Go',brand:'IND',lat:32.65804,lon:-83.74741,addr:'241 GA Highway 49 N, Byron, GA 31008-4008',flags:[],note:''},  // Do NOT upgrade this row to a Pilot: Pilot #267 is at exit 146, three miles south - the obvious stop to reach for, and the wrong one.
+{feet:618,corridor:'I-75',state:'GA',exit:'11',city:'Valdosta',ts:'Pilot',brand:'PIL',lat:30.75253,lon:-83.27228,addr:'3487 Madison Hwy, Valdosta, GA 31601-8634',flags:['limited'],note:'Reviews report delivery-only hours at this store.'},
 {feet:636,corridor:'I-95',state:'FL',exit:'129',city:'Fort Pierce',ts:"Love's",brand:'LOV',lat:27.41228,lon:-80.39660,addr:'7147 Okeechobee Rd, Fort Pierce, FL 34945-2603',flags:[],alt:[{ts:'Pilot',feet:1279,brand:'PIL'}],note:'A second Waffle House sits right at the ramp.'},
 {feet:646,corridor:'I-20',state:'GA',exit:'114',city:'Madison',ts:'TA',brand:'TA',lat:33.55181,lon:-83.47304,addr:'2050 Eatonton Rd, Madison, GA 30650-5000',flags:[],alt:[{ts:'Pilot',feet:3643,brand:'PIL'}],note:''},
-{feet:671,corridor:'I-10',state:'MS',exit:'31',city:'Gulfport',ts:'Flying J',brand:'FJ',lat:30.42038,lon:-89.13606,addr:'9282 Canal Rd, Gulfport, MS 39503-9086',flags:[],note:"Mississippi's only walkable pair, on the whole interstate system."},
 {feet:678,corridor:'I-10',state:'FL',exit:'70',city:'DeFuniak Springs',ts:"Love's",brand:'LOV',lat:30.73580,lon:-86.34972,addr:'17837 ST HWY 285 S, Defuniak Springs, FL 32435',flags:[],note:'Two Waffle Houses at this exit; the Love\u2019s pairs with the farther one.'},
-{feet:697,corridor:'I-75',state:'FL',exit:'329',city:'Wildwood',ts:'Truck stop',brand:'IND',lat:28.87188,lon:-82.09006,addr:'7954 NE 8th Way, Wildwood, FL 34785-8458',flags:[],note:''},
-{feet:699,corridor:'I-75',state:'GA',exit:'11',city:'Valdosta',ts:'Pilot',brand:'PIL',lat:30.75253,lon:-83.27228,addr:'3487 Madison Hwy, Valdosta, GA 31601-8634',flags:['limited'],note:'Reviews report delivery-only hours at this store.'},
-{feet:723,corridor:'I-75',state:'KY',exit:'126',city:'Georgetown',ts:'Truck stop',brand:'IND',lat:38.27408,lon:-84.55312,addr:'405 Delaplain Rd, Georgetown, KY 40324',flags:[],note:''},
-{feet:738,corridor:'I-95',state:'SC',exit:'5',city:'Hardeeville',ts:'Pilot',brand:'PIL',lat:32.27079,lon:-81.08075,addr:'16877 Whyte Hardee Blvd, Hardeeville, SC 29927-6940',flags:[],note:''},
-{feet:753,corridor:'I-85',state:'GA',exit:'149',city:'Commerce',ts:'TA',brand:'TA',lat:34.25187,lon:-83.46108,addr:'30789 US-441 S, Commerce, GA 30529-6654',flags:[],note:'The only walkable pair on all 666 miles of I-85.'},
-{feet:791,corridor:'I-95',state:'SC',exit:'119',city:'Manning',ts:'TA (Country Pride)',brand:'TA',lat:33.70314,lon:-80.24317,addr:'3021 Paxville Hwy, Manning, SC 29102-6449',flags:['diner'],note:''},
-{feet:836,corridor:'I-40',state:'AR',exit:'81',city:'Russellville',ts:'Truck stop',brand:'IND',lat:35.28191,lon:-93.09513,addr:'3085 E Parkway Dr, Russellville, AR 72802',flags:[],note:''},
-{feet:858,corridor:'I-95',state:'VA',exit:'104',city:'Carmel Church',ts:'Truck stop',brand:'IND',lat:37.93494,lon:-77.47452,addr:'24148 Welcome Way Dr, Ruther Glen, VA 22546',flags:[],note:''},
-{feet:859,corridor:'I-10',state:'FL',exit:'343',city:'Baldwin',ts:'TA',brand:'TA',lat:30.28307,lon:-81.98388,addr:'1066 US Highway 301 S, Jacksonville, FL 32234',flags:[],note:''},
-{feet:869,corridor:'I-24',state:'TN',exit:'64',city:'La Vergne',ts:'Truck stop',brand:'IND',lat:35.99889,lon:-86.59777,addr:'108 Enterprise Blvd, La Vergne, TN 37086-3544',flags:[],note:''},
-{feet:871,corridor:'I-65',state:'AL',exit:'334',city:'Priceville',ts:'Truck stop',brand:'IND',lat:34.53579,lon:-86.90990,addr:'3305 Point Mallard Pkwy SE, Decatur, AL 35603',flags:[],note:''},
-{feet:883,corridor:'I-75',state:'GA',exit:'16',city:'Valdosta',ts:'Bigfoot',brand:'IND',lat:30.82016,lon:-83.31170,addr:'1819 W Hill Ave, Valdosta, GA 31601-5110',flags:[],note:''},
+{feet:687,corridor:'I-85',state:'GA',exit:'149',city:'Commerce',ts:'TA',brand:'TA',lat:34.25187,lon:-83.46108,addr:'30789 US-441 S, Commerce, GA 30529-6654',flags:[],note:'The only walkable pair on all 666 miles of I-85.'},
+{feet:716,corridor:'I-75',state:'GA',exit:'345',city:'Ringgold',ts:'Circle K Travel Center',brand:'IND',lat:34.89051,lon:-85.07438,addr:'11292 Highway 41, Ringgold, GA 30736-8690',tsAddr:'11418 Hwy 41',flags:[],note:''},
+{feet:791,corridor:'I-95',state:'SC',exit:'119',city:'Manning',ts:'TA #179',brand:'TA',lat:33.70314,lon:-80.24317,addr:'3021 Paxville Hwy, Manning, SC 29102-6449',flags:[],note:''},  // Country Pride is gone, replaced by quick-service brands - the diner flag left with it, 09-2026.
+{feet:795,corridor:'I-65',state:'AL',exit:'334',city:'Priceville',ts:'Pilot #441',brand:'PIL',lat:34.53579,lon:-86.90990,addr:'3305 Point Mallard Pkwy SE, Decatur, AL 35603',tsAddr:'3240 Point Mallard Pkwy',flags:[],note:''},
+{feet:799,corridor:'I-10',state:'FL',exit:'343',city:'Baldwin',ts:'TA',brand:'TA',lat:30.28307,lon:-81.98388,addr:'1066 US Highway 301 S, Jacksonville, FL 32234',flags:[],note:''},
+{feet:838,corridor:'I-24',state:'TN',exit:'64',city:'La Vergne',ts:'Pilot #52',brand:'PIL',lat:35.99889,lon:-86.59777,addr:'108 Enterprise Blvd, La Vergne, TN 37086-3544',tsAddr:'535 Waldron Rd',flags:[],note:''},
+{feet:858,corridor:'I-95',state:'VA',exit:'104',city:'Carmel Church',ts:'Flying J #749',brand:'FJ',lat:37.93494,lon:-77.47452,addr:'24148 Welcome Way Dr, Ruther Glen, VA 22546',tsAddr:'24279 Rogers Clark Blvd',flags:[],note:''},
+{feet:860,corridor:'I-95',state:'SC',exit:'5',city:'Hardeeville',ts:'Pilot',brand:'PIL',lat:32.27079,lon:-81.08075,addr:'16877 Whyte Hardee Blvd, Hardeeville, SC 29927-6940',flags:[],note:''},
+{feet:861,corridor:'I-10',state:'LA',exit:'64',city:'Jennings',ts:'Jennings Travel Plaza',brand:'IND',lat:30.24020,lon:-92.66398,addr:'1635 N Lake Arthur Ave, Jennings, LA 70546-3613',flags:['scale','diner'],note:'Cajun sit-down restaurant, scales, casino. A driver review calls the walk "30 seconds".'},
+{feet:883,corridor:'I-75',state:'FL',exit:'161',city:'Punta Gorda',ts:'Pilot #94',brand:'PIL',lat:26.89615,lon:-82.00744,addr:'9092 Mac Dr, Punta Gorda, FL 33950-4309',tsAddr:'26505 Jones Loop Rd',flags:[],note:''},
+{feet:889,corridor:'I-75',state:'GA',exit:'16',city:'Valdosta',ts:'Big Foot Travel Center #946',brand:'IND',lat:30.82016,lon:-83.31170,addr:'1819 W Hill Ave, Valdosta, GA 31601-5110',flags:['smalllot'],note:'About six spaces, cash-only pricing.'},
 {feet:892,corridor:'I-10',state:'FL',exit:'26',city:'Milton',ts:"Love's (Garcon Point)",brand:'LOV',lat:30.57642,lon:-87.03186,addr:'3921 Garcon Point Rd, Milton, FL 32583-9048',flags:[],note:'Two Waffle Houses at this exit; the Love\u2019s pairs with the farther one.'},
-{feet:904,corridor:'I-10',state:'TX',exit:'877',city:'Orange',ts:'Pilot',brand:'PIL',lat:30.11405,lon:-93.82053,addr:'2310 Highway 62 S, Orange, TX 77630-8321',flags:['diner'],alt:[{ts:'Flying J',feet:911,brand:'FJ'}],note:'There is a Denny\u2019s inside the Pilot. Drivers walk 900 ft past it anyway.'},
-{feet:919,corridor:'I-10',state:'LA',exit:'64',city:'Jennings',ts:'Jennings Travel Plaza',brand:'IND',lat:30.24020,lon:-92.66398,addr:'1635 N Lake Arthur Ave, Jennings, LA 70546-3613',flags:['scale','diner'],note:'Cajun sit-down restaurant, scales, casino. A driver review calls the walk "30 seconds".'},
-{feet:946,corridor:'I-75',state:'FL',exit:'161',city:'Punta Gorda',ts:'Truck stop',brand:'IND',lat:26.89615,lon:-82.00744,addr:'9092 Mac Dr, Punta Gorda, FL 33950-4309',flags:[],note:''},
-{feet:978,corridor:'I-75',state:'KY',exit:'41',city:'London',ts:'The Scale Dodger',brand:'IND',lat:37.14930,lon:-84.11636,addr:'76 Austin Ln, London, KY 40741-8335',flags:['diner'],note:'Inside the Dogpatch Trading Center. Yes, that is its real name.'},
-{feet:1048,corridor:'I-65',state:'TN',exit:'46',city:'Columbia',ts:'Truck stop',brand:'IND',lat:35.64335,lon:-86.89491,addr:'1591 Bear Creek Pike, Columbia, TN 38401-7658',flags:[],note:''},
-{feet:1050,corridor:'I-65',state:'AL',exit:'57',city:'Atmore',ts:'Truck stop',brand:'IND',lat:31.10705,lon:-87.47717,addr:'78 Wind River Rd N, Atmore, AL 36502',flags:[],note:''},
-{feet:1050,corridor:'I-65',state:'AL',exit:'13',city:'Satsuma',ts:'Truck stop',brand:'IND',lat:30.86994,lon:-88.04735,addr:'6097 Hwy 43, Satsuma, AL 36572',flags:[],note:''},
-{feet:1053,corridor:'I-95',state:'MD',exit:'109',city:'Elkton',ts:'Flying J',brand:'FJ',lat:39.63551,lon:-75.80539,addr:'261 Belle Hill Rd, Elkton, MD 21921-5132',flags:[],note:'The northern terminus of walkable waffles. Delaware has none on I-95.'},
-{feet:1069,corridor:'I-95',state:'GA',exit:'3',city:'Kingsland',ts:'Truck stop',brand:'IND',lat:30.78043,lon:-81.62451,addr:'2054 E King Ave, Kingsland, GA 31548',flags:[],note:''},
-{feet:1100,corridor:'I-75',state:'GA',exit:'101',city:'Cordele',ts:'Truck stop',brand:'IND',lat:31.95881,lon:-83.75010,addr:'1007 Arc Way Ave, Cordele, GA 31015',flags:[],note:''},
-{feet:1221,corridor:'I-80',state:'OH',exit:'226',city:'Girard',ts:'Truck stop',brand:'IND',lat:41.14330,lon:-80.72091,addr:'2725 Salt Springs Rd, Girard, OH 44481-9231',flags:[],note:''},
-{feet:1348,corridor:'I-10',state:'TX',exit:'848',city:'Beaumont',ts:'Petro (Iron Skillet)',brand:'PET',lat:30.03970,lon:-94.15429,addr:'3865 Interstate 10 S, Beaumont, TX 77705',flags:['diner','caution'],note:'One driver fueled here, got verbal OK to park, and was threatened with a tow mid-meal. Eat fast.'},
-{feet:1442,corridor:'I-20',state:'GA',exit:'19',city:'Temple',ts:'Pilot',brand:'PIL',lat:33.72270,lon:-85.02881,addr:'543 Carrollton St, Temple, GA 30179',flags:[],alt:[{ts:'Flying J',feet:1442,brand:'FJ'}],note:'Both majors sit at this exit. Exit 19, not 24 — the guides get this wrong.'},
-{feet:1498,corridor:'I-75',state:'GA',exit:'201',city:'Jackson',ts:'Flying J',brand:'FJ',lat:33.20347,lon:-84.06293,addr:'3201 W Highway 36, Jackson, GA 30233',flags:[],alt:[{ts:'TA',feet:1725,brand:'TA'},{ts:"Love's",feet:2192,brand:'LOV'},{ts:'Pilot',feet:3274,brand:'PIL'}],note:'More major chains walkable from one Waffle House than anywhere else in the country.'},
-{feet:1528,corridor:'I-65',state:'AL',exit:'205',city:'Clanton',ts:'Truck stop',brand:'IND',lat:32.80092,lon:-86.57739,addr:'2230 7th St S, Clanton, AL 35046',flags:[],note:''},
+{feet:963,corridor:'I-75',state:'KY',exit:'41',city:'London',ts:'London Auto/Truck Center',brand:'IND',lat:37.14930,lon:-84.11636,addr:'76 Austin Ln, London, KY 40741-8335',tsAddr:'15 Dogpatch Trading Ctr',flags:['diner'],note:'The Scale Dodger diner is on site - yes, that is its real name. Inside the Dogpatch Trading Center.'},
+{feet:969,corridor:'I-10',state:'TX',exit:'848',city:'Beaumont',ts:'Petro Stopping Center #304',brand:'PET',lat:30.03970,lon:-94.15429,addr:'3865 Interstate 10 S, Beaumont, TX 77705',flags:['diner','caution'],note:'The Iron Skillet is gone - it is a Black Bear Diner now. One driver fueled here, got verbal OK to park, and was threatened with a tow mid-meal. Eat fast.'},
+{feet:1041,corridor:'I-95',state:'MD',exit:'109',city:'Elkton',ts:'Flying J',brand:'FJ',lat:39.63551,lon:-75.80539,addr:'261 Belle Hill Rd, Elkton, MD 21921-5132',flags:[],note:'The northern terminus of walkable waffles. Delaware has none on I-95.'},
+{feet:1043,corridor:'I-75',state:'GA',exit:'101',city:'Cordele',ts:'Pilot #416',brand:'PIL',lat:31.95881,lon:-83.75010,addr:'1007 Arc Way Ave, Cordele, GA 31015',tsAddr:'2201 16th Ave E',flags:[],note:''},
+{feet:1052,corridor:'I-65',state:'TN',exit:'46',city:'Columbia',ts:"Love's #346",brand:'LOV',lat:35.64335,lon:-86.89491,addr:'1591 Bear Creek Pike, Columbia, TN 38401-7658',tsAddr:'Bear Creek Pike',flags:[],note:''},
+{feet:1183,corridor:'I-80',state:'OH',exit:'226',city:'Girard',ts:'Petro #320',brand:'PET',lat:41.14330,lon:-80.72091,addr:'2725 Salt Springs Rd, Girard, OH 44481-9231',tsAddr:'1 Petro Place',flags:[],note:''},
+{feet:1282,corridor:'I-20',state:'GA',exit:'19',city:'Temple',ts:'Pilot',brand:'PIL',lat:33.72270,lon:-85.02881,addr:'543 Carrollton St, Temple, GA 30179',flags:[],alt:[{ts:'Flying J',feet:1442,brand:'FJ'}],note:'Both majors sit at this exit. Exit 19, not 24 — the guides get this wrong.'},
+{feet:1483,corridor:'I-75',state:'GA',exit:'201',city:'Jackson',ts:'Flying J',brand:'FJ',lat:33.20347,lon:-84.06293,addr:'3201 W Highway 36, Jackson, GA 30233',flags:[],alt:[{ts:'TA',feet:1725,brand:'TA'},{ts:"Love's",feet:2192,brand:'LOV'},{ts:'Pilot',feet:3274,brand:'PIL'}],note:'More major chains walkable from one Waffle House than anywhere else in the country.'},
 {feet:1588,corridor:'I-10',state:'LA',exit:'266',city:'Slidell',ts:'TA',brand:'TA',lat:30.28517,lon:-89.74616,addr:'1728 Gause Blvd E, Slidell, LA 70461-5530',flags:[],note:''},
-{feet:1619,corridor:'I-24',state:'KY',exit:'86',city:'Oak Grove',ts:'Truck stop',brand:'IND',lat:36.69333,lon:-87.45229,addr:'12880 Fort Campbell Blvd, Oak Grove, KY 42262-8325',flags:[],note:''},
-{feet:1869,corridor:'I-10',state:'LA',exit:'151',city:'Port Allen',ts:"Love's",brand:'LOV',lat:30.45000,lon:-91.24561,addr:'112 S Lobdell Hwy, Port Allen, LA 70767-4117',flags:[],note:''},
-{feet:1885,corridor:'I-20',state:'TX',exit:'617',city:'Marshall',ts:'Marshall Truck Stop',brand:'IND',lat:32.49430,lon:-94.35878,addr:'5551 S East End Blvd, Marshall, TX 75672',flags:['caution'],note:'$15 to park on a lot reviewers compare to a crater field, gates close at midnight. Free parking at exit 599.'},
-{feet:1913,corridor:'I-20',state:'TX',exit:'501',city:'Terrell',ts:'Valero Terrell Travel Plaza',brand:'IND',lat:32.70430,lon:-96.27687,addr:'1612 State Highway 34 S, Terrell, TX 75160-5407',flags:[],note:''},
-{feet:1933,corridor:'I-81',state:'VA',exit:'150',city:'Troutville',ts:'ONE9',brand:'ONE9',lat:37.38399,lon:-79.90364,addr:'2609 Lee Hwy, Troutville, VA 24175-6326',flags:[],note:'This store is new — it did not exist a year ago. The TA up the same road is the backup when the ONE9 lot fills.'},
-{feet:2078,corridor:'I-12',state:'LA',exit:'10',city:'Denham Springs',ts:'Truck stop',brand:'IND',lat:30.45746,lon:-90.95560,addr:'105 Rushing Rd E, Denham Springs, LA 70726-7842',flags:[],note:''},
-{feet:2091,corridor:'I-65',state:'AL',exit:'164',city:'Hope Hull',ts:'Truck stop',brand:'IND',lat:32.26881,lon:-86.35750,addr:'90 Folmar Pkwy, Montgomery, AL 36105-5509',flags:[],note:''},
-{feet:2392,corridor:'I-20',state:'SC',exit:'116',city:'Bishopville',ts:'Pilot',brand:'PIL',lat:34.19673,lon:-80.27721,addr:'1113 Sumter Hwy, Bishopville, SC 29010-7008',flags:['limited'],note:'Honorary member at 0.45 mi. It is on the list because a driver review says it plainly: for truckers like us, thankfully there is a waffle house near the truck stop. The store sometimes runs window service only.'}
+{feet:1657,corridor:'I-75',state:'FL',exit:'329',city:'Wildwood',ts:'TA Wildwood',brand:'TA',lat:28.87188,lon:-82.09006,addr:'7954 NE 8th Way, Wildwood, FL 34785-8458',tsAddr:'556 State Route 44',flags:[],note:''},
+{feet:1792,corridor:'I-10',state:'LA',exit:'151',city:'Port Allen',ts:"Love's",brand:'LOV',lat:30.45000,lon:-91.24561,addr:'112 S Lobdell Hwy, Port Allen, LA 70767-4117',flags:[],note:''},
+{feet:1913,corridor:'I-20',state:'TX',exit:'501',city:'Terrell',ts:'Valero Terrell Travel Plaza',brand:'IND',lat:32.70430,lon:-96.27687,addr:'1612 State Highway 34 S, Terrell, TX 75160-5407',flags:['smalllot'],note:'About fifteen spaces. TA #233 at exit 503 is the fallback, about 1.9 mi.'},
+{feet:1950,corridor:'I-81',state:'VA',exit:'150',city:'Troutville',ts:'ONE9',brand:'ONE9',lat:37.38399,lon:-79.90364,addr:'2609 Lee Hwy, Troutville, VA 24175-6326',flags:['smalllot'],note:'This store is new — it did not exist a year ago. The TA up the same road is the backup when the ONE9 lot fills. About ten spaces.'},
+{feet:1976,corridor:'I-20',state:'TX',exit:'617',city:'Marshall',ts:'Pony Express Travel Center',brand:'IND',lat:32.49430,lon:-94.35878,addr:'5551 S East End Blvd, Marshall, TX 75672',tsAddr:'304 I-20 E',flags:['caution'],note:'$15 to park on a lot reviewers compare to a crater field, gates close at midnight. Free parking at exit 599.'},
+{feet:2031,corridor:'I-12',state:'LA',exit:'10',city:'Denham Springs',ts:'Pilot #79',brand:'PIL',lat:30.45746,lon:-90.95560,addr:'105 Rushing Rd E, Denham Springs, LA 70726-7842',tsAddr:'2601 S Range Ave',flags:[],note:'Co-branded ONE9 on the signage.'},
+{feet:2062,corridor:'I-65',state:'AL',exit:'164',city:'Hope Hull',ts:'Saveway Truck Plaza',brand:'IND',lat:32.26881,lon:-86.35750,addr:'90 Folmar Pkwy, Montgomery, AL 36105-5509',tsAddr:'7735 Mobile Hwy',flags:[],note:''},
+{feet:2380,corridor:'I-20',state:'SC',exit:'116',city:'Bishopville',ts:'Pilot',brand:'PIL',lat:34.19673,lon:-80.27721,addr:'1113 Sumter Hwy, Bishopville, SC 29010-7008',flags:['limited'],note:'Honorary member at 0.45 mi. It is on the list because a driver review says it plainly: for truckers like us, thankfully there is a waffle house near the truck stop. The store sometimes runs window service only.'}
 ];
 
 /* ===== brand letters ===============================================
@@ -909,8 +915,9 @@ function mapResized(){
 }
 
 /* One DomIcon per distinct pin APPEARANCE, not per marker. WafflePost's
-   appearance is tier crossed with brand letter - up to 28 icons across 67
-   markers - and the class string that distinguishes them is the cache key.
+   appearance is tier crossed with brand letter - at most 28 icons however
+   many markers the atlas holds - and the class string that distinguishes
+   them is the cache key.
    DomIcon CLONES its template element for every marker rather than
    attaching it, so sharing one icon across markers is safe: each renders an
    independent element and the template is never mutated. Route endpoint
@@ -1101,6 +1108,7 @@ function rowHtml(row, idx, lead, extra){
   if (row.alt && row.alt.length) pills.push('<span class="pill">+'+row.alt.length+' more stop'+(row.alt.length>1?'s':'')+'</span>');
   if ((row.flags||[]).indexOf('caution')!==-1) pills.push('<span class="pill warn">read first</span>');
   if ((row.flags||[]).indexOf('limited')!==-1) pills.push('<span class="pill">limited service</span>');
+  if ((row.flags||[]).indexOf('smalllot')!==-1) pills.push('<span class="pill">small lot</span>');
   return '<button class="row" data-i="'+idx+'">'+
     '<div class="row-top">'+(lead?'<span class="mile">'+esc(lead)+'</span>':'')+
       '<span class="row-city">'+esc(row.city)+', '+esc(row.state)+'</span>'+
@@ -1128,7 +1136,7 @@ function render(){
                .sort(function(a,b){ return a.feet-b.feet; });
     if (!rows.length) {
       html = '<div class="empty"><b>Nothing matches those filters</b>Clear one and try '+
-             'again — the atlas only holds 67 exits, so stacking filters runs out of country fast.</div>';
+             'again — the atlas only holds '+DATA.length+' exits, so stacking filters runs out of country fast.</div>';
     } else {
       rows.forEach(function(r){ html += rowHtml(r, DATA.indexOf(r)); });
     }
@@ -1229,7 +1237,7 @@ function routeHtml(){
   if (!p.stops.length) {
     h += '<div class="empty"><b>None within '+p.tierUsed+' mi of this route</b>'+
          (many ? 'This option does not pass one. Another above does — tap it.'
-               : 'The atlas holds 67 exits nationwide and this run does not pass one. '+
+               : 'The atlas holds '+DATA.length+' exits nationwide and this run does not pass one. '+
                  'That is a finding, not missing data.')+'</div>';
     return h;
   }
@@ -1269,6 +1277,11 @@ function openSheet(row){
   if ((row.flags||[]).indexOf('scale')!==-1) conf.push('CAT scale');
   if ((row.flags||[]).indexOf('diner')!==-1) conf.push('sit-down diner');
   if (conf.length) h += '<div class="kv"><span>Confirmed</span><span>'+esc(conf.join(', '))+'</span></div>';
+  /* smalllot is not caution: the stop is real and fine, there is just not
+     enough parking to count on for a ten hour break. Said plainly where a
+     driver plans, not buried in a flag name. */
+  if ((row.flags||[]).indexOf('smalllot')!==-1)
+    h += '<div class="kv"><span>Parking</span><span>small lot — do not count on an overnight space</span></div>';
   if (state.plan) {
     var hit = state.plan.stops.filter(function(s){ return s.row===row; })[0];
     if (hit) h += '<div class="kv"><span>On your run</span><span>mile '+

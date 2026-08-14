@@ -12,8 +12,10 @@ function grab(name){
 }
 var DATA = grab('DATA'), BRAND = grab('BRAND');
 
-var OK_FLAGS = ['free','scale','diner','limited','caution'];
-var seen = {}, honorary = 0, pairings = 0;
+var OK_FLAGS = ['free','scale','diner','limited','caution','smalllot'];
+var seen = {}, seenAddr = {}, honorary = 0, pairings = 0;
+// truck stop / truckstop / unknown / tbd / empty, case-insensitive.
+var PLACEHOLDER = /^\s*(truck\s*stop|unknown|tbd)?\s*$/i;
 
 t.eq(DATA.length > 0, true, 'DATA parsed out of index.html');
 
@@ -23,6 +25,14 @@ DATA.forEach(function(r){
   seen[id] = 1;
 
   t.eq(typeof r.feet === 'number' && r.feet > 0, true, r.city + ' has real feet');
+
+  // THE GUARD THAT WOULD HAVE CAUGHT THE 09-2026 PURGE TEN ROWS EARLY.
+  // Twenty-one rows shipped with the literal placeholder "Truck stop" as the
+  // operator name, and every shape check in this file stayed green for the
+  // entire life of the bad data - a placeholder passes them all. An operator
+  // name is a claim about the world; a placeholder is an admission nobody
+  // checked, and it must never ship as fact again.
+  t.eq(PLACEHOLDER.test(r.ts), false, r.city + ' names a real operator, not "' + r.ts + '"');
   t.eq(/^I-\d+$/.test(r.corridor), true, r.city + ' corridor looks like an interstate');
   t.eq(/^[A-Z]{2}$/.test(r.state), true, r.city + ' has a two-letter state');
   t.eq(!!BRAND[r.brand], true, r.city + ' brand "' + r.brand + '" is in BRAND');
@@ -47,6 +57,11 @@ DATA.forEach(function(r){
   // state line, which is otherwise entirely plausible-looking.
   t.eq(new RegExp(',\\s*' + r.state + '\\s+\\d{5}').test(r.addr), true,
        r.city + ' address is in ' + r.state + ': ' + r.addr);
+  // And no two rows may share one - two Waffle Houses do not have the same
+  // door, so a duplicate means a copy-paste row or a geocode that landed on
+  // the wrong store.
+  t.eq(seenAddr[r.addr], undefined, r.city + ' address is not another row\'s: ' + r.addr);
+  seenAddr[r.addr] = 1;
 
   (r.flags || []).forEach(function(f){
     t.eq(OK_FLAGS.indexOf(f) !== -1, true, r.city + ' flag "' + f + '" is a known flag');
@@ -57,6 +72,7 @@ DATA.forEach(function(r){
     pairings++;
     t.eq(a.feet >= r.feet, true, r.city + ': the primary stop is the closest one');
     t.eq(!!BRAND[a.brand], true, r.city + ' alternate brand is in BRAND');
+    t.eq(PLACEHOLDER.test(a.ts), false, r.city + ' alt names a real operator, not "' + a.ts + '"');
   });
 
   if (r.feet > wd.WALKABLE_FT) {
@@ -74,6 +90,37 @@ t.eq(sorted.slice().sort(function(a,b){return a-b;}).join() === sorted.join(), t
 
 t.eq(DATA[0].city, 'Good Hope', 'Good Hope AL still holds the record');
 t.eq(DATA[0].feet, 170, 'at 170 ft');
+
+// data/atlas.csv is regenerated from DATA by scripts/remeasure.js, never
+// hand-edited. This pins the two against each other row for row, so the CSV
+// cannot drift the way a hand-maintained second copy always eventually does.
+function parseCsv(text){
+  var rows = [], row = [], field = '', q = false;
+  for (var i = 0; i < text.length; i++){
+    var c = text[i];
+    if (q){
+      if (c === '"' && text[i+1] === '"'){ field += '"'; i++; }
+      else if (c === '"') q = false;
+      else field += c;
+    } else if (c === '"') q = true;
+    else if (c === ','){ row.push(field); field = ''; }
+    else if (c === '\n'){ row.push(field); field = ''; if (row.length > 1 || row[0] !== '') rows.push(row); row = []; }
+    else if (c !== '\r') field += c;
+  }
+  if (field !== '' || row.length > 1) { row.push(field); rows.push(row); }
+  return rows;
+}
+var csv = parseCsv(fs.readFileSync(path.join(__dirname, '..', 'data', 'atlas.csv'), 'utf8'));
+var hdr = csv.shift();
+t.eq(hdr.slice(0,6).join(','), 'feet,corridor,state,exit,city,truck_stop',
+     'atlas.csv leads with the six identity columns');
+t.eq(csv.length, DATA.length, 'atlas.csv holds exactly one line per DATA row');
+DATA.forEach(function(r, i){
+  var c = csv[i] || [];
+  t.eq(+c[0] === r.feet && c[1] === r.corridor && c[2] === r.state &&
+       c[3] === r.exit && c[4] === r.city && c[5] === r.ts, true,
+       'atlas.csv row ' + i + ' matches DATA: ' + r.city + ' x' + r.exit);
+});
 
 console.log('     ' + DATA.length + ' exits, ' + pairings + ' pairings, ' +
             honorary + ' honorary');

@@ -55,8 +55,8 @@ var bare = {feet:170, corridor:'I-65', state:'AL', exit:'304', city:'X',
 t.eq(tt.formatStopText(bare, 'Rev').indexOf('undefined') === -1, true,
      'a row with no address shares cleanly');
 
-// ATLAS_REV already reads "Atlas Rev 08-2026"; the formatter must not add its
-// own "Atlas " on top. This said "Atlas Atlas Rev 08-2026" for eleven releases.
+// ATLAS_REV already starts with the word "Atlas"; the formatter must not add
+// its own "Atlas " on top. This stammered "Atlas Atlas" for eleven releases.
 t.eq(stopTxt.indexOf('Atlas Atlas') === -1, true, 'stop share does not stammer the rev label');
 t.eq(routeTxt.indexOf('Atlas Atlas') === -1, true, 'route share does not either');
 t.eq(stopTxt.indexOf('Atlas Rev 08-2026') !== -1, true, 'the rev line itself survives');
