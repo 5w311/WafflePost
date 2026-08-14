@@ -10,7 +10,7 @@ WafflePost answers *can I get a plate of hashbrowns without moving the truck*.
 
 Two tabs:
 
-- **Atlas** — map and list of all 67 exits, filterable by corridor, state,
+- **Atlas** — map and list of all 55 exits, filterable by corridor, state,
   truck stop chain, walk distance and free text. Every row, distance and
   filter is computed locally; only the basemap under the pins is fetched.
 - **Route** — pickup and delivery with address autosuggest and a "use my
@@ -37,7 +37,9 @@ lib/flexible-polyline.js  HERE's reference decoder, vendored unmodified (MIT)
 test/*.test.js            plain-node tests, no framework
 test/_assert.js           two assertions and a reporter; that is the whole framework
 test/run.js               runs every test file and fails the run if any file fails
-data/atlas.csv            the audit's own source table, with coordinates and addresses
+scripts/remeasure.js      geocodes each truck stop and re-derives feet; regenerates the CSV
+scripts/remeasure-report.txt  provenance of every surviving figure, every judgment call
+data/atlas.csv            REGENERATED from DATA by scripts/remeasure.js - never hand-edit
 apple-touch-icon.png      iOS home screen, 180x180 - the header tile, baked
 icon-192.png              Android home screen
 icon-512.png              Android, large
@@ -78,15 +80,41 @@ they are on opposite sides of a mile-wide interchange.
 Counts, reconciled, because three different numbers are all correct about
 different things:
 
-- **67 exits** — rows in `DATA`. 66 walkable plus one honorary member.
-- **78 pairings listed** — every truck stop named, including the second,
+- **55 exits** — rows in `DATA`. 54 walkable plus one honorary member.
+- **65 pairings listed** — every truck stop named, including the second,
   third and fourth stop at exits that have them.
-- **73 pairings within 0.4 mi** — the headline number. The other 5 sit past
+- **60 pairings within 0.4 mi** — the headline number. The other 5 sit past
   the line. Four are alternates, labelled *(past the line)* in the stop sheet
   rather than dropped, because at 3am a 3,274 ft walk you know about beats a
-  1,498 ft walk into a full lot. The fifth is Bishopville's own primary stop
-  at 2,392 ft — the honorary row below, which carries no such label because
+  1,483 ft walk into a full lot. The fifth is Bishopville's own primary stop
+  at 2,380 ft — the honorary row below, which carries no such label because
   the tag is only emitted on alternates.
+
+### The 09-2026 re-audit
+
+The atlas was assembled partly from a compacted session summary rather than
+from verified coordinate pairs, and a driver spot-check against satellite and
+Trucker Path caught it: claimed truck stops that do not exist. A two-pass
+re-verification of all 67 rows followed. **Twelve rows were purged** — ten
+whose claimed truck stop is not there (the dominant failure was *adjacent
+exit confusion*: same town, same highway signage, different interchanges two
+to three miles apart), plus Kingsland GA and Oak Grove KY, whose own
+re-audit truck stop addresses geocoded 2.7 and 1.1 miles from their Waffle
+House coordinates at house-number precision. **Twenty-one rows** had shipped
+with the literal placeholder "Truck stop" as the operator name; the fifteen
+that survived now carry verified operators, and `data.test.js` fails on any
+placeholder name — the test that would have caught the original bug, since
+every shape check stayed green for the entire life of the bad data.
+
+Every surviving distance was then re-derived by `scripts/remeasure.js`, which
+geocodes each truck stop address and computes the haversine with the app's
+own `lib/waffledist`. The committed report records the provenance of every
+figure: 16 confirmed within 50 ft, 20 corrected on a decision recorded in the
+report, 2 corrections reversed (a name-match POI pin does not re-award "the
+shortest walk in America", and a figure that lands a primary behind its own
+alternate indicts itself), and 17 kept stale-and-labelled where geocoding
+could not produce a credible point. A stale number that is labelled stale is
+recoverable; an invented one is not.
 
 `WALKABLE_FT` is 2,112 — 0.4 mi. One row (Bishopville SC, 0.45 mi) sits past
 it and is admitted anyway as **honorary**, on the strength of a driver review
@@ -116,7 +144,7 @@ LaPlace LA's says *"4301 Main St and 4304 Main St"* and the address is 4304.
 
 Their provenance is weaker than everything around them, and that matters here
 in the same way the amenity flags do. The coordinates and `feet` were audited
-by hand, exit by exit. The addresses were **generated**: 44 of the 67 came
+by hand, exit by exit. The addresses were **generated**, back when the atlas held 67 rows: 44 came
 from a POI match on the Waffle House itself, the other 23 from the street
 address at the coordinate. Every one was checked to start with a house number
 and to name the row's own state — which catches the reverse-geocode landing
@@ -145,16 +173,17 @@ this, since the opposite reading is the obvious way to get it wrong.
 
 ## Amenity filters: unknown is not the same as false
 
-Feet, corridor, exit, chain and coordinates were verified for all 67 rows.
+Feet, corridor, exit, chain and coordinates were verified for every row of
+the original audit.
 Amenity detail — free parking, a CAT scale, a sit-down diner — was only
 recorded where a review or the stop's own listing confirmed it, because
-chasing every amenity across 67 exits was not what the audit was for.
+chasing every amenity across the whole atlas was not what the audit was for.
 
 So those three toggles filter to **"confirmed by the audit"**, never to "has
 it". A stop without the flag may well have a scale and simply was never
 checked. The UI labels them "Confirmed …" and says so in the filter panel.
 Do not relabel them to plain "Has parking" without going back and verifying
-all 67 exits — a filter that silently reads unknown as no would hide good
+every exit — a filter that silently reads unknown as no would hide good
 stops and a driver would never know why.
 
 The `caution` flag works the other way and is never hidden by default:
@@ -392,8 +421,8 @@ deep it is worth looking: on Dallas → Atlanta the 13-pair route sits at index
 4, so asking for three would drop the single best demonstration of what this
 app is for, while index 5 on that lane is both longer and poorer.
 
-Every option that comes back is decoded, measured and scored against all 67
-atlas rows when the run is planned, so switching between them is a pure
+Every option that comes back is decoded, measured and scored against every
+atlas row when the run is planned, so switching between them is a pure
 re-render and costs no network at all.
 
 Each card leads with its walkable-pair count, because on this app a different
@@ -512,13 +541,13 @@ they come to 965 across twelve files, counted by hand.
 
 Same reasoning as FuelPost, different perishable thing:
 
-- **`ATLAS_REV`** (`Atlas Rev 08-2026`) — which edition of the walkability
+- **`ATLAS_REV`** (`Atlas Rev 09-2026`) — which edition of the walkability
   audit the rows came from. Shown in the **header**, because stores open and
   close: Troutville's did not exist a year before this revision, and a pair
   that has closed is a wasted exit at 3am. A driver cannot tell stale atlas
   data from current atlas data without it. Bump only when the rows are
   re-audited.
-- **`APP_VERSION`** (`3.7.0`) — the code. Shown in the **legend card**.
+- **`APP_VERSION`** (`4.0.0`) — the code. Shown in the **legend card**.
   Bumped for every shipped change, and stamped onto every `lib/` URL as a
   cache-buster.
 
@@ -538,6 +567,32 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v4.0.0
+
+**The re-audit purge.** Fifteen percent of the atlas is gone, and the first
+`ATLAS_REV` move in the app's history says why: rows a driver relied on did
+not survive verification. See *The 09-2026 re-audit* above for the full
+account. Ten rows removed for truck stops that do not exist, two more —
+Kingsland GA and Oak Grove KY — purged by owner decision when their own
+re-audit addresses contradicted their coordinates, twenty-one placeholder
+operators replaced or removed, Hammond LA moved from I-55 to I-12 where its
+truck stops actually are, four rows flagged `smalllot` (a real stop with too
+few spaces to count on — deliberately not `caution`, because "might be full"
+and "might bite you" lead to different decisions), and every surviving
+distance re-derived from a geocoded truck stop address with provenance in
+`scripts/remeasure-report.txt`.
+
+I-40, I-55, Indiana and Arkansas leave the atlas. I-12 gains Hammond and
+holds two. 67 exits become 55; 78 pairings become 65; exactly one honorary
+member, unchanged, because Bishopville earned that on driver evidence and
+nothing gets demoted on arithmetic.
+
+`data/atlas.csv` is now regenerated from `DATA` by the remeasure script and
+cross-checked row for row by `data.test.js`, so the hand-maintained second
+copy that drifted is no longer possible. The placeholder-name guard, the
+address-uniqueness guard and the CSV cross-check are the tests that would
+have caught all of this ten rows earlier.
 
 ### v3.7.0
 
