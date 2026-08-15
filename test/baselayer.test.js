@@ -49,4 +49,29 @@ t.eq(bl.nextBaseLayer(LIGHT, 'system', L), null,
 t.eq(bl.nextBaseLayer({name:'vector.normal.map'}, 'dark', L), null,
      'a look-alike object is not the light layer and is left alone');
 
+// ---- more than one themed pair (v4.1.0: the satellite view is themed too) ----
+// The satellite view became HERE's hybrid stack, which has day and night
+// variants, so there are now two pairs to keep in step rather than one. The
+// allow-list property has to survive that: belonging to no pair still means
+// hands off.
+var HDAY = {name:'hybrid.day.raster'}, HNIGHT = {name:'hybrid.night.raster'};
+var P = {pairs:[L, {light:HDAY, dark:HNIGHT}]};
+
+t.eq(bl.nextBaseLayer(LIGHT, 'dark', P), DARK, 'the road pair still swaps with two pairs present');
+t.eq(bl.nextBaseLayer(HDAY, 'dark', P), HNIGHT, 'day satellite + dark theme -> night satellite');
+t.eq(bl.nextBaseLayer(HNIGHT, 'light', P), HDAY, 'and back again');
+t.eq(bl.nextBaseLayer(HDAY, 'light', P), null, 'day satellite in a light theme needs no change');
+t.eq(bl.nextBaseLayer(HNIGHT, 'dark', P), null, 'nor night satellite in a dark one');
+// The whole point of the allow-list, restated for the multi-pair form: a layer
+// in NO pair is still the driver's choice or HERE's, and still untouched. If
+// this ever fails, the five-release bug is back in a new shape.
+t.eq(bl.nextBaseLayer(SAT, 'dark', P), null,
+     'a layer belonging to no pair is left alone exactly as before');
+t.eq(bl.nextBaseLayer({name:'something.new'}, 'light', P), null, 'and so is an unknown one');
+t.eq(bl.nextBaseLayer(null, 'dark', P), null, 'and null asks for nothing');
+// A pair that is not built yet - a keyless build, a layer HERE did not return -
+// must not throw on the way past.
+t.eq(bl.nextBaseLayer(LIGHT, 'dark', {pairs:[null, L]}), DARK,
+     'a missing pair is skipped rather than thrown on');
+
 t.done('baselayer');
