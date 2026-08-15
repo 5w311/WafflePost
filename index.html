@@ -106,7 +106,7 @@
 <meta name="theme-color" content="#14110E">
 
 <!-- First contact with js.api.here.com is the render-blocking stylesheet
-     below, then five SDK scripts. crossorigin is load-bearing, not
+     below, then four SDK scripts. crossorigin is load-bearing, not
      decoration: those are all CORS fetches, and a preconnect hint without
      it opens a socket on a different connection key, so the socket is not
      reused and the hint does nothing at all. -->
@@ -121,7 +121,7 @@ document.documentElement.setAttribute('data-theme',
   t||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'));
 }catch(e){document.documentElement.setAttribute('data-theme','light');}})();
 </script>
-<link rel="stylesheet" href="https://js.api.here.com/v3/3.1/mapsjs-ui.css">
+<link rel="stylesheet" href="https://js.api.here.com/v3/3.2/mapsjs-ui.css">
 <style>
 /* ---- tokens -------------------------------------------------------------
    The palette is the sign and the griddle: sign yellow, char black, syrup
@@ -568,16 +568,18 @@ html[data-theme=dark] .mile{color:#E8B96B}
   <div class="sheet" id="sheet" role="dialog" aria-label="Stop detail"></div>
 </div>
 
-<!-- HERE Maps JS 3.1. mapsjs-harp.js is the HARP rendering engine and must
-     follow core; service, mapevents and ui all extend the H namespace core
-     creates. None of these five carry a ?v= stamp — they are third-party
-     CDN URLs at a pinned version, not our files, so APP_VERSION has no
-     business on them (test/structure.test.js counts lib/ tags only). -->
-<script src="https://js.api.here.com/v3/3.1/mapsjs-core.js"></script>
-<script src="https://js.api.here.com/v3/3.1/mapsjs-harp.js"></script>
-<script src="https://js.api.here.com/v3/3.1/mapsjs-service.js"></script>
-<script src="https://js.api.here.com/v3/3.1/mapsjs-mapevents.js"></script>
-<script src="https://js.api.here.com/v3/3.1/mapsjs-ui.js"></script>
+<!-- HERE Maps JS 3.2. FOUR scripts, not five: 3.1 shipped the HARP renderer
+     as a separate mapsjs-harp.js that had to follow core, and 3.2 folds it
+     into core itself — HERE's own quick start lists exactly these four, and
+     /v3/3.2/mapsjs-harp.js does not exist (it 403s). service, mapevents and
+     ui all extend the H namespace core creates, so order still matters.
+     None of these four carry a ?v= stamp — they are third-party CDN URLs at
+     a pinned version, not our files, so APP_VERSION has no business on them
+     (test/structure.test.js counts lib/ tags only). -->
+<script src="https://js.api.here.com/v3/3.2/mapsjs-core.js"></script>
+<script src="https://js.api.here.com/v3/3.2/mapsjs-service.js"></script>
+<script src="https://js.api.here.com/v3/3.2/mapsjs-mapevents.js"></script>
+<script src="https://js.api.here.com/v3/3.2/mapsjs-ui.js"></script>
 
 <!-- lib/ loads as classic scripts. FuelPost uses a bare module.exports shim;
      ours also needs require(), because these modules depend on each other.
@@ -587,27 +589,27 @@ var __mods={};
 function require(p){return __mods[p.replace(/^\.\//,'').replace(/\.js$/,'')];}
 var module={exports:{}};
 </script>
-<script src="lib/waffledist.js?v=4.1.0"></script>
+<script src="lib/waffledist.js?v=4.2.0"></script>
 <script>__mods.waffledist=module.exports;module={exports:{}};</script>
-<script src="lib/atlasfilter.js?v=4.1.0"></script>
+<script src="lib/atlasfilter.js?v=4.2.0"></script>
 <script>__mods.atlasfilter=module.exports;module={exports:{}};</script>
-<script src="lib/routewaffles.js?v=4.1.0"></script>
+<script src="lib/routewaffles.js?v=4.2.0"></script>
 <script>__mods.routewaffles=module.exports;module={exports:{}};</script>
-<script src="lib/vehicleprofile.js?v=4.1.0"></script>
+<script src="lib/vehicleprofile.js?v=4.2.0"></script>
 <script>__mods.vehicleprofile=module.exports;module={exports:{}};</script>
-<script src="lib/triptext.js?v=4.1.0"></script>
+<script src="lib/triptext.js?v=4.2.0"></script>
 <script>__mods.triptext=module.exports;module={exports:{}};</script>
-<script src="lib/escape.js?v=4.1.0"></script>
+<script src="lib/escape.js?v=4.2.0"></script>
 <script>__mods.escape=module.exports;module={exports:{}};</script>
-<script src="lib/flexible-polyline.js?v=4.1.0"></script>
+<script src="lib/flexible-polyline.js?v=4.2.0"></script>
 <script>__mods['flexible-polyline']=module.exports;module={exports:{}};</script>
-<script src="lib/autosuggest.js?v=4.1.0"></script>
+<script src="lib/autosuggest.js?v=4.2.0"></script>
 <script>__mods.autosuggest=module.exports;module={exports:{}};</script>
-<script src="lib/location.js?v=4.1.0"></script>
+<script src="lib/location.js?v=4.2.0"></script>
 <script>__mods.location=module.exports;module={exports:{}};</script>
-<script src="lib/routeoptions.js?v=4.1.0"></script>
+<script src="lib/routeoptions.js?v=4.2.0"></script>
 <script>__mods.routeoptions=module.exports;module={exports:{}};</script>
-<script src="lib/baselayer.js?v=4.1.0"></script>
+<script src="lib/baselayer.js?v=4.2.0"></script>
 <script>__mods.baselayer=module.exports;module={exports:{}};</script>
 
 <script>
@@ -649,7 +651,7 @@ var HERE_API_KEY = '7RDploUiahAnm08IZA9X7YSbb0Qh99pvqV2NCNQX_Hg';
    APP_VERSION - the code. Shown in the legend card. Bumped every change,
                 and stamped onto every lib/ URL as a cache-buster. */
 var ATLAS_REV   = 'Atlas Rev 09-2026';
-var APP_VERSION = '4.1.0';
+var APP_VERSION = '4.2.0';
 
 /* ===== DATA ==========================================================
    55 rows - 54 walkable exits plus one honorary - carrying 65 pairings,
@@ -960,13 +962,19 @@ function fitAtlas(){
 }
 
 if (MAP_ON) {
-  /* The engine type has to be passed in BOTH places or the map half-works:
-       - createDefaultLayers({engineType}) builds layers whose styles the
-         engine can actually parse. Omit it and HARP throws "Wrong style
-         format" because it is handed WEBGL-format styles.
-       - the H.Map option selects the engine that draws. Omit it and the map
-         falls back to WEBGL, under which HERE's own MapSettingsControl
-         renders Satellite greyed out and unpickable. */
+  /* Under 3.1 the engine type had to be passed in BOTH places or the map
+     half-worked: omit it from createDefaultLayers and HARP threw "Wrong style
+     format" on WEBGL-format styles; omit it from the H.Map options and the map
+     fell back to WEBGL, under which HERE's own MapSettingsControl rendered
+     Satellite greyed out and unpickable.
+
+     3.2 retires that whole hazard - H.Map.EngineType is {HARP} and nothing
+     else, the WEBGL renderer is gone, and the engine now ships inside
+     mapsjs-core.js rather than a separate bundle. Both arguments are kept
+     anyway, and deliberately: they are correct, they are free, and they say
+     out loud which engine this app is built against. Every layer choice below
+     - mapnight, the hybrid stack, Satellite being pickable at all - was a
+     HARP-only capability when it was written. */
   var HERE_ENGINE = H.Map.EngineType.HARP;
   var platform = new H.service.Platform({apikey:HERE_API_KEY});
   var defaultLayers = platform.createDefaultLayers({engineType:HERE_ENGINE});

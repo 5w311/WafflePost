@@ -195,8 +195,9 @@ worth a row rather than an omission.
 
 Through 2.x the Atlas tab called nothing — Leaflet with CARTO's free basemap
 tiles — and a fork of this repo deployed with no account and no key. **v3.0.0
-ends that.** The map is HERE Maps JS 3.1, `H.service.Platform` authenticates
-with `HERE_API_KEY`, and an empty key costs the basemap on *both* tabs.
+ends that.** The map is HERE Maps JS 3.2 (3.1 until v4.2.0),
+`H.service.Platform` authenticates with `HERE_API_KEY`, and an empty key costs
+the basemap on *both* tabs.
 
 What did not change is where the atlas itself comes from. Every distance,
 tier, filter and walk strip is still computed client-side against `DATA`, and
@@ -306,9 +307,37 @@ the map is on `mapnight` highlights *nothing at all* — and that rebuild
 happens even while the map sits on Satellite and no layer is being touched.
 
 The engine is pinned to HARP in both `createDefaultLayers` and the `H.Map`
-options, and Satellite is part of why: under the WEBGL fallback HERE's own
-switcher renders it greyed out and unpickable, and `mapnight` does not exist
-at all.
+options, and Satellite is part of why: under 3.1's WEBGL fallback HERE's own
+switcher rendered it greyed out and unpickable, and `mapnight` did not exist at
+all. **v4.2.0 retires that hazard rather than the code that guards it.** In 3.2
+`H.Map.EngineType` is `{HARP}` and nothing else, the WEBGL renderer is gone,
+and the engine ships inside `mapsjs-core.js` instead of a separate
+`mapsjs-harp.js`. Both arguments are kept anyway: they are correct, they cost
+nothing, and they say out loud which engine every layer choice here was written
+against.
+
+### Upgrading 3.1 → 3.2 (v4.2.0)
+
+The whole migration is the script tags: **four, not five**. `/v3/3.2/` has no
+`mapsjs-harp.js` — it 403s — because the render engine is now part of core, and
+HERE's own quick start lists exactly `mapsjs-core.js`, `mapsjs-service.js`,
+`mapsjs-mapevents.js`, `mapsjs-ui.js` plus the stylesheet. Load order still
+matters: service, mapevents and ui all extend the `H` namespace core creates.
+
+Nothing else moved. Every API this app touches was probed against 3.2 in a real
+browser before the switch — `H.map.DomIcon`/`DomMarker`, `H.map.Group`,
+`H.map.Polyline`, `H.geo.LineString`, `H.mapevents.Behavior`/`MapEvents`,
+`H.ui.UI.createDefault`, `H.ui.MapSettingsControl`, `UnitSystem`,
+`LayoutAlignment`, and every `H.Map` method used here. `createDefaultLayers`
+returns the same shape (`raster.satellite.{xbase,base,map,labels}`, all six
+`hybrid` variants, `vector.normal.mapnight`) with identical zoom ranges, and
+`mapsjs-ui.css` is **byte-identical between 3.1 and 3.2** — so every `H_`-class
+override in this file, including the `.H_ui` stacking fix, is untouched.
+
+`test/structure.test.js` pins the count at four, fails if `mapsjs-harp.js`
+reappears out of habit, and asserts every HERE URL — scripts and stylesheet
+alike — names the same SDK version, since a stylesheet left behind on the old
+version shows up as one control laid out wrongly rather than as an error.
 
 ## Route mode
 
@@ -592,7 +621,7 @@ Same reasoning as FuelPost, different perishable thing:
   that has closed is a wasted exit at 3am. A driver cannot tell stale atlas
   data from current atlas data without it. Bump only when the rows are
   re-audited.
-- **`APP_VERSION`** (`4.1.0`) — the code. Shown in the **legend card**.
+- **`APP_VERSION`** (`4.2.0`) — the code. Shown in the **legend card**.
   Bumped for every shipped change, and stamped onto every `lib/` URL as a
   cache-buster.
 
@@ -612,6 +641,22 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v4.2.0
+
+**HERE Maps JS 3.1 → 3.2.** Five SDK script tags become four: 3.2 folds the
+HARP render engine into `mapsjs-core.js`, and `/v3/3.2/mapsjs-harp.js` does not
+exist. `H.Map.EngineType` is now `{HARP}` alone — the WEBGL renderer that made
+Satellite unpickable and `mapnight` absent is gone from the SDK entirely — and
+the explicit `engineType` arguments are kept anyway as a statement of what this
+app is built against.
+
+Nothing else changed. Every API the app uses was probed against 3.2 in a real
+browser first; `createDefaultLayers` returns the same shape with the same zoom
+ranges, and `mapsjs-ui.css` is byte-identical across the two versions, so no
+`H_`-class override needed touching. `test/structure.test.js` pins the tag
+count, fails on a returning `mapsjs-harp.js`, and now requires every HERE URL —
+stylesheet included — to name one version. See *Upgrading 3.1 → 3.2* above.
 
 ### v4.1.0
 
