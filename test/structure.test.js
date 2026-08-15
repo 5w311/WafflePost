@@ -19,13 +19,26 @@ libTags.forEach(function(tag){
   t.eq(/\bdefer\b|\basync\b/.test(tag), false, 'no defer/async on: ' + tag);
 });
 
-// The five HERE SDK tags are third-party CDN URLs at a pinned version, not our
+// The HERE SDK tags are third-party CDN URLs at a pinned version, not our
 // files. A ?v= stamp on them would be a cache-buster on someone else's cache.
+// FOUR since v4.2.0: 3.1 needed a separate mapsjs-harp.js for the render
+// engine, and 3.2 folds it into core. /v3/3.2/mapsjs-harp.js does not exist,
+// so re-adding the fifth tag out of habit is a 403 and a dead map.
 var hereTags = src.match(/<script src="https:\/\/js\.api\.here\.com\/[^"]+"><\/script>/g) || [];
-t.eq(hereTags.length, 5, 'five HERE SDK scripts are loaded');
+t.eq(hereTags.length, 4, 'four HERE SDK scripts are loaded');
+t.eq(hereTags.some(function(tag){ return /mapsjs-harp/.test(tag); }), false,
+     'no mapsjs-harp.js: 3.2 ships the render engine inside core');
 hereTags.forEach(function(tag){
   t.eq(tag.indexOf('?v=') === -1, true, 'no version stamp on third-party CDN: ' + tag);
 });
+
+// One SDK version across every HERE URL, script tags and stylesheet alike.
+// A stylesheet left on the old version is the kind of mismatch that shows up
+// as one control laid out wrongly rather than as an error.
+var hereUrls = src.match(/https:\/\/js\.api\.here\.com\/v3\/[\d.]+\//g) || [];
+t.eq(hereUrls.length >= 5, true, 'the HERE CDN is referenced by scripts and the stylesheet');
+t.eq(hereUrls.filter(function(u){ return u !== hereUrls[0]; }).length, 0,
+     'every HERE URL pins the same SDK version: ' + hereUrls[0]);
 
 // H.service.Platform THROWS on an empty apikey ("Argument #0 apikey must be
 // specified"), and the key ships empty by design two assertions below. An
