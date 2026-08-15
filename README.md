@@ -228,13 +228,18 @@ this; the bright day map genuinely reading badly in a cab at night is why
 v3.3.0 took it on anyway.
 
 The whole feature is one conditional, in `lib/baselayer.js`. `nextBaseLayer()`
-returns `null` — leave it alone — for any layer that is not one of the two
-themed road layers, so a driver looking at Satellite when the sun goes down
-**stays on Satellite**. It is an allow-list by identity, never a deny-list
-naming satellite, because a check for "is this satellite" needs updating every
-time HERE adds a layer and is wrong until someone notices. Returning `null`
-when the layer is already correct is also what makes the `baselayerchange`
-backstop self-terminating rather than a feedback loop.
+returns `null` — leave it alone — for any layer that belongs to none of the
+themed pairs it is given, so a driver looking at something this app did not put
+there **keeps looking at it**. It is an allow-list by identity, never a
+deny-list naming satellite, because a check for "is this satellite" needs
+updating every time HERE adds a layer and is wrong until someone notices.
+Returning `null` when the layer is already correct is also what makes the
+`baselayerchange` backstop self-terminating rather than a feedback loop.
+
+Since v4.1.0 there are **two** themed pairs, not one — the satellite view is
+HERE's hybrid stack, which has day and night variants of its own — and the
+allow-list is what generalised cleanly to that. A layer in no pair is still
+untouched; a layer in *a* pair moves with the theme, whichever pair it is in.
 
 Everything else is plumbing the SDK earns. Every base-layer change goes through
 one deferred (60ms), coalesced, idempotent choke point, because HARP rebuilds
@@ -245,6 +250,46 @@ phones. The idempotency check sits *inside* the timer on purpose: whoever got
 there first wins, including the driver's own tap on the layer switcher.
 `test/structure.test.js` pins that there is exactly one `setBaseLayer` call
 site and that the theme asks `nextBaseLayer` before using it.
+
+### What the Satellite view actually shows, and why it is two layers
+
+Through v4.0.x *Satellite* was `defaultLayers.raster.satellite.map`. That reads
+as the obvious choice and is the wrong one. It is the `base` resource on style
+`explore.satellite.day`, which means HERE renders the road casings **and** the
+place labels *into the JPEG* before sending it. Differenced against the raw
+imagery for the same tile at Good Hope — the 170 ft walk this atlas is built
+around — the baked paint repaints **35% of the ground at z17 and 46% at z19**,
+and the band it lays down sits directly over the strip between the truck stop
+and the store. An app whose one claim is that a walk is walkable was covering
+up half the evidence for it.
+
+v4.1.0 switches to `hybrid.day` / `hybrid.night`: the same imagery with nothing
+baked in — `background` on style `satellite.day` — plus a **vector** road-and-
+label layer drawn over it. The ground stays visible, and because the overlay is
+geometry rather than a JPEG it stays sharp at DPR 3 and at zoom levels the
+imagery itself cannot reach.
+
+That last part is the honest limit. **No SDK setting buys more imagery
+resolution.** Tiles are already requested at `size=512` (the `createDefaultLayers`
+default), the raster provider already caps at z20, and `pixelRatio` already
+tracks the device. Testing each zoom against a plain upscale of its parent tile
+shows HERE's imagery runs out of *real* detail at **z17 at rural exits** — z18
+in a metro — and every level above that is magnification at 43–46 dB PSNR, i.e.
+no new information. Roughly a metre per pixel is the ceiling for the kind of
+exit this atlas covers. The free US public-domain alternative is not a way
+around it either: USGS `USGSImageryOnly` 404s above z16 from its tile cache, its
+`export` endpoint is magnification past z17, and it measured consistently softer
+than HERE. What *can* be fixed is spending that fixed resolution on ground
+instead of on paint, and that is what this release does.
+
+Being two layers costs one piece of bookkeeping. The vector half follows the
+raster half from the `baselayerchange` handler and **only** from there, because
+that is the one place that sees every route to the base layer — the theme, the
+backstop, and the driver's own tap on the switcher alike. It is inserted at
+**index 1**, not appended: the marker layer is already on the map by the time
+anyone first taps Satellite, and an appended overlay would draw on top of every
+pin and the route line. Index 1 puts it directly above the base and below the
+objects, which is where an overlay belongs.
 
 **Satellite is a control, not just a rationale.** The layer switcher sits at
 the bottom right of the map and offers exactly two entries, *Map view* and
@@ -547,7 +592,7 @@ Same reasoning as FuelPost, different perishable thing:
   that has closed is a wasted exit at 3am. A driver cannot tell stale atlas
   data from current atlas data without it. Bump only when the rows are
   re-audited.
-- **`APP_VERSION`** (`4.0.0`) — the code. Shown in the **legend card**.
+- **`APP_VERSION`** (`4.1.0`) — the code. Shown in the **legend card**.
   Bumped for every shipped change, and stamped onto every `lib/` URL as a
   cache-buster.
 
@@ -567,6 +612,20 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v4.1.0
+
+**The satellite view stops painting over the walk.** *Satellite* moves from
+`raster.satellite.map` — imagery with HERE's roads and labels baked into the
+JPEG, covering 35–46% of the ground — to the `hybrid` stack: raw `satellite.day`
+imagery with a vector road-and-label layer on top. The overlay is inserted at
+index 1 so it sits above the base and below the pins, and it follows the base
+layer from the single `baselayerchange` handler. `hybrid` has day and night
+variants, so the satellite view is now themed too; `nextBaseLayer()` takes a
+list of themed pairs instead of one, keeping its allow-list-by-identity
+property intact. Measured along the way and recorded above: no SDK setting buys
+more imagery resolution, and HERE's imagery has no native detail past z17 at
+rural exits. See *What the Satellite view actually shows* above.
 
 ### v4.0.0
 

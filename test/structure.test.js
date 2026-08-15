@@ -182,4 +182,35 @@ t.eq((appBlock.match(/\.setBaseLayer\(/g) || []).length, 1,
 t.eq(/bl\.nextBaseLayer\(/.test(appBlock), true,
      'the theme consults nextBaseLayer before touching the base layer');
 
+// ---- the satellite view shows GROUND (v4.1.0) ----
+// Comments stripped first: this file's rules are about what the app DOES, and
+// the map setup explains at length what it deliberately stopped doing. Scanning
+// prose for the name of the layer that was removed fails on the explanation of
+// why it was removed, which would push the next person into deleting the
+// reasoning to get their build green.
+var appCode = appBlock.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+// raster.satellite.map is the `base` resource on explore.satellite.day: HERE
+// bakes road casings and labels into the JPEG, repainting 35% of the ground at
+// z17 and 46% at z19. This app's one claim is that a walk is walkable, so the
+// baked layer must not come back by reflex.
+t.eq(/raster\.satellite\.map/.test(appCode), false,
+     'the baked-label satellite raster is not used as a base layer');
+t.eq(/defaultLayers\.hybrid\.day\.raster/.test(appCode) &&
+     /defaultLayers\.hybrid\.night\.raster/.test(appCode), true,
+     'Satellite is the hybrid stack, day and night');
+t.eq(/defaultLayers\.hybrid\.day\.vector/.test(appCode) &&
+     /defaultLayers\.hybrid\.night\.vector/.test(appCode), true,
+     'and both vector overlays are wired to their rasters');
+// INDEX 1, not appended. The marker layer is already on the map before anyone
+// taps Satellite, so an appended overlay draws over every pin and the route
+// line. This is the one number that keeps the atlas visible on satellite.
+t.eq(/map\.addLayer\([^)]*,\s*1\)/.test(appCode), true,
+     'the vector overlay is inserted at index 1, above the base and below the objects');
+// One place syncs it, so no route to the base layer can leave labels stranded
+// over the road map.
+t.eq((appCode.match(/map\.addLayer\(/g) || []).length, 1,
+     'exactly one addLayer call site: the overlay sync');
+t.eq((appCode.match(/baselayerchange/g) || []).length, 1,
+     'and one baselayerchange handler owning it');
+
 t.done('structure');

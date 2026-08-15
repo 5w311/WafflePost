@@ -587,27 +587,27 @@ var __mods={};
 function require(p){return __mods[p.replace(/^\.\//,'').replace(/\.js$/,'')];}
 var module={exports:{}};
 </script>
-<script src="lib/waffledist.js?v=4.0.0"></script>
+<script src="lib/waffledist.js?v=4.1.0"></script>
 <script>__mods.waffledist=module.exports;module={exports:{}};</script>
-<script src="lib/atlasfilter.js?v=4.0.0"></script>
+<script src="lib/atlasfilter.js?v=4.1.0"></script>
 <script>__mods.atlasfilter=module.exports;module={exports:{}};</script>
-<script src="lib/routewaffles.js?v=4.0.0"></script>
+<script src="lib/routewaffles.js?v=4.1.0"></script>
 <script>__mods.routewaffles=module.exports;module={exports:{}};</script>
-<script src="lib/vehicleprofile.js?v=4.0.0"></script>
+<script src="lib/vehicleprofile.js?v=4.1.0"></script>
 <script>__mods.vehicleprofile=module.exports;module={exports:{}};</script>
-<script src="lib/triptext.js?v=4.0.0"></script>
+<script src="lib/triptext.js?v=4.1.0"></script>
 <script>__mods.triptext=module.exports;module={exports:{}};</script>
-<script src="lib/escape.js?v=4.0.0"></script>
+<script src="lib/escape.js?v=4.1.0"></script>
 <script>__mods.escape=module.exports;module={exports:{}};</script>
-<script src="lib/flexible-polyline.js?v=4.0.0"></script>
+<script src="lib/flexible-polyline.js?v=4.1.0"></script>
 <script>__mods['flexible-polyline']=module.exports;module={exports:{}};</script>
-<script src="lib/autosuggest.js?v=4.0.0"></script>
+<script src="lib/autosuggest.js?v=4.1.0"></script>
 <script>__mods.autosuggest=module.exports;module={exports:{}};</script>
-<script src="lib/location.js?v=4.0.0"></script>
+<script src="lib/location.js?v=4.1.0"></script>
 <script>__mods.location=module.exports;module={exports:{}};</script>
-<script src="lib/routeoptions.js?v=4.0.0"></script>
+<script src="lib/routeoptions.js?v=4.1.0"></script>
 <script>__mods.routeoptions=module.exports;module={exports:{}};</script>
-<script src="lib/baselayer.js?v=4.0.0"></script>
+<script src="lib/baselayer.js?v=4.1.0"></script>
 <script>__mods.baselayer=module.exports;module={exports:{}};</script>
 
 <script>
@@ -649,7 +649,7 @@ var HERE_API_KEY = '7RDploUiahAnm08IZA9X7YSbb0Qh99pvqV2NCNQX_Hg';
    APP_VERSION - the code. Shown in the legend card. Bumped every change,
                 and stamped onto every lib/ URL as a cache-buster. */
 var ATLAS_REV   = 'Atlas Rev 09-2026';
-var APP_VERSION = '4.0.0';
+var APP_VERSION = '4.1.0';
 
 /* ===== DATA ==========================================================
    55 rows - 54 walkable exits plus one honorary - carrying 65 pairings,
@@ -984,16 +984,54 @@ if (MAP_ON) {
      mapnight is a real peer of map under HARP (it is created in the same
      createDefaultLayers branch); under WEBGL it does not exist at all, which
      is one more reason the engine is pinned to HARP in both places above. */
-  var THEMED_LAYERS = {
+  var ROAD_LAYERS = {
     light: defaultLayers.vector.normal.map,
     dark:  defaultLayers.vector.normal.mapnight
   };
+
+  /* The satellite view, and why it is two layers rather than one.
+     Through 4.0.x this was defaultLayers.raster.satellite.map, which reads as
+     the obvious choice and is not. That layer is the `base` resource on style
+     `explore.satellite.day`: HERE renders the road casings AND the place
+     labels INTO the JPEG before sending it. Measured against the raw imagery
+     for the same tile at Good Hope - the 170 ft walk this whole atlas is built
+     around - the baked paint repaints 35% of the ground at z17 and 46% at z19,
+     and the band it lays down sits directly over the strip between the truck
+     stop and the store. This app's one claim is that a walk is walkable; half
+     the ground being painted over is the claim being covered up.
+
+     hybrid.day/.night is the same imagery with nothing baked in - `background`
+     on style `satellite.day` - plus a VECTOR road-and-label layer drawn on
+     top. The ground stays visible, and because the overlay is geometry rather
+     than a JPEG it stays sharp at DPR 3 and at zoom levels the imagery itself
+     cannot reach. That last part matters more than it sounds: HERE's imagery
+     runs out of real detail at z17 at rural exits (z18 in a metro), and every
+     level above that is magnification. Nothing on the SDK side changes that -
+     tiles are already requested at size=512, the provider already caps at
+     z20, and pixelRatio already tracks the device. What CAN be fixed is
+     spending that fixed resolution on ground instead of on paint. */
+  var HYBRID_LAYERS = {
+    light: defaultLayers.hybrid.day.raster,
+    dark:  defaultLayers.hybrid.night.raster
+  };
+  /* The vector half, keyed to its raster. Kept as a lookup rather than a
+     property on HYBRID_LAYERS because nextBaseLayer compares base layers by
+     identity and must not see anything that is not one. */
+  function hybridOverlayFor(baseLayer){
+    if (baseLayer === HYBRID_LAYERS.light) return defaultLayers.hybrid.day.vector;
+    if (baseLayer === HYBRID_LAYERS.dark)  return defaultLayers.hybrid.night.vector;
+    return null;
+  }
+
+  /* Both pairs, so a theme change moves whichever one the driver is actually
+     looking at - and still leaves anything else alone. */
+  var THEMED_LAYERS = {pairs:[ROAD_LAYERS, HYBRID_LAYERS]};
 
   /* Constructed on the theme the head script already resolved, so there is no
      layer swap on first paint and nothing to correct at boot. */
   var initialTheme = docTheme();
   map = new H.Map(document.getElementById('map'),
-    initialTheme==='dark' ? THEMED_LAYERS.dark : THEMED_LAYERS.light,
+    initialTheme==='dark' ? ROAD_LAYERS.dark : ROAD_LAYERS.light,
     {engineType:HERE_ENGINE,
      /* Pre-fit fallback only: the marker build below fits to the whole atlas
         in this same script task, before the browser paints a frame. */
@@ -1025,8 +1063,8 @@ if (MAP_ON) {
   function buildMapSettings(theme){
     return new H.ui.MapSettingsControl({
       baseLayers:[
-        {label:'Map view', layer: theme==='dark' ? THEMED_LAYERS.dark : THEMED_LAYERS.light},
-        {label:'Satellite', layer:defaultLayers.raster.satellite.map}
+        {label:'Map view', layer: theme==='dark' ? ROAD_LAYERS.dark : ROAD_LAYERS.light},
+        {label:'Satellite', layer: theme==='dark' ? HYBRID_LAYERS.dark : HYBRID_LAYERS.light}
       ],
       alignment:H.ui.LayoutAlignment.BOTTOM_RIGHT
     });
@@ -1049,12 +1087,33 @@ if (MAP_ON) {
      metric, because it reads the UI's unit system when it is attached. */
   installMapSettings(initialTheme);
 
+  /* The hybrid satellite view's vector half follows its raster half from here,
+     and ONLY from here, because baselayerchange is the one place that sees
+     every route to the base layer: the theme, the backstop, and the driver's
+     own tap on HERE's layer switcher alike. Anything that swaps the base and
+     forgets the overlay would leave road labels floating over the road map.
+
+     INDEX 1 is load-bearing. addLayer appends, and the marker layer is already
+     on the map by the time a driver first taps Satellite, so an appended
+     overlay would draw ON TOP OF every pin - the atlas would vanish behind
+     HERE's own street labels. Index 1 puts it directly above the base layer
+     and below the objects, which is where an overlay belongs. */
+  var hybridOverlay = null;
+  function syncHybridOverlay(){
+    var want = hybridOverlayFor(map.getBaseLayer());
+    if (want === hybridOverlay) return;
+    if (hybridOverlay) map.removeLayer(hybridOverlay);
+    hybridOverlay = want;
+    if (hybridOverlay) map.addLayer(hybridOverlay, 1);
+  }
+
   /* Backstop. With the control owning a correctly themed entry this should
      never fire a correction; it is here so that any OTHER route to the base
      layer - a future feature, an SDK default - still lands on the themed one.
      Self-terminating: the correction it schedules produces another event
      whose next pass asks nextBaseLayer for nothing. */
   map.addEventListener('baselayerchange', function(){
+    syncHybridOverlay();
     var next = bl.nextBaseLayer(map.getBaseLayer(), docTheme(), THEMED_LAYERS);
     if (next) setNormalBaseLayer(next);
   });
