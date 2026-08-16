@@ -19,28 +19,23 @@
      transparency is composited onto black. The 5px radius on .tile is a
      header detail; on the home screen the OS owns the shape.
 
-     iOS reads apple-touch-icon and nothing else here. manifest.json is still
-     in the repo, still valid, and deliberately NOT linked - see the
-     experiment below - so Android currently takes its home screen label from
-     <title>, which is exactly "WafflePost" and is checked by
-     structure.test.js. The manifest's own icons (the two sizes Android asks
-     for plus a maskable variant, the maskable W drawn smaller so its diagonal
-     fits inside the centre-80% safe zone - measured at 0.745, where 0.80 is
-     the limit) go unread while it is unlinked, and the file keeps its tests
-     because it is the revert path.
+     iOS reads apple-touch-icon and nothing else here. Android reads the
+     manifest below, which is where its home screen LABEL comes from - left
+     to itself it uses <title>, and a manifest is the only way to control
+     that independently. (<title> is in fact exactly "WafflePost", asserted
+     by structure.test.js, which is why v4.6.0's experiment cost the label
+     nothing while it ran.) It carries icons at the two sizes Android asks
+     for plus a maskable variant, because a launcher that crops to a circle
+     will clip a full-bleed glyph: the maskable W is drawn smaller so its
+     diagonal fits inside the centre-80% safe zone (measured at 0.745 of the
+     icon, where 0.80 is the limit), while the plain ones stay full size.
 
-     Standalone, deliberately. This app was already built like one - html and
-     body are overflow:hidden, the bar pads for env(safe-area-inset-top) and
-     the panel for the bottom - so the URL bar was only ever taking map away
-     from a driver. It now comes from the legacy pair below rather than from
-     the manifest's display:standalone: apple-mobile-web-app-capable is how
-     iOS did this for a decade before manifests, and
-     apple-mobile-web-app-status-bar-style=black-translucent is what makes the
-     page extend UNDER the status bar. That second one is load-bearing, not
-     decoration - without it the inset reports zero, the bar loses its top
-     padding, and the layout is a different one from the shipped design that
-     pads for exactly that inset. Still no service worker and no offline
-     caching.
+     display:standalone, deliberately. This app was already built like one -
+     html and body are overflow:hidden, the bar pads for
+     env(safe-area-inset-top) and the panel for the bottom - so the URL bar
+     was only ever taking map away from a driver. Still no service worker
+     and no offline caching: the manifest names the app and its icons, and
+     stops there.
 
      THE ICON RECOLOURS ITSELF IN DARK MODE. THAT IS A TRADE WE HAVE NOT
      MADE, NOT A WALL.
@@ -54,46 +49,44 @@
      raster has no variant slots, so iOS generates the dark and tinted
      versions itself from this PNG.
 
-     THE EXPERIMENT IS DEPLOYED AND AWAITING ON-DEVICE OBSERVATION. As of
-     v4.6.0 the manifest link is removed and standalone comes from the legacy
-     meta pair instead. Nobody has looked at the result yet, so nothing below
-     is a finding.
+     THE MANIFEST WAS NOT THE LEVER. RUN, OBSERVED, REFUTED - v4.6.0 out,
+     v4.6.1 back. This paragraph is the finding; the ones after it are what
+     the finding does and does not license.
 
-     The hypothesis it tests: the manifest link was the lever. The evidence
-     was a comparison - FuelPost declares no manifest at all, only an
-     apple-touch-icon link, and its icon does NOT darken on the same phone,
-     same Home Screen, same setting; WafflePost declared a manifest with
-     display:standalone and darkened. That was the only structural difference
-     between the two, and it maps to a real iOS distinction: no manifest
-     means the page is added as a bookmark web clip, a manifest with
-     display:standalone means it is installed as a web app. Reports from the
-     iOS 18 rollout describe bookmark clips as unaffected by Dark while
-     installed web apps get a system-generated dark icon.
+     The hypothesis was that the manifest link made iOS treat this as an
+     INSTALLED web app rather than a bookmark web clip, and that only
+     installed apps get the system-generated dark icon. The evidence was a
+     comparison: FuelPost declares no manifest, only an apple-touch-icon link,
+     and does NOT darken on the same phone, same Home Screen, same setting.
+     That was the only structural difference between the two apps.
 
-     Reading the result, once someone deletes the home screen icon and re-adds
-     it - re-adding without deleting first tests NOTHING, because iOS caches
-     web clip icons and will not refetch into an existing clip:
+     v4.6.0 removed the link and shipped standalone via the legacy pair
+     (apple-mobile-web-app-capable, status-bar-style=black-translucent). The
+     icon was deleted from the home screen and re-added from Safari - not
+     re-added over the existing clip, which would have tested nothing, since
+     iOS caches web clip icons and will not refetch into one. Observed under
+     Dark appearance: STILL DARK. So the link is not what iOS keys on, the
+     comparison with FuelPost has some other cause, and the manifest was
+     costing Android installability for nothing. It is back.
 
-       Yellow under Dark appearance means iOS keys on the manifest. The trade
-       landed at Android installability only, since the label survives via
-       <title>.
+     What is NOT established, and must not be written up as though it were:
+     WHY FuelPost differs. "iOS keys on standalone-ness itself" is the
+     leading remaining explanation and it is still only that - the experiment
+     that would separate it from the alternatives is a build with neither the
+     manifest nor the legacy metas, i.e. a genuine bookmark clip, and that has
+     not been run. Two other candidates are untested: iOS may key on the
+     presence of any home-screen-capable declaration whatever its form, or
+     FuelPost's icon may differ for a reason nobody has looked for yet.
 
-       Still dark means iOS keys on standalone-ness itself rather than on the
-       manifest. The trade is then icon versus URL bar, standalone wins, and
-       the revert is re-adding one link.
-
-     Re-checked on iOS 26 before running this: there is still no documented
-     mechanism for a web app to opt out of, or supply a variant for, the Dark
-     icon appearance - developers are asking for exactly this control on the
-     iOS 26 forums with no Apple answer, and web apps still get one flat
-     raster with no appearance slots. There is nothing pending to wait for.
-
-     What this costs, accepted rather than discovered: Android installability.
-     An unlinked manifest is not an installable PWA, so Android offers "add to
-     home screen" as a bookmark rather than an install. The LABEL survives,
-     because it falls back to <title> and that is already exactly
-     "WafflePost". manifest.json stays on disk, valid and tested, so the
-     revert is re-adding one link and nothing else.
+     Re-checked on iOS 26: there is still no documented mechanism for a web
+     app to opt out of, or supply a variant for, the Dark icon appearance -
+     developers are asking for exactly this control on the iOS 26 forums with
+     no Apple answer, and web apps still get one flat raster with no
+     appearance slots. There is nothing pending to wait for, and after this
+     experiment there is no known markup that changes the outcome. That is a
+     stronger statement than the repo could make before v4.6.0 and a weaker
+     one than "impossible" - the untested build above is the next thing to
+     try, if anyone judges the icon worth a URL bar.
 
      Serving the manifest link to Android only, by sniffing the UA, is
      rejected rather than unconsidered. It would buy both halves, and it is
@@ -118,12 +111,13 @@
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
-<!-- No manifest link, on purpose - the icon experiment above. manifest.json
-     is still in the repo and still tested; re-adding this one line is the
-     whole revert. structure.test.js FAILS if the link comes back, so that it
-     is a red build rather than a dark icon nobody connects to a commit. -->
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<!-- Back after v4.6.0's experiment: removing it did not save the icon, and it
+     was costing Android installability for nothing. The legacy
+     apple-mobile-web-app-* metas that stood in for it went with the revert -
+     display:standalone had been doing that job for releases and is the
+     supported way to ask for it; carrying both would be an untested
+     combination adopted straight after a failed experiment. -->
+<link rel="manifest" href="manifest.json">
 <!-- Colours the browser UI on Android, and the status bar in standalone.
      --char is declared once and never themed, so the header is #14110E in
      both light and dark; a single static value is correct here, not a
@@ -701,27 +695,27 @@ var __mods={};
 function require(p){return __mods[p.replace(/^\.\//,'').replace(/\.js$/,'')];}
 var module={exports:{}};
 </script>
-<script src="lib/waffledist.js?v=4.6.0"></script>
+<script src="lib/waffledist.js?v=4.6.1"></script>
 <script>__mods.waffledist=module.exports;module={exports:{}};</script>
-<script src="lib/atlasfilter.js?v=4.6.0"></script>
+<script src="lib/atlasfilter.js?v=4.6.1"></script>
 <script>__mods.atlasfilter=module.exports;module={exports:{}};</script>
-<script src="lib/routewaffles.js?v=4.6.0"></script>
+<script src="lib/routewaffles.js?v=4.6.1"></script>
 <script>__mods.routewaffles=module.exports;module={exports:{}};</script>
-<script src="lib/vehicleprofile.js?v=4.6.0"></script>
+<script src="lib/vehicleprofile.js?v=4.6.1"></script>
 <script>__mods.vehicleprofile=module.exports;module={exports:{}};</script>
-<script src="lib/triptext.js?v=4.6.0"></script>
+<script src="lib/triptext.js?v=4.6.1"></script>
 <script>__mods.triptext=module.exports;module={exports:{}};</script>
-<script src="lib/escape.js?v=4.6.0"></script>
+<script src="lib/escape.js?v=4.6.1"></script>
 <script>__mods.escape=module.exports;module={exports:{}};</script>
-<script src="lib/flexible-polyline.js?v=4.6.0"></script>
+<script src="lib/flexible-polyline.js?v=4.6.1"></script>
 <script>__mods['flexible-polyline']=module.exports;module={exports:{}};</script>
-<script src="lib/autosuggest.js?v=4.6.0"></script>
+<script src="lib/autosuggest.js?v=4.6.1"></script>
 <script>__mods.autosuggest=module.exports;module={exports:{}};</script>
-<script src="lib/location.js?v=4.6.0"></script>
+<script src="lib/location.js?v=4.6.1"></script>
 <script>__mods.location=module.exports;module={exports:{}};</script>
-<script src="lib/routeoptions.js?v=4.6.0"></script>
+<script src="lib/routeoptions.js?v=4.6.1"></script>
 <script>__mods.routeoptions=module.exports;module={exports:{}};</script>
-<script src="lib/baselayer.js?v=4.6.0"></script>
+<script src="lib/baselayer.js?v=4.6.1"></script>
 <script>__mods.baselayer=module.exports;module={exports:{}};</script>
 
 <script>
@@ -773,7 +767,7 @@ var HERE_API_KEY = '7RDploUiahAnm08IZA9X7YSbb0Qh99pvqV2NCNQX_Hg';
    APP_VERSION - the code. Shown in the legend card. Bumped every change,
                 and stamped onto every lib/ URL as a cache-buster. */
 var ATLAS_REV   = 'Atlas Rev 09-2026';
-var APP_VERSION = '4.6.0';
+var APP_VERSION = '4.6.1';
 
 /* ===== DATA ==========================================================
    55 rows - 54 walkable exits plus one honorary - carrying 65 pairings,

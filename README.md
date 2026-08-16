@@ -46,7 +46,7 @@ icon-512.png              Android, large
 icon-maskable-512.png     Android, padded for a launcher that crops to a circle
 favicon-32.png            browser tab, 32x32
 favicon-16.png            browser tab, 16x16
-manifest.json             valid, tested, and deliberately NOT linked - the revert path for the v4.6.0 icon experiment
+manifest.json             app name, icons, standalone display - no service worker
 ```
 
 `lib/` is CommonJS so the tests run under plain `node` with no install and no
@@ -664,8 +664,8 @@ address starts with a house number and names the row's own state, and that
 leaderboard.
 
 `run.js` prints one `ok <name> N passed` line per file and then `all green`,
-or names the files that failed. It does not sum the assertions — at v4.6.0
-they come to 1,093 across twelve files, added up from those lines.
+or names the files that failed. It does not sum the assertions — at v4.6.1
+they come to 1,094 across twelve files, added up from those lines.
 
 ## Two version strings, on purpose
 
@@ -680,7 +680,7 @@ Same reasoning as FuelPost, different perishable thing:
   stopped existing; the requirement was "always on screen", not "in the
   header", and the panel tab is on screen in both modes whether the panel is
   open or collapsed. Bump only when the rows are re-audited.
-- **`APP_VERSION`** (`4.6.0`) — the code. Shown in the **legend card**.
+- **`APP_VERSION`** (`4.6.1`) — the code. Shown in the **legend card**.
   Bumped for every shipped change, and stamped onto every `lib/` URL as a
   cache-buster.
 
@@ -700,6 +700,30 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v4.6.1
+
+**Result: still dark. The manifest was not the lever, and it is back.**
+v4.6.0's experiment ran on device — home screen icon deleted and re-added from
+Safari, not re-added over the existing clip — and the icon darkened under Dark
+appearance exactly as before. So removing the link bought nothing and was
+costing Android installability, and the link is restored. The legacy
+`apple-mobile-web-app-*` metas that stood in for it went back out with it:
+`display:standalone` is the supported way to ask for standalone and had been
+doing the job for releases, and carrying both would be an untested combination
+adopted straight after a failed experiment.
+
+**What is now known, and what is still not.** Known: the manifest link is not
+what iOS keys on. Not known: *why* FuelPost, with no manifest, does not darken
+on the same phone. "iOS keys on standalone-ness itself" is the leading
+remaining explanation and is still only that — separating it from the
+alternatives needs a build with neither the manifest nor the legacy metas, a
+genuine bookmark clip, which has not been run. Two other candidates are
+untested: iOS may key on any home-screen-capable declaration whatever its
+form, or FuelPost's icon may differ for a reason nobody has looked for.
+
+The inverted test assertion flips back, deliberately and in the same change as
+the comment rewrite — which is what its own comment said to do.
 
 ### v4.6.0
 
@@ -723,6 +747,8 @@ refetch into an existing clip, so re-adding without deleting tests nothing),
 then look under Dark appearance. Yellow means iOS keys on the manifest and the
 cost was Android installability alone. Still dark means iOS keys on
 standalone-ness itself, standalone wins, and the revert is re-adding one line.
+
+> It came back **still dark**. See v4.6.1 above.
 
 Cost accepted: Android installability. The **label survives**, because it
 falls back to `<title>`, which is already exactly `WafflePost` — now asserted.
@@ -891,13 +917,12 @@ with no variant slots, so iOS generates the dark and tinted versions itself.
 There is no markup, manifest field or asset that opts out; the only control
 is that per-device setting, and it belongs to the user, not the app.
 
-> Corrected later. That last sentence was stated more confidently than the
-> evidence supported: the manifest **link** is a candidate lever, since
-> FuelPost declares no manifest and does not darken on the same phone under
-> the same setting. **v4.6.0 removes the link and is awaiting the on-device
-> result.** Re-checked on iOS 26: there is still no documented opt-out or
-> variant mechanism, and developers are asking for exactly this control on
-> the forums with no Apple answer.
+> Corrected, then tested. That last sentence was stated more confidently
+> than the evidence supported, so v4.6.0 removed the manifest link to find
+> out — and the icon was **still dark** after a delete-and-re-add. The link
+> was not the lever; v4.6.1 put it back. The original sentence turns out to
+> be right about the outcome and still wrong about the reasoning, and *why*
+> FuelPost differs is open. See **v4.6.0 / v4.6.1** below.
 
 The app's own header tile was ruled out first, by pixels rather than by
 reading: `--sign` and `--char` are declared once in `:root` and the dark
