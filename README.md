@@ -46,7 +46,7 @@ icon-512.png              Android, large
 icon-maskable-512.png     Android, padded for a launcher that crops to a circle
 favicon-32.png            browser tab, 32x32
 favicon-16.png            browser tab, 16x16
-manifest.json             app name, icons, standalone display - no service worker
+manifest.json             valid, tested, and deliberately NOT linked - the revert path for the v4.6.0 icon experiment
 ```
 
 `lib/` is CommonJS so the tests run under plain `node` with no install and no
@@ -664,8 +664,8 @@ address starts with a house number and names the row's own state, and that
 leaderboard.
 
 `run.js` prints one `ok <name> N passed` line per file and then `all green`,
-or names the files that failed. It does not sum the assertions — at v4.5.0
-they come to 1,090 across twelve files, added up from those lines.
+or names the files that failed. It does not sum the assertions — at v4.6.0
+they come to 1,093 across twelve files, added up from those lines.
 
 ## Two version strings, on purpose
 
@@ -680,7 +680,7 @@ Same reasoning as FuelPost, different perishable thing:
   stopped existing; the requirement was "always on screen", not "in the
   header", and the panel tab is on screen in both modes whether the panel is
   open or collapsed. Bump only when the rows are re-audited.
-- **`APP_VERSION`** (`4.5.0`) — the code. Shown in the **legend card**.
+- **`APP_VERSION`** (`4.6.0`) — the code. Shown in the **legend card**.
   Bumped for every shipped change, and stamped onto every `lib/` URL as a
   cache-buster.
 
@@ -700,6 +700,39 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v4.6.0
+
+**The dark-icon experiment, deployed.** The head comment had carried a
+hypothesis and an explicit untested next step for three releases: the home
+screen icon darkens under iOS Dark appearance, FuelPost with no manifest does
+not darken on the same phone under the same setting, and the manifest link is
+the only structural difference. Nobody had removed it and looked. This release
+removes it.
+
+`<link rel="manifest">` is gone. Standalone now comes from the legacy pair —
+`apple-mobile-web-app-capable` plus
+`apple-mobile-web-app-status-bar-style=black-translucent` — and the second
+half is load-bearing: without it the page does not extend under the status
+bar, `env(safe-area-inset-top)` reports 0, and the bar loses the top padding
+the whole v4.3.0 chrome layout is built around.
+
+**No result yet, and the comment says so.** Reading it needs a device: delete
+the home screen icon and re-add it (iOS caches web clip icons and will not
+refetch into an existing clip, so re-adding without deleting tests nothing),
+then look under Dark appearance. Yellow means iOS keys on the manifest and the
+cost was Android installability alone. Still dark means iOS keys on
+standalone-ness itself, standalone wins, and the revert is re-adding one line.
+
+Cost accepted: Android installability. The **label survives**, because it
+falls back to `<title>`, which is already exactly `WafflePost` — now asserted.
+`manifest.json` stays on disk, valid and still fully tested, because it is the
+revert path and an unlinked manifest that had rotted would turn a one-line
+revert into a debugging session.
+
+The link assertion in `structure.test.js` **inverts** rather than disappears:
+re-adding the link would silently re-trigger the dark treatment weeks later
+with nothing tying it to a commit, so it is a red build instead.
 
 ### v4.5.0
 
@@ -857,6 +890,14 @@ Automatic, follows the system appearance. A web clip is a single flat raster
 with no variant slots, so iOS generates the dark and tinted versions itself.
 There is no markup, manifest field or asset that opts out; the only control
 is that per-device setting, and it belongs to the user, not the app.
+
+> Corrected later. That last sentence was stated more confidently than the
+> evidence supported: the manifest **link** is a candidate lever, since
+> FuelPost declares no manifest and does not darken on the same phone under
+> the same setting. **v4.6.0 removes the link and is awaiting the on-device
+> result.** Re-checked on iOS 26: there is still no documented opt-out or
+> variant mechanism, and developers are asking for exactly this control on
+> the forums with no Apple answer.
 
 The app's own header tile was ruled out first, by pixels rather than by
 reading: `--sign` and `--char` are declared once in `:root` and the dark
