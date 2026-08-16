@@ -11,9 +11,10 @@
      v4.6.3 from the yellow-ground, black-W mark that shipped from v3.5.0.
      Baked rather than reused, because the bar's W is drawn in whatever the
      DEVICE calls system-ui - SF Pro on iOS, Roboto on Android - and an icon
-     has to be one fixed image. Liberation Sans is the metric twin of Arial
-     and the closest stand-in available. scripts/icons.py bakes all six from
-     one description; it is the only place the geometry lives.
+     has to be one fixed image. The icons are authored outside this repo;
+     scripts/icons.py does not draw them, it MEASURES the shipped files - the
+     flatten, the sizes, the byte-identity of the two 512s, and the one
+     geometric fact prose cannot check for itself, below.
 
      THE INVERSION IS NOT A FIX FOR THE DARK ICON PROBLEM. The next person to
      read this will assume it is, so: six candidate designs were rendered and
@@ -44,19 +45,20 @@
      for plus a maskable variant, because a launcher that crops to a circle
      will clip a full-bleed glyph.
 
-     THE MASKABLE AND PLAIN 512 ARE NOW BYTE-IDENTICAL FILES. They used to
+     THE MASKABLE AND PLAIN 512 ARE BYTE-IDENTICAL FILES. They used to
      differ, because the old plain W was drawn full size and the maskable one
-     shrunk to fit. The new W sits at 0.62 of the icon and needs no shrink:
-     measured pixel by pixel on the baked file, its furthest yellow pixel is
-     at radius 0.380 against the centre-80% circle's 0.400, so a circular crop
-     clips NONE of it. (Its bounding-box diagonal is 0.767, which overstates
-     the risk - the box corners are empty. The direct measurement is the one
-     that decides, and scripts/icons.py checks the box against the 0.80 limit
-     as a cheap guard on top.) Both files still ship because the manifest
-     declares purpose "maskable" separately and a launcher may fetch either;
-     they simply happen to have the same contents. The grid's outer wells ARE
-     clipped by a circular crop, and that is intended - the grid is background
-     texture and only the W has to survive the mask.
+     shrunk to fit. The current W needs no shrink, measured pixel by pixel on
+     the shipped file by scripts/icons.py: it spans 0.582 of the icon wide by
+     0.426 tall, and its furthest yellow pixel sits at radius 0.359 against
+     the centre-80% circle's 0.400. A circular crop clips NONE of it. (The
+     bounding-box diagonal is 0.721, which OVERSTATES the risk, because the
+     box corners are empty. The radius is the number that decides; both are
+     printed so the difference stays visible to whoever changes the mark.)
+     Both files still ship because the manifest declares purpose "maskable"
+     separately and a launcher may fetch either; they simply happen to have
+     the same contents. The grid's outer wells ARE clipped by a circular crop,
+     and that is intended - the grid is background texture and only the W has
+     to survive the mask.
 
      display:standalone, deliberately. This app was already built like one -
      html and body are overflow:hidden, the bar pads for
@@ -779,27 +781,27 @@ var __mods={};
 function require(p){return __mods[p.replace(/^\.\//,'').replace(/\.js$/,'')];}
 var module={exports:{}};
 </script>
-<script src="lib/waffledist.js?v=4.7.0"></script>
+<script src="lib/waffledist.js?v=4.7.1"></script>
 <script>__mods.waffledist=module.exports;module={exports:{}};</script>
-<script src="lib/atlasfilter.js?v=4.7.0"></script>
+<script src="lib/atlasfilter.js?v=4.7.1"></script>
 <script>__mods.atlasfilter=module.exports;module={exports:{}};</script>
-<script src="lib/routewaffles.js?v=4.7.0"></script>
+<script src="lib/routewaffles.js?v=4.7.1"></script>
 <script>__mods.routewaffles=module.exports;module={exports:{}};</script>
-<script src="lib/vehicleprofile.js?v=4.7.0"></script>
+<script src="lib/vehicleprofile.js?v=4.7.1"></script>
 <script>__mods.vehicleprofile=module.exports;module={exports:{}};</script>
-<script src="lib/triptext.js?v=4.7.0"></script>
+<script src="lib/triptext.js?v=4.7.1"></script>
 <script>__mods.triptext=module.exports;module={exports:{}};</script>
-<script src="lib/escape.js?v=4.7.0"></script>
+<script src="lib/escape.js?v=4.7.1"></script>
 <script>__mods.escape=module.exports;module={exports:{}};</script>
-<script src="lib/flexible-polyline.js?v=4.7.0"></script>
+<script src="lib/flexible-polyline.js?v=4.7.1"></script>
 <script>__mods['flexible-polyline']=module.exports;module={exports:{}};</script>
-<script src="lib/autosuggest.js?v=4.7.0"></script>
+<script src="lib/autosuggest.js?v=4.7.1"></script>
 <script>__mods.autosuggest=module.exports;module={exports:{}};</script>
-<script src="lib/location.js?v=4.7.0"></script>
+<script src="lib/location.js?v=4.7.1"></script>
 <script>__mods.location=module.exports;module={exports:{}};</script>
-<script src="lib/routeoptions.js?v=4.7.0"></script>
+<script src="lib/routeoptions.js?v=4.7.1"></script>
 <script>__mods.routeoptions=module.exports;module={exports:{}};</script>
-<script src="lib/baselayer.js?v=4.7.0"></script>
+<script src="lib/baselayer.js?v=4.7.1"></script>
 <script>__mods.baselayer=module.exports;module={exports:{}};</script>
 
 <script>
@@ -851,7 +853,7 @@ var HERE_API_KEY = '7RDploUiahAnm08IZA9X7YSbb0Qh99pvqV2NCNQX_Hg';
    APP_VERSION - the code. Shown in the legend card. Bumped every change,
                 and stamped onto every lib/ URL as a cache-buster. */
 var ATLAS_REV   = 'Atlas Rev 09-2026';
-var APP_VERSION = '4.7.0';
+var APP_VERSION = '4.7.1';
 
 /* ===== DATA ==========================================================
    55 rows - 54 walkable exits plus one honorary - carrying 65 pairings,

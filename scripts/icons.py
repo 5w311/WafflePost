@@ -1,151 +1,112 @@
 #!/usr/bin/env python3
-"""Bakes every icon PNG this app ships, from one description of the mark.
+"""Verifies the icon PNGs this app ships against the invariants that matter.
 
-Run:  python3 scripts/icons.py            (writes to repo root)
-      python3 scripts/icons.py --check    (verifies, writes nothing)
+Run:  python3 scripts/icons.py
 
-WHY THIS EXISTS. Until v4.6.3 the icons were baked outside the repo and the
-only record of how was prose in the head comment. That is fine until someone
-needs to change one of them, and then every measurement the comment asserts -
-the W's diagonal against the maskable safe zone, the flatten to RGB - has to
-be reproduced by hand and trusted. Here they are executable instead.
+WHAT THIS IS, AND WHAT IT DELIBERATELY IS NOT. v4.6.3 shipped a generator
+here, because the supplied assets had not reached the session and the mark had
+to come from somewhere. v4.7.1 replaced its output with the real files, which
+are AUTHORED OUTSIDE THIS REPO. A generator that cannot reproduce what ships
+is worse than no generator - it invites someone to run it and quietly replace
+hand-made assets with an approximation - so it is gone, and what is left is
+the half that was actually earning its place: measurement.
+
+It checks what prose cannot: that every shipped file is flat RGB at the size
+it claims, that the two 512s really are the same bytes, and that the W clears
+the maskable safe circle - measured pixel by pixel on the shipped file rather
+than argued from a bounding box. test/structure.test.js covers the format and
+the byte-identity in plain node with no dependency; the safe-circle geometry
+needs a decoder, which is why it lives here.
 
 THE FLATTEN IS THE POINT, not a detail. iOS composites any transparency onto
 black, so an alpha channel buys nothing and risks a black wedge showing
-through its own superellipse mask. Everything below is built on an opaque RGB
-canvas and asserted alpha-free on the way out; test/structure.test.js asserts
-it again on the committed files, because "a future regeneration forgets the
-flatten" is exactly the kind of change that looks right on a desktop and is
-wrong on a phone.
-
-THIS IS NOT A FIX FOR THE DARK ICON PROBLEM. See the icon comment in
-index.html: no icon design defeats the iOS dark transform. This mark degrades
-gracefully under it instead of falling apart. That is the whole claim.
+through its own superellipse mask. "A future regeneration forgets the flatten"
+is exactly the kind of change that looks right on a desktop and is wrong on a
+phone, so it is asserted on the committed bytes in two places.
 """
 
-import sys, os
-from PIL import Image, ImageDraw, ImageFont
+import sys, os, math, hashlib
+from PIL import Image
 
-ROOT  = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-FONT  = '/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf'
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+SIGN = (0xFF, 0xC7, 0x2C)          # --sign, the W
+SAFE_R = 0.40                      # centre-80% circle: the maskable safe zone
 
-# Straight from the app's tokens. --sign and --char are declared once in :root
-# and never themed, so the icon and the header tile are the same two colours in
-# both appearances - which is the reason the tile can be pixel-identical light
-# and dark, and the reason a dark icon VARIANT would contradict the app.
-CHAR = (0x14, 0x11, 0x0E)   # --char, the ground
-SIGN = (0xFF, 0xC7, 0x2C)   # --sign, the W
-GRID = (0x33, 0x2C, 0x24)   # --line (dark theme): the waffle, one step up from
-                            # the ground. Light enough to read as texture at
-                            # 180px, dark enough that the icon still reads as
-                            # one flat dark tile rather than as a pattern.
-
-# 4 wells across, with the outer margin equal to the inner gutter, and the
-# gutter a quarter of a well: 4w + 5g = 1 and g = w/4.
-WELLS   = 4
-WELL    = 1.0 / (WELLS + (WELLS + 1) / 4.0)
-GUTTER  = WELL / 4.0
-RADIUS  = 0.20          # of a well, so the waffle reads as pressed, not tiled
-
-W_WIDTH = 0.62          # target glyph width as a fraction of the icon
-SS      = 4             # supersample factor; the grid edges alias badly at 1x
+# name -> expected square size
+TARGETS = [('apple-touch-icon.png', 180), ('icon-192.png', 192),
+           ('icon-512.png', 512), ('icon-maskable-512.png', 512),
+           ('favicon-32.png', 32), ('favicon-16.png', 16)]
 
 
-def _fit_font(target_px):
-    """Point size whose rendered 'W' is target_px wide. Bisection rather than a
-    ratio, because Liberation's advance width and its INK width differ and it
-    is the ink that has to land on 0.62."""
-    lo, hi = 1, target_px * 4
-    while lo < hi:
-        mid = (lo + hi + 1) // 2
-        f = ImageFont.truetype(FONT, mid)
-        l, t, r, b = f.getbbox('W')
-        if (r - l) <= target_px:
-            lo = mid
-        else:
-            hi = mid - 1
-    return ImageFont.truetype(FONT, lo)
+def sha(path):
+    return hashlib.sha256(open(path, 'rb').read()).hexdigest()[:12]
 
 
-def render(size, grid=True):
-    """One icon, opaque, square, no corner radius of its own - iOS masks with
-    its superellipse and Android launchers apply their own shape, so a source
-    that rounds its own corners shows dark wedges through the mask."""
-    S = size * SS
-    im = Image.new('RGB', (S, S), CHAR)
-    d = ImageDraw.Draw(im)
-
-    if grid:
-        # Dropped at 32 and 16: the wells are under two pixels there and only
-        # add noise around the W.
-        w, g = WELL * S, GUTTER * S
-        for row in range(WELLS):
-            for col in range(WELLS):
-                x = g + col * (w + g)
-                y = g + row * (w + g)
-                d.rounded_rectangle([x, y, x + w, y + w], radius=w * RADIUS, fill=GRID)
-
-    f = _fit_font(int(round(W_WIDTH * S)))
-    l, t, r, b = f.getbbox('W')
-    # Centre on the INK box. Liberation's 'W' carries asymmetric side bearings
-    # and a font-metrics centring puts the glyph visibly left of centre - the
-    # same trap the 3.5.0 icons hit and corrected by 2.5px.
-    d.text(((S - (r - l)) / 2 - l, (S - (b - t)) / 2 - t), 'W', font=f, fill=SIGN)
-
-    return im.resize((size, size), Image.LANCZOS)
-
-
-def glyph_metrics(size=512):
-    """The two numbers the head comment asserts: the W's width and the diagonal
-    of its bounding box, both as fractions of the icon. The diagonal is what
-    decides whether a circular maskable crop clips the glyph."""
-    S = size * SS
-    f = _fit_font(int(round(W_WIDTH * S)))
-    l, t, r, b = f.getbbox('W')
-    wf, hf = (r - l) / S, (b - t) / S
-    return wf, hf, (wf * wf + hf * hf) ** 0.5
-
-
-# name -> (px, draw the waffle grid?)
-TARGETS = [
-    ('apple-touch-icon.png',    180, True),
-    ('icon-192.png',            192, True),
-    ('icon-512.png',            512, True),
-    # Identical contents to icon-512 on purpose: the W's diagonal already sits
-    # inside the maskable safe zone, so there is nothing to shrink. Both files
-    # still ship because the manifest declares purpose "maskable" separately
-    # and a launcher may fetch either. The grid's outer wells DO get clipped by
-    # a circular crop; that is intended, the grid is background texture and
-    # only the W has to survive the mask.
-    ('icon-maskable-512.png',   512, True),
-    ('favicon-32.png',           32, False),
-    ('favicon-16.png',           16, False),
-]
+def glyph_geometry(path):
+    """Where the yellow actually is. Returns the W's bounding box as fractions
+    of the icon, plus the furthest yellow pixel's radius from centre - which is
+    the number that decides whether a circular crop clips the mark. The
+    bounding-box diagonal OVERSTATES the risk, because the box corners are
+    empty; both are reported so the difference stays visible."""
+    im = Image.open(path).convert('RGB')
+    S = im.size[0]
+    px = im.load()
+    xs, ys, maxr = [], [], 0.0
+    c = (S - 1) / 2
+    for y in range(S):
+        for x in range(S):
+            p = px[x, y]
+            if all(abs(p[i] - SIGN[i]) < 70 for i in range(3)):
+                xs.append(x); ys.append(y)
+                maxr = max(maxr, math.hypot(x - c, y - c) / S)
+    if not xs:
+        return None
+    w = (max(xs) - min(xs) + 1) / S
+    h = (max(ys) - min(ys) + 1) / S
+    return w, h, math.hypot(w, h), maxr
 
 
 def main():
-    check = '--check' in sys.argv
-    wf, hf, diag = glyph_metrics()
-    print('glyph: width %.3f  height %.3f  diagonal %.3f of the icon' % (wf, hf, diag))
-    print('maskable safe zone: diagonal must stay under 0.80 -> %s'
-          % ('OK' if diag < 0.80 else 'CLIPS'))
-    if diag >= 0.80:
-        sys.exit('the W would be clipped by a circular mask')
-
-    for name, px, grid in TARGETS:
-        im = render(px, grid)
-        assert im.mode == 'RGB', name + ' is not flat RGB'
+    bad = []
+    for name, size in TARGETS:
         path = os.path.join(ROOT, name)
-        if check:
-            if not os.path.exists(path):
-                sys.exit(name + ' missing')
-            cur = Image.open(path)
-            same = (cur.mode == 'RGB' and cur.size == (px, px)
-                    and cur.convert('RGB').tobytes() == im.tobytes())
-            print('  %-24s %s' % (name, 'matches' if same else 'DIFFERS from a fresh bake'))
-        else:
-            im.save(path, 'PNG', optimize=True)
-            print('  %-24s %dx%d %s' % (name, px, px, 'grid' if grid else 'no grid'))
+        if not os.path.exists(path):
+            bad.append(name + ' is missing'); continue
+        im = Image.open(path)
+        ok_mode = im.mode == 'RGB'
+        ok_size = im.size == (size, size)
+        print('  %-24s %-9s %-5s %s' % (name, '%dx%d' % im.size, im.mode, sha(path)))
+        if not ok_mode:
+            bad.append('%s is %s, not flat RGB - iOS composites alpha onto black' % (name, im.mode))
+        if not ok_size:
+            bad.append('%s is %dx%d, expected %d' % (name, im.size[0], im.size[1], size))
+
+    a = os.path.join(ROOT, 'icon-512.png')
+    b = os.path.join(ROOT, 'icon-maskable-512.png')
+    if os.path.exists(a) and os.path.exists(b):
+        same = open(a, 'rb').read() == open(b, 'rb').read()
+        print('\n512 pair byte-identical: %s' % same)
+        # Not a failure if they ever diverge - a future mark might genuinely
+        # need a shrunk maskable - but it contradicts the head comment, so say
+        # so loudly rather than letting the two drift apart in silence.
+        if not same:
+            bad.append('the two 512s differ; the head comment says they are identical')
+
+    g = glyph_geometry(b if os.path.exists(b) else a)
+    if g:
+        w, h, diag, maxr = g
+        print('glyph: width %.3f  height %.3f  bbox diagonal %.3f' % (w, h, diag))
+        print('furthest W pixel: r=%.4f  against the safe circle %.2f -> %s'
+              % (maxr, SAFE_R, 'clears it' if maxr <= SAFE_R else 'CLIPPED'))
+        if maxr > SAFE_R:
+            bad.append('a circular maskable crop would clip the W (r=%.4f)' % maxr)
+
+    if bad:
+        print('\nFAIL')
+        for m in bad:
+            print('  ' + m)
+        sys.exit(1)
+    print('\nall icon invariants hold')
 
 
 if __name__ == '__main__':
