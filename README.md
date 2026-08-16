@@ -37,13 +37,14 @@ lib/flexible-polyline.js  HERE's reference decoder, vendored unmodified (MIT)
 test/*.test.js            plain-node tests, no framework
 test/_assert.js           two assertions and a reporter; that is the whole framework
 test/run.js               runs every test file and fails the run if any file fails
+scripts/icons.py          bakes all six icon PNGs from one description; --check verifies the committed bytes
 scripts/remeasure.js      geocodes each truck stop and re-derives feet; regenerates the CSV
 scripts/remeasure-report.txt  provenance of every surviving figure, every judgment call
 data/atlas.csv            REGENERATED from DATA by scripts/remeasure.js - never hand-edit
-apple-touch-icon.png      iOS home screen, 180x180 - the header tile, baked
+apple-touch-icon.png      iOS home screen, 180x180 - the bar tile, baked
 icon-192.png              Android home screen
 icon-512.png              Android, large
-icon-maskable-512.png     Android, padded for a launcher that crops to a circle
+icon-maskable-512.png     Android; byte-identical to icon-512 since v4.6.3 - the W needs no shrink
 favicon-32.png            browser tab, 32x32
 favicon-16.png            browser tab, 16x16
 manifest.json             app name, icons, standalone display - no service worker
@@ -664,8 +665,8 @@ address starts with a house number and names the row's own state, and that
 leaderboard.
 
 `run.js` prints one `ok <name> N passed` line per file and then `all green`,
-or names the files that failed. It does not sum the assertions — at v4.6.2
-they come to 1,094 across twelve files, added up from those lines.
+or names the files that failed. It does not sum the assertions — at v4.6.3
+they come to 1,113 across twelve files, added up from those lines.
 
 ## Two version strings, on purpose
 
@@ -680,7 +681,7 @@ Same reasoning as FuelPost, different perishable thing:
   stopped existing; the requirement was "always on screen", not "in the
   header", and the panel tab is on screen in both modes whether the panel is
   open or collapsed. Bump only when the rows are re-audited.
-- **`APP_VERSION`** (`4.6.2`) — the code. Shown in the **legend card**.
+- **`APP_VERSION`** (`4.6.3`) — the code. Shown in the **legend card**.
   Bumped for every shipped change, and stamped onto every `lib/` URL as a
   cache-buster.
 
@@ -700,6 +701,44 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v4.6.3
+
+**The mark inverts: char ground, sign-yellow W, over a flat 4×4 waffle grid.**
+The old yellow field with a black W crushed under the iOS dark appearance into
+a murky olive rectangle — a bright icon that had visibly gone wrong. The new
+one darkens into a dark icon with a legible W.
+
+**This is not a fix for the dark icon problem, and the comment says so
+first.** Six candidate designs were rendered and pushed through a simulated
+dark crush; every one lost comparable contrast. No icon design defeats the
+transform — that mechanism was investigated and closed in v4.6.0–v4.6.2. This
+ships because it is a better mark and because it degrades gracefully. It buys
+appearance, not contrast.
+
+**The maskable and plain 512 are now byte-identical**, asserted. The old plain
+W was full size and the maskable one shrunk to fit; the new W needs no shrink.
+Measured pixel by pixel on the baked file, its furthest yellow pixel sits at
+radius **0.380** against the centre-80% circle's 0.400, so a circular crop
+clips none of it. (Bounding-box diagonal is 0.767, which overstates the risk —
+the box corners are empty.) Both files still ship because the manifest names
+them separately. The grid's outer wells *are* clipped by a circular crop; that
+is intended, the grid is texture and only the W has to survive.
+
+**`scripts/icons.py` is new**, because the icons were previously baked outside
+the repo with only prose recording how. Every measurement the head comment
+asserts is now executable, and `--check` verifies the committed bytes against
+a fresh bake.
+
+**The bar tile follows**, char with a yellow W and no grid — the wells are
+under 2px at 28px. The bar is char too, so the tile gets a `#332C24` hairline
+(the icon's own waffle colour) to keep reading as a tile rather than as stray
+text. Reverting the fill to yellow would have been the wrong fix.
+
+New assertions: every shipped PNG is flat RGB with no alpha — read from the
+IHDR colour-type byte, because a regeneration that forgets the flatten looks
+right on a desktop and shows a black wedge on a phone — and the two 512s are
+byte-identical.
 
 ### v4.6.2
 
