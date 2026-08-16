@@ -79,34 +79,37 @@ t.eq(/\bL\.(map|marker|divIcon|polyline|tileLayer|featureGroup|layerGroup|contro
               pair[0] + ' file exists: ' + m[1]);
 });
 
-// ---- the manifest link is ABSENT, on purpose (v4.6.0) ----
-// This assertion is inverted from what it used to be, and that inversion IS
-// the point. The home screen icon renders dark under iOS Dark appearance and
-// the manifest link is the suspected lever; the experiment removing it is
-// deployed and the result is not in yet. Re-adding the link would silently
-// re-trigger the dark treatment on a phone, weeks later, with nothing tying
-// it to a commit. Here it is a red build instead.
-// If the experiment fails, this is the assertion to flip back - deliberately,
-// with the head comment updated in the same change. See the icon comment in
-// index.html for how to read the result.
-t.eq(/<link rel="manifest"/.test(src), false,
-     'no manifest link: the dark-icon experiment is live');
-t.eq(/<meta name="apple-mobile-web-app-capable" content="yes">/.test(src), true,
-     'standalone comes from the legacy meta instead');
-// black-translucent is load-bearing, not cosmetic: without it the page does
-// not extend under the status bar, env(safe-area-inset-top) reports 0, and the
-// bar loses the top padding the whole chrome layout is built around.
-t.eq(/<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">/.test(src), true,
-     'and the status bar style keeps the safe-area inset reporting');
+// ---- the manifest link is back (v4.6.1) ----
+// v4.6.0 inverted this assertion to hold a dark-icon experiment in place:
+// remove the link, see whether the home screen icon stops being darkened by
+// iOS Dark appearance. Observed on device after a delete-and-re-add: STILL
+// DARK. The link was not the lever, so it was costing Android installability
+// for nothing and it is back. That inverted assertion said it was the one to
+// flip back, deliberately, with the head comment updated in the same change -
+// this is that change. The experiment is written up in the icon comment in
+// index.html; do not re-run it without reading that first.
+t.eq(/<link rel="manifest" href="([^"]+)">/.test(src), true, 'the manifest is linked again');
+// The stand-ins went with the revert. display:standalone is the supported way
+// to ask for standalone and had been doing it for releases; keeping both would
+// be an untested combination adopted right after a failed experiment.
+// Matched as a TAG, not as a string: the icon comment names these metas while
+// writing up what v4.6.0 did, and a bare substring test fails on the account
+// of the experiment rather than on the markup it describes.
+t.eq(/<meta name="apple-mobile-web-app-capable"/.test(src), false,
+     'the legacy standalone metas went back out with it');
+t.eq(/<meta name="apple-mobile-web-app-status-bar-style"/.test(src), false,
+     'both of them');
 
-// The manifest itself is still validated, by its own path rather than through
-// a link that no longer exists. The file is deliberately unlinked and kept
-// valid because it is the one-line revert path for the experiment above - an
-// unlinked manifest that had rotted would turn a revert into a debugging
-// session. It fails the same quiet way it always did: a bad icon path inside
-// it costs Android the home screen icon and says nothing.
+// The manifest is read by its own path rather than through the captured href,
+// which is how v4.6.0 left it and is the more useful shape: the file has to be
+// valid whether or not anything links it, since it is the revert path in both
+// directions. It fails the same quiet way it always did - a bad icon path
+// inside it costs Android the home screen icon and says nothing.
 var mfPath = path.join(__dirname, '..', 'manifest.json');
-t.eq(fs.existsSync(mfPath), true, 'manifest.json is still in the repo as the revert path');
+t.eq(fs.existsSync(mfPath), true, 'manifest.json is in the repo');
+t.eq(fs.existsSync(path.join(__dirname, '..',
+     (src.match(/<link rel="manifest" href="([^"]+)">/) || [])[1] || 'nope')), true,
+     'and the link points at a file that exists');
 var mf = null;
 try { mf = JSON.parse(fs.readFileSync(mfPath, 'utf8')); } catch (e) {
   console.log('  manifest parse error: ' + e.message);
