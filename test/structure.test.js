@@ -256,6 +256,39 @@ t.eq(/\.sheet-actions\{[^}]*position:sticky/.test(src), false,
 t.eq(/class="sheet-scroll"/.test(src), true, 'the sheet has one scrolling child');
 t.eq(/\.sheet\.show\{display:flex\}/.test(src), true, 'and the sheet itself is a flex column');
 
+// ---- the bar follows the theme (v4.7.0) ----
+// It was --char in both themes from v1.x, with every child written against
+// that dark surround in hardcoded literals. A dark bar over a cream app read
+// as a fragment of a different design. It is --surface now, the same material
+// as the panel at the other end of the map.
+t.eq(/\.bar\{background:var\(--surface\)/.test(src), true, 'the bar is --surface');
+// The literals that assumed a permanently dark bar are gone from the RULES.
+// Matched as declarations, not as bare strings: the bar comment names the old
+// values while explaining what they were, and a substring test would fail on
+// the explanation rather than on a regression.
+[['#241F1A', /background:#241F1A/], ['#4A443B', /border:1px solid #4A443B/],
+ ['#C9C1B4', /color:#C9C1B4/],      ['#8E857A', /color:#8E857A/],
+ ['#3A342C', /solid #3A342C/]].forEach(function (pair) {
+  t.eq(pair[1].test(src), false, 'no dark-surround literal left in a rule: ' + pair[0]);
+});
+// The one deliberate exception, kept because it earns its place in dark mode
+// only: --surface #1E1A16 against the tile's #14110E is about four levels of
+// luminance, which is no edge at all.
+t.eq(/\.tile\{[\s\S]{0,200}border:1px solid #332C24/.test(src), true,
+     "the tile keeps its hairline, which is the bar block's one literal");
+// theme-color was a static #14110E while the bar was permanently char. A fixed
+// value now paints dark browser chrome above a cream bar in light mode, which
+// is the exact seam this change removed.
+t.eq(/function syncThemeColor\(\)/.test(src), true, 'the browser chrome colour is synced');
+var applySrc = (src.match(/function applyTheme\(choice\)\{[\s\S]*?\n\}/) || [''])[0];
+t.eq(/syncThemeColor\(\)/.test(applySrc), true, 'every theme change updates it');
+t.eq((src.match(/syncThemeColor\(\);/g) || []).length >= 2, true,
+     'and boot does too, since the meta ships the light value');
+// Read off the bar rather than from a table of colours, so a palette change
+// moves both without anyone remembering this function exists.
+t.eq(/getComputedStyle\(bar\)\.backgroundColor/.test(src), true,
+     'the synced value is read from the bar itself');
+
 // max(), not calc(). calc(10px + inset) stacks a gap on top of an inset that
 // exists to BE that gap - 69px of top padding on a Dynamic Island phone.
 t.eq(/padding-top:calc\([\d.]+px \+ env\(safe-area-inset-top/.test(src), false,

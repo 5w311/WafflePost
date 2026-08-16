@@ -665,8 +665,8 @@ address starts with a house number and names the row's own state, and that
 leaderboard.
 
 `run.js` prints one `ok <name> N passed` line per file and then `all green`,
-or names the files that failed. It does not sum the assertions — at v4.6.3
-they come to 1,113 across twelve files, added up from those lines.
+or names the files that failed. It does not sum the assertions — at v4.7.0
+they come to 1,124 across twelve files, added up from those lines.
 
 ## Two version strings, on purpose
 
@@ -681,7 +681,7 @@ Same reasoning as FuelPost, different perishable thing:
   stopped existing; the requirement was "always on screen", not "in the
   header", and the panel tab is on screen in both modes whether the panel is
   open or collapsed. Bump only when the rows are re-audited.
-- **`APP_VERSION`** (`4.6.3`) — the code. Shown in the **legend card**.
+- **`APP_VERSION`** (`4.7.0`) — the code. Shown in the **legend card**.
   Bumped for every shipped change, and stamped onto every `lib/` URL as a
   cache-buster.
 
@@ -701,6 +701,40 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v4.7.0
+
+**The bar follows the theme.** It had been `--char` in both appearances since
+v1.x, with every child written against that dark surround in hardcoded
+literals — `#241F1A` grounds, `#4A443B` borders, `#C9C1B4` text. That was a
+real decision rather than an oversight, but a dark bar sitting over a cream
+app in light mode reads as a fragment of a different design, which is what got
+it raised.
+
+It is `--surface` now — the same material as the panel at the other end of the
+map, so the two pieces of chrome match each other rather than one of them
+matching the icon. Every literal inside it became a token in the same change,
+and `test/structure.test.js` fails if one comes back.
+
+**The tile deliberately does not follow.** It stays `--char` with a
+sign-yellow W in both themes, because char-on-white in light mode *is* the
+home screen icon reproduced exactly — it is the one element in the bar that
+should look like the icon rather than like the app. Its `#332C24` hairline is
+now the bar block's single literal, and it earns that in dark mode only:
+`--surface` `#1E1A16` against the tile's `#14110E` is about four levels of
+luminance, which is no edge at all.
+
+**`theme-color` had to become dynamic.** A static `#14110E` would paint dark
+browser chrome above a cream bar — the exact seam this change removed.
+`syncThemeColor()` writes the bar's own resolved background into the meta on
+every theme change, reading it off the bar rather than from a table, so a
+palette change moves both. Not two `<meta media=…>` tags: those follow
+`prefers-color-scheme`, which disagrees with a driver who explicitly picked
+the other theme.
+
+Contrast measured in a browser in both themes rather than assumed — idle tab
+5.12 : 1 light and 6.88 : 1 dark, selected tab 12.06, input text 16.70/16.31,
+tile W 12.06, button icon 16.70/16.31. All past AA.
 
 ### v4.6.3
 
@@ -1035,9 +1069,11 @@ came out at 0.804, just over, and was redrawn.
 `env(safe-area-inset-top)` and the panel for the bottom. The URL bar was only
 ever taking map away from a driver.
 
-`theme_color` is `#14110E`, the chrome black. `--char` is declared once and
-never themed, so that single static value is correct in both light and dark
-rather than a compromise between them.
+`theme_color` is `#14110E`, matching `background_color` so the Android install
+splash is one colour. It is deliberately *not* kept in step with the page's
+`<meta name="theme-color">`, which has tracked the themed bar since v4.7.0: a
+manifest carries one value and the splash has no theme to follow, so the two
+answer different questions.
 
 `structure.test.js` now parses the manifest and follows **every** icon `src`,
 because a bad path inside it costs Android the icon and says nothing. Checked
