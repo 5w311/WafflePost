@@ -29,7 +29,7 @@
      0.80 is the limit), while the plain ones stay full size.
 
      display:standalone, deliberately. This app was already built like one -
-     html and body are overflow:hidden, the header pads for
+     html and body are overflow:hidden, the bar pads for
      env(safe-area-inset-top) and the panel for the bottom - so the URL bar
      was only ever taking map away from a driver. Still no service worker
      and no offline caching: the manifest names the app and its icons, and
@@ -160,37 +160,63 @@ input,select,textarea{font-size:16px}
 :focus-visible{outline:3px solid var(--sign);outline-offset:2px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 
-header{background:var(--char);color:#fff;display:flex;align-items:center;gap:10px;
-  padding:10px 12px;padding-top:calc(10px + env(safe-area-inset-top,0px));flex:none}
-.tile{width:34px;height:34px;border-radius:5px;background:var(--sign);color:var(--char);
-  display:grid;place-items:center;font-weight:900;font-size:21px;letter-spacing:-.04em;flex:none}
-.brand{font-weight:800;letter-spacing:.14em;text-transform:uppercase;font-size:14px}
-.rev{font-size:11px;color:#C9C1B4}
-.hspace{flex:1}
-.hbtn{background:transparent;border:1px solid #4A443B;color:#fff;border-radius:8px;
-  padding:6px 10px;font-size:12px;font-weight:600;cursor:pointer}
+/* ---- the one bar --------------------------------------------------------
+   MAX, not calc. The old header wrote calc(10px + env(safe-area-inset-top)),
+   which stacks a ten pixel gap on top of an inset that already exists to be
+   that gap - 69px of top padding on a Dynamic Island phone. max() means ten
+   pixels where there is no inset and the inset alone where there is, which is
+   what the inset is for. Worth about ten pixels for one keyword.
 
-.modes{display:flex;gap:6px;padding:8px 12px;background:var(--surface);
-  border-bottom:1px solid var(--line);flex:none}
-.mode{flex:1;padding:8px 6px;border:1px solid var(--line);background:transparent;
-  border-radius:9px;font-size:12px;font-weight:700;letter-spacing:.08em;
-  text-transform:uppercase;cursor:pointer;color:var(--sub)}
-.mode[aria-selected=true]{background:var(--sign);border-color:var(--sign);color:var(--char)}
+   The bar is char in BOTH themes, so everything inside it is styled against a
+   dark surround with literals rather than theme tokens - the same thing the
+   old header did for .hbtn and .rev. A token here would go light-on-light the
+   moment the light theme is picked. */
+.bar{background:var(--char);color:#fff;display:flex;align-items:center;gap:7px;
+  padding:8px 10px;padding-top:max(8px, env(safe-area-inset-top,0px));flex:none}
+.tile{width:28px;height:28px;border-radius:5px;background:var(--sign);color:var(--char);
+  display:grid;place-items:center;font-weight:900;font-size:17px;letter-spacing:-.04em;flex:none}
 
-.toolbar{display:flex;gap:8px;padding:8px 12px;background:var(--surface);
-  border-bottom:1px solid var(--line);flex:none;align-items:center}
+/* Pill group. 34px minimum in the smaller dimension, like every other target
+   in this bar: it is the primary navigation and it is used at the wheel.
+
+   NOT .seg. That class is already taken, by the vehicle profile group in the
+   trip drawer and the route option list, and `.seg button` there beats a bare
+   `.segtab` on specificity - the first cut of this bar came out with an
+   unselected tab painted in --bg on a char pill, light-on-light in the light
+   theme. The two controls are also genuinely different: .seg is a group of
+   aria-pressed toggles, this is an aria-selected tablist. Same reason the
+   markup must not be "made consistent", one level down. */
+.modeseg{display:flex;background:#241F1A;border:1px solid #3A342C;border-radius:9px;
+  padding:2px;gap:2px;flex:none}
+.modetab{min-height:34px;padding:0 7px;border:0;background:transparent;border-radius:7px;
+  font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  color:#C9C1B4;cursor:pointer;white-space:nowrap}
+.modetab[aria-selected=true]{background:var(--sign);color:var(--char)}
+
+/* Every number here is tuned to one requirement: "City, exit, stop" must fit
+   at 16px, which is mandatory - see the iOS zoom note above - and which is
+   what makes this tight at all. It is measured with scrollWidth against
+   clientWidth in the field, NOT with canvas measureText: canvas came out 116px
+   against 122 available and called it a fit, while the input actually needed
+   131 and clipped to "City, exit, sto". The gap it needed was taken from
+   whitespace - the bar's gap and the tabs' side padding - and never from a tap
+   target. The right side only needs room when the clear button is showing,
+   which is only ever when there is text and therefore no placeholder. */
 .searchwrap{position:relative;flex:1;min-width:0}
-.searchwrap input{width:100%;padding:9px 30px 9px 32px;border:1px solid var(--line);
-  border-radius:9px;background:var(--bg);color:var(--ink)}
-.searchwrap .mag{position:absolute;left:10px;top:50%;transform:translateY(-50%);
-  color:var(--sub);pointer-events:none;font-size:13px}
-.clr{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;
-  background:transparent;color:var(--sub);cursor:pointer;font-size:17px;padding:2px 6px;
+.searchwrap input{width:100%;padding:8px 8px 8px 22px;border:1px solid #4A443B;
+  border-radius:9px;background:#241F1A;color:#fff;min-height:34px}
+.searchwrap:has(.clr.on) input{padding-right:28px}
+.searchwrap input::placeholder{color:#8E857A}
+.searchwrap .mag{position:absolute;left:9px;top:50%;transform:translateY(-50%);
+  color:#A69B8A;pointer-events:none;font-size:13px}
+.clr{position:absolute;right:4px;top:50%;transform:translateY(-50%);border:0;
+  background:transparent;color:#A69B8A;cursor:pointer;font-size:17px;padding:2px 6px;
   line-height:1;display:none}
 .clr.on{display:block}
-.tbtn{position:relative;border:1px solid var(--line);background:var(--bg);border-radius:9px;
-  padding:9px 12px;font-size:13px;font-weight:600;cursor:pointer;flex:none}
-.tbtn .dot{position:absolute;top:-5px;right:-5px;min-width:17px;height:17px;border-radius:9px;
+.barbtn{position:relative;width:34px;height:34px;flex:none;display:grid;place-items:center;
+  border:1px solid #4A443B;background:#241F1A;color:#fff;border-radius:9px;cursor:pointer;
+  padding:0}
+.barbtn .dot{position:absolute;top:-5px;right:-5px;min-width:17px;height:17px;border-radius:9px;
   background:var(--sign);color:var(--char);font-size:11px;font-weight:800;
   display:grid;place-items:center;padding:0 4px}
 
@@ -381,10 +407,17 @@ html[data-theme=dark] .mile{color:#E8B96B}
   font-weight:700;font-size:13.5px;cursor:pointer}
 .act.primary{background:var(--sign);border-color:var(--sign);color:var(--char)}
 
+/* max-height and the scroll are new with the merge, not decoration: filters
+   and legend behind one button is a taller card than either was alone, and on
+   a short phone in landscape the bottom of it - the theme picker and the
+   version line - would otherwise sit off the end of the stage with no way to
+   reach it. */
 .pop{position:absolute;top:0;right:10px;width:264px;background:var(--surface);
   border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.24);
-  padding:12px;z-index:950;display:none}
+  padding:12px;z-index:950;display:none;
+  max-height:calc(100% - 12px);overflow-y:auto;-webkit-overflow-scrolling:touch}
 .pop.show{display:block}
+.popsep{border:0;border-top:1px solid var(--line);margin:14px 0 0}
 .pop h3{margin:0 0 8px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--sub)}
 .pop label{display:block;font-size:12px;color:var(--sub);margin:9px 0 3px}
 .pop select{width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
@@ -436,29 +469,51 @@ html[data-theme=dark] .mile{color:#E8B96B}
 </head>
 <body>
 
-<header>
+<!-- ONE bar, and it is never hidden. Through 4.2.x this was three stacked
+     bands - header, modes, toolbar - costing about 213px above the map on a
+     Dynamic Island phone for a job FuelPost does in about 110. The wordmark
+     went (the W tile carries it, and the app name is on the home screen), the
+     modes got their own row back as a segmented control, and the two header
+     buttons became one.
+
+     The mode control lives IN here now, which is why nothing may ever add
+     `hidden` to #bar: that would stand a driver in Route mode with no way
+     back to Atlas. structure.test.js fails if anything tries. -->
+<div class="bar" id="bar">
   <div class="tile" aria-hidden="true">W</div>
-  <div>
-    <div class="brand">WafflePost</div>
-    <div class="rev" id="revLine"></div>
+
+  <!-- Still a tablist, still aria-selected. This is a restyle, not a
+       re-semantic: .modeseg looks like the vehicle profile's toggle group in
+       the trip drawer but is NOT one - that group is aria-pressed toggles,
+       this picks one of two views. Do not "make them consistent". It does not
+       share the .seg class either, and for the same reason plus a concrete
+       one: `.seg button` outranks a bare class and repainted these tabs. -->
+  <div class="modeseg" role="tablist" aria-label="Mode">
+    <button class="modetab" role="tab" id="mAtlas" aria-selected="true">Atlas</button>
+    <button class="modetab" role="tab" id="mRoute" aria-selected="false">Route</button>
   </div>
-  <div class="hspace"></div>
-  <button class="hbtn" id="legendBtn" aria-expanded="false">Legend</button>
-</header>
 
-<div class="modes" role="tablist" aria-label="Mode">
-  <button class="mode" role="tab" id="mAtlas" aria-selected="true">Atlas</button>
-  <button class="mode" role="tab" id="mRoute" aria-selected="false">Route</button>
-</div>
-
-<div class="toolbar" id="toolbar">
-  <div class="searchwrap">
+  <div class="searchwrap" id="searchWrap">
     <span class="mag" aria-hidden="true">&#9906;</span>
-    <input id="q" type="search" placeholder="City, state, exit, truck stop"
+    <input id="q" type="search" placeholder="City, exit, stop"
            aria-label="Search the atlas" autocomplete="off">
     <button class="clr" id="qClear" aria-label="Clear search">&times;</button>
   </div>
-  <button class="tbtn" id="filterBtn" aria-expanded="false">Filters<span class="dot hidden" id="fDot">0</span></button>
+
+  <!-- One button, both modes, on purpose. In Atlas it opens filters with the
+       legend appended; in Route, where a filter means nothing, it opens the
+       legend alone. Route still draws pins and walk strips, so a legend that
+       hid with the filters would be unreachable exactly where it is still
+       being used - and the bar would look empty besides. -->
+  <button class="barbtn" id="chromeBtn" aria-expanded="false" aria-label="Filters and legend">
+    <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true" focusable="false">
+      <g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+        <path d="M3 5.5h14M3 10h14M3 14.5h14"/>
+      </g>
+      <g fill="currentColor"><circle cx="7" cy="5.5" r="2.1"/><circle cx="13" cy="10" r="2.1"/><circle cx="8.5" cy="14.5" r="2.1"/></g>
+    </svg>
+    <span class="dot hidden" id="fDot">0</span>
+  </button>
 </div>
 
 <div class="drawer hidden" id="drawer">
@@ -520,7 +575,13 @@ html[data-theme=dark] .mile{color:#E8B96B}
 <div class="stage">
   <div id="map"></div>
 
-  <div class="pop" id="filterPop" role="dialog" aria-label="Filters">
+  <!-- Both panels behind one button now. They are still two sections in
+       source order, with their contents byte-for-byte what they were behind
+       two buttons - only the shell around them changed. #filterSection is
+       hidden in Route mode, which is what makes the same button open "filters
+       then legend" in Atlas and "legend" in Route. -->
+  <div class="pop" id="chromePop" role="dialog" aria-label="Filters and legend">
+  <div id="filterSection">
     <h3>Narrow the atlas</h3>
     <label for="fCorridor">Corridor</label><select id="fCorridor"></select>
     <label for="fState">State</label><select id="fState"></select>
@@ -536,9 +597,10 @@ html[data-theme=dark] .mile{color:#E8B96B}
       verified. A stop without the flag may still have it — it was never checked.
       They narrow, they do not rule out.</p>
     <button class="act" id="fReset" style="margin-top:10px;width:100%">Clear filters</button>
+    <hr class="popsep">
   </div>
 
-  <div class="pop" id="legendPop" role="dialog" aria-label="Legend">
+  <div id="legendSection">
     <h3>Pin colour is the walk</h3>
     <div class="legend-row"><i class="sw" style="background:var(--t-porch)"></i>Front porch — under 500 ft</div>
     <div class="legend-row"><i class="sw" style="background:var(--t-short)"></i>Short walk — under 1,000 ft</div>
@@ -554,6 +616,7 @@ html[data-theme=dark] .mile{color:#E8B96B}
       <button id="thSys"   role="radio" aria-checked="false">System</button>
     </div>
     <p class="fine" id="verLine"></p>
+  </div>
   </div>
 
   <div class="panel" id="panel">
@@ -589,27 +652,27 @@ var __mods={};
 function require(p){return __mods[p.replace(/^\.\//,'').replace(/\.js$/,'')];}
 var module={exports:{}};
 </script>
-<script src="lib/waffledist.js?v=4.2.0"></script>
+<script src="lib/waffledist.js?v=4.3.0"></script>
 <script>__mods.waffledist=module.exports;module={exports:{}};</script>
-<script src="lib/atlasfilter.js?v=4.2.0"></script>
+<script src="lib/atlasfilter.js?v=4.3.0"></script>
 <script>__mods.atlasfilter=module.exports;module={exports:{}};</script>
-<script src="lib/routewaffles.js?v=4.2.0"></script>
+<script src="lib/routewaffles.js?v=4.3.0"></script>
 <script>__mods.routewaffles=module.exports;module={exports:{}};</script>
-<script src="lib/vehicleprofile.js?v=4.2.0"></script>
+<script src="lib/vehicleprofile.js?v=4.3.0"></script>
 <script>__mods.vehicleprofile=module.exports;module={exports:{}};</script>
-<script src="lib/triptext.js?v=4.2.0"></script>
+<script src="lib/triptext.js?v=4.3.0"></script>
 <script>__mods.triptext=module.exports;module={exports:{}};</script>
-<script src="lib/escape.js?v=4.2.0"></script>
+<script src="lib/escape.js?v=4.3.0"></script>
 <script>__mods.escape=module.exports;module={exports:{}};</script>
-<script src="lib/flexible-polyline.js?v=4.2.0"></script>
+<script src="lib/flexible-polyline.js?v=4.3.0"></script>
 <script>__mods['flexible-polyline']=module.exports;module={exports:{}};</script>
-<script src="lib/autosuggest.js?v=4.2.0"></script>
+<script src="lib/autosuggest.js?v=4.3.0"></script>
 <script>__mods.autosuggest=module.exports;module={exports:{}};</script>
-<script src="lib/location.js?v=4.2.0"></script>
+<script src="lib/location.js?v=4.3.0"></script>
 <script>__mods.location=module.exports;module={exports:{}};</script>
-<script src="lib/routeoptions.js?v=4.2.0"></script>
+<script src="lib/routeoptions.js?v=4.3.0"></script>
 <script>__mods.routeoptions=module.exports;module={exports:{}};</script>
-<script src="lib/baselayer.js?v=4.2.0"></script>
+<script src="lib/baselayer.js?v=4.3.0"></script>
 <script>__mods.baselayer=module.exports;module={exports:{}};</script>
 
 <script>
@@ -644,14 +707,24 @@ var HERE_API_KEY = '7RDploUiahAnm08IZA9X7YSbb0Qh99pvqV2NCNQX_Hg';
 
 /* ===== two version strings, on purpose ==============================
    ATLAS_REV  - which edition of the walkability audit DATA came from.
-                Shown in the HEADER, because Waffle Houses and truck
-                stops open and close: Troutville's store did not exist a
-                year before this revision, and a pair that has closed is
-                a wasted exit at 3am.
+                Shown in the PANEL TAB, beside the pair count, because
+                Waffle Houses and truck stops open and close: Troutville's
+                store did not exist a year before this revision, and a
+                pair that has closed is a wasted exit at 3am. A driver
+                cannot tell stale atlas data from current atlas data
+                without it, so it has to be permanently visible.
+                It sat in the header until v4.3.0 collapsed three chrome
+                bands into one and the header stopped existing. The
+                requirement was never "in the header", it was "always on
+                screen"; the panel tab is on screen in both modes and
+                whether the panel is open or collapsed, so the rev moved
+                there rather than being dropped. Do not delete it to
+                reclaim the space - that would overrule the argument
+                above rather than satisfy it somewhere cheaper.
    APP_VERSION - the code. Shown in the legend card. Bumped every change,
                 and stamped onto every lib/ URL as a cache-buster. */
 var ATLAS_REV   = 'Atlas Rev 09-2026';
-var APP_VERSION = '4.2.0';
+var APP_VERSION = '4.3.0';
 
 /* ===== DATA ==========================================================
    55 rows - 54 walkable exits plus one honorary - carrying 65 pairings,
@@ -1197,7 +1270,6 @@ function render(){
     rows = state.route ? state.route.stops.map(function(s){return s.row;}) : [];
     var n = rows.length;
     $('panelCount').textContent = state.plan ? n+(n===1?' pair':' pairs') : '\u2014';
-    $('panelSummary').textContent = state.route ? 'on '+Math.round(state.route.miles)+' mi' : '';
   } else {
     rows = DATA.filter(function(r){ return af.passes(r,state); })
                .sort(function(a,b){ return a.feet-b.feet; });
@@ -1208,8 +1280,20 @@ function render(){
       rows.forEach(function(r){ html += rowHtml(r, DATA.indexOf(r)); });
     }
     $('panelCount').textContent = rows.length+(rows.length===1?' pair':' pairs');
-    $('panelSummary').textContent = rows.length===DATA.length ? 'the whole atlas' : 'of '+DATA.length;
   }
+
+  /* The atlas revision, in the one place that is on screen in every mode with
+     the panel open or collapsed. It used to sit in the header, and the reason
+     it was there has not changed: stores open and close, and a driver cannot
+     tell stale atlas data from current atlas data without it. The header did
+     not survive; the argument did, so the rev moved rather than went. Set on
+     both branches from one line, because "permanently visible" has to mean
+     Route mode too - which is what it costs the route's mile count this slot
+     used to carry, and the drawer summary and panel body both still state it.
+     ATLAS_REV already begins with the word "Atlas"; the tab beside it already
+     says "pairs". Stripping the prefix here is the same lesson triptext.js
+     learned after eleven releases of "Atlas Atlas". */
+  $('panelSummary').textContent = ATLAS_REV.replace(/^Atlas\s+/,'');
 
   /* No construction, no teardown: every marker was built once at startup.
      Filtering is one pass of visibility flips. */
@@ -1233,9 +1317,14 @@ function render(){
     });
   });
 
+  /* Atlas only, and not merely to save a pixel: in Route mode the button
+     behind this badge opens the legend, and a count of active filters over a
+     legend is a number about nothing the driver can see. The count itself
+     keeps ticking - filters are not cleared by a mode change, and coming back
+     to Atlas shows the badge again with the right number on it. */
   var n2 = af.activeFilterCount(state);
   $('fDot').textContent = n2;
-  $('fDot').classList.toggle('hidden', n2===0);
+  $('fDot').classList.toggle('hidden', n2===0 || state.mode!=='atlas');
 }
 
 /* The route chooser. Absent, not empty, when there is only one route: on a
@@ -1931,7 +2020,13 @@ function setMode(m){
   state.mode=m;
   $('mAtlas').setAttribute('aria-selected', m==='atlas');
   $('mRoute').setAttribute('aria-selected', m==='route');
-  $('toolbar').classList.toggle('hidden', m!=='atlas');
+  /* Through 4.2.x this hid the whole toolbar in Route mode. It cannot any
+     more: the mode control now lives inside the bar, so hiding the bar would
+     hide the way back to Atlas. The BAR always shows; only Atlas-only pieces
+     inside it swap. The filter badge is the third such piece and it is dealt
+     with in render(), where the count it displays is computed. */
+  $('searchWrap').classList.toggle('hidden', m!=='atlas');
+  $('filterSection').classList.toggle('hidden', m!=='atlas');
   $('drawer').classList.toggle('hidden', m!=='route');
   $('sheet').classList.remove('show');
   closePops(); render();
@@ -1949,19 +2044,17 @@ $('mRoute').addEventListener('click',function(){ setMode('route'); });
 
 /* ---- popovers / panel / theme ---- */
 function closePops(){
-  ['filterPop','legendPop'].forEach(function(id){ $(id).classList.remove('show'); });
-  $('filterBtn').setAttribute('aria-expanded','false');
-  $('legendBtn').setAttribute('aria-expanded','false');
+  $('chromePop').classList.remove('show');
+  $('chromeBtn').setAttribute('aria-expanded','false');
 }
 function togglePop(popId,btnId){
   var p=$(popId), open=p.classList.contains('show');
   closePops();
   if (!open) { p.classList.add('show'); $(btnId).setAttribute('aria-expanded','true'); }
 }
-$('filterBtn').addEventListener('click',function(e){ e.stopPropagation(); togglePop('filterPop','filterBtn'); });
-$('legendBtn').addEventListener('click',function(e){ e.stopPropagation(); togglePop('legendPop','legendBtn'); });
+$('chromeBtn').addEventListener('click',function(e){ e.stopPropagation(); togglePop('chromePop','chromeBtn'); });
 document.addEventListener('click',function(e){
-  if (!e.target.closest('.pop') && !e.target.closest('#filterBtn') && !e.target.closest('#legendBtn')) closePops();
+  if (!e.target.closest('.pop') && !e.target.closest('#chromeBtn')) closePops();
 });
 function togglePanel(){
   var c=$('panel').classList.toggle('collapsed');
@@ -2010,8 +2103,9 @@ matchMedia('(prefers-color-scheme: dark)').addEventListener('change',function(){
 });
 syncThemeButtons(storedChoice());
 
-/* boot */
-$('revLine').textContent = ATLAS_REV+' \u00b7 '+DATA.length+' exits';
+/* boot. The atlas revision is no longer written here - render() puts it in
+   the panel tab on every pass, so it is correct in both modes rather than
+   only at startup. */
 $('verLine').textContent = 'WafflePost v'+APP_VERSION+' \u00b7 '+ATLAS_REV;
 setVehicleMode('standard');
 /* render() first, then the one-time fit: fitAtlas measures the panel, and
