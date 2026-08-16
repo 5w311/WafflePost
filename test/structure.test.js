@@ -71,8 +71,7 @@ t.eq(/\bL\.(map|marker|divIcon|polyline|tileLayer|featureGroup|layerGroup|contro
 // See the head comment; this is the assertion that keeps that reasoning true.
 [['apple-touch-icon', /<link rel="apple-touch-icon" sizes="180x180" href="([^"]+)">/],
  ['favicon 32',       /<link rel="icon" type="image\/png" sizes="32x32" href="([^"]+)">/],
- ['favicon 16',       /<link rel="icon" type="image\/png" sizes="16x16" href="([^"]+)">/],
- ['manifest',         /<link rel="manifest" href="([^"]+)">/]
+ ['favicon 16',       /<link rel="icon" type="image\/png" sizes="16x16" href="([^"]+)">/]
 ].forEach(function(pair){
   var m = src.match(pair[1]);
   t.eq(!!m, true, pair[0] + ' is declared in the head');
@@ -80,36 +79,63 @@ t.eq(/\bL\.(map|marker|divIcon|polyline|tileLayer|featureGroup|layerGroup|contro
               pair[0] + ' file exists: ' + m[1]);
 });
 
-// The manifest fails the same quiet way, one level deeper: a bad icon path
-// inside it costs Android the home screen icon and says nothing. Parse it and
-// follow every src.
-var mfRef = (src.match(/<link rel="manifest" href="([^"]+)">/) || [])[1];
-if (mfRef) {
-  var mfPath = path.join(__dirname, '..', mfRef);
-  var mf = null;
-  try { mf = JSON.parse(fs.readFileSync(mfPath, 'utf8')); } catch (e) {
-    console.log('  manifest parse error: ' + e.message);
-  }
-  t.eq(!!mf, true, 'the manifest is valid JSON');
-  if (mf) {
-    // short_name is what Android prints under the icon; without it the label
-    // falls back to <title>, which is the thing the manifest was added to fix.
-    t.eq(typeof mf.short_name === 'string' && mf.short_name.length > 0, true,
-         'the manifest names the app for the home screen');
-    t.eq(Array.isArray(mf.icons) && mf.icons.length > 0, true, 'the manifest lists icons');
-    (mf.icons || []).forEach(function (ic) {
-      t.eq(fs.existsSync(path.join(__dirname, '..', ic.src)), true,
-           'manifest icon exists: ' + ic.src);
-    });
-    // Android wants 192 and 512; a maskable variant keeps a circular launcher
-    // mask from clipping the glyph.
-    var sizes = (mf.icons || []).map(function (i) { return i.sizes; });
-    t.eq(sizes.indexOf('192x192') !== -1, true, 'a 192x192 icon is declared');
-    t.eq(sizes.indexOf('512x512') !== -1, true, 'a 512x512 icon is declared');
-    t.eq((mf.icons || []).some(function (i) { return i.purpose === 'maskable'; }), true,
-         'a maskable icon is declared');
-  }
+// ---- the manifest link is ABSENT, on purpose (v4.6.0) ----
+// This assertion is inverted from what it used to be, and that inversion IS
+// the point. The home screen icon renders dark under iOS Dark appearance and
+// the manifest link is the suspected lever; the experiment removing it is
+// deployed and the result is not in yet. Re-adding the link would silently
+// re-trigger the dark treatment on a phone, weeks later, with nothing tying
+// it to a commit. Here it is a red build instead.
+// If the experiment fails, this is the assertion to flip back - deliberately,
+// with the head comment updated in the same change. See the icon comment in
+// index.html for how to read the result.
+t.eq(/<link rel="manifest"/.test(src), false,
+     'no manifest link: the dark-icon experiment is live');
+t.eq(/<meta name="apple-mobile-web-app-capable" content="yes">/.test(src), true,
+     'standalone comes from the legacy meta instead');
+// black-translucent is load-bearing, not cosmetic: without it the page does
+// not extend under the status bar, env(safe-area-inset-top) reports 0, and the
+// bar loses the top padding the whole chrome layout is built around.
+t.eq(/<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">/.test(src), true,
+     'and the status bar style keeps the safe-area inset reporting');
+
+// The manifest itself is still validated, by its own path rather than through
+// a link that no longer exists. The file is deliberately unlinked and kept
+// valid because it is the one-line revert path for the experiment above - an
+// unlinked manifest that had rotted would turn a revert into a debugging
+// session. It fails the same quiet way it always did: a bad icon path inside
+// it costs Android the home screen icon and says nothing.
+var mfPath = path.join(__dirname, '..', 'manifest.json');
+t.eq(fs.existsSync(mfPath), true, 'manifest.json is still in the repo as the revert path');
+var mf = null;
+try { mf = JSON.parse(fs.readFileSync(mfPath, 'utf8')); } catch (e) {
+  console.log('  manifest parse error: ' + e.message);
 }
+t.eq(!!mf, true, 'the manifest is valid JSON');
+if (mf) {
+  // short_name is what Android would print under the icon if the manifest were
+  // linked. Unlinked, the label falls back to <title> - asserted below.
+  t.eq(typeof mf.short_name === 'string' && mf.short_name.length > 0, true,
+       'the manifest names the app for the home screen');
+  t.eq(Array.isArray(mf.icons) && mf.icons.length > 0, true, 'the manifest lists icons');
+  (mf.icons || []).forEach(function (ic) {
+    t.eq(fs.existsSync(path.join(__dirname, '..', ic.src)), true,
+         'manifest icon exists: ' + ic.src);
+  });
+  // Android wants 192 and 512; a maskable variant keeps a circular launcher
+  // mask from clipping the glyph.
+  var sizes = (mf.icons || []).map(function (i) { return i.sizes; });
+  t.eq(sizes.indexOf('192x192') !== -1, true, 'a 192x192 icon is declared');
+  t.eq(sizes.indexOf('512x512') !== -1, true, 'a 512x512 icon is declared');
+  t.eq((mf.icons || []).some(function (i) { return i.purpose === 'maskable'; }), true,
+       'a maskable icon is declared');
+}
+
+// With the manifest unlinked, THIS is Android's home screen label. It is the
+// difference between the experiment costing installability only and it costing
+// the app's name as well.
+t.eq(/<title>WafflePost<\/title>/.test(src), true,
+     'the title is exactly WafflePost: it is the home screen label now');
 
 t.eq((src.match(/^var ATLAS_REV   = /m) || []).length, 1, 'one ATLAS_REV declaration');
 // v4.3.0 moved the rev out of the header (there is no header) into the panel
