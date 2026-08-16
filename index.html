@@ -652,27 +652,27 @@ var __mods={};
 function require(p){return __mods[p.replace(/^\.\//,'').replace(/\.js$/,'')];}
 var module={exports:{}};
 </script>
-<script src="lib/waffledist.js?v=4.3.0"></script>
+<script src="lib/waffledist.js?v=4.4.0"></script>
 <script>__mods.waffledist=module.exports;module={exports:{}};</script>
-<script src="lib/atlasfilter.js?v=4.3.0"></script>
+<script src="lib/atlasfilter.js?v=4.4.0"></script>
 <script>__mods.atlasfilter=module.exports;module={exports:{}};</script>
-<script src="lib/routewaffles.js?v=4.3.0"></script>
+<script src="lib/routewaffles.js?v=4.4.0"></script>
 <script>__mods.routewaffles=module.exports;module={exports:{}};</script>
-<script src="lib/vehicleprofile.js?v=4.3.0"></script>
+<script src="lib/vehicleprofile.js?v=4.4.0"></script>
 <script>__mods.vehicleprofile=module.exports;module={exports:{}};</script>
-<script src="lib/triptext.js?v=4.3.0"></script>
+<script src="lib/triptext.js?v=4.4.0"></script>
 <script>__mods.triptext=module.exports;module={exports:{}};</script>
-<script src="lib/escape.js?v=4.3.0"></script>
+<script src="lib/escape.js?v=4.4.0"></script>
 <script>__mods.escape=module.exports;module={exports:{}};</script>
-<script src="lib/flexible-polyline.js?v=4.3.0"></script>
+<script src="lib/flexible-polyline.js?v=4.4.0"></script>
 <script>__mods['flexible-polyline']=module.exports;module={exports:{}};</script>
-<script src="lib/autosuggest.js?v=4.3.0"></script>
+<script src="lib/autosuggest.js?v=4.4.0"></script>
 <script>__mods.autosuggest=module.exports;module={exports:{}};</script>
-<script src="lib/location.js?v=4.3.0"></script>
+<script src="lib/location.js?v=4.4.0"></script>
 <script>__mods.location=module.exports;module={exports:{}};</script>
-<script src="lib/routeoptions.js?v=4.3.0"></script>
+<script src="lib/routeoptions.js?v=4.4.0"></script>
 <script>__mods.routeoptions=module.exports;module={exports:{}};</script>
-<script src="lib/baselayer.js?v=4.3.0"></script>
+<script src="lib/baselayer.js?v=4.4.0"></script>
 <script>__mods.baselayer=module.exports;module={exports:{}};</script>
 
 <script>
@@ -724,7 +724,7 @@ var HERE_API_KEY = '7RDploUiahAnm08IZA9X7YSbb0Qh99pvqV2NCNQX_Hg';
    APP_VERSION - the code. Shown in the legend card. Bumped every change,
                 and stamped onto every lib/ URL as a cache-buster. */
 var ATLAS_REV   = 'Atlas Rev 09-2026';
-var APP_VERSION = '4.3.0';
+var APP_VERSION = '4.4.0';
 
 /* ===== DATA ==========================================================
    55 rows - 54 walkable exits plus one honorary - carrying 65 pairings,
@@ -1325,6 +1325,46 @@ function render(){
   var n2 = af.activeFilterCount(state);
   $('fDot').textContent = n2;
   $('fDot').classList.toggle('hidden', n2===0 || state.mode!=='atlas');
+
+  capPanelRows();
+}
+
+/* Three rows of atlas, then scroll. The panel used to run to max-height:62%,
+   which on a phone is half the screen of the thing the app is actually for -
+   the map. Three is the number that leaves the map dominant while still
+   showing enough list to compare a walk against the next one down.
+
+   MEASURED, not a constant. Rows are not a fixed height: a row carrying "read
+   first" or "+1 more stop" is a pill taller than one that carries neither, and
+   the tier strip, the two text lines and the pill row all scale with the
+   driver's own text size. A hardcoded px cap would cut the third row in half
+   on one phone and float a gap under it on another, and would silently drift
+   the first time anything in rowHtml changes. Summing the first three actual
+   rows is exact on every device and needs no maintenance.
+
+   Atlas only. Route's panel holds the option chooser and the ordered stop
+   list, which are read as a sequence rather than browsed, and clamping those
+   to three would hide the route summary that sits above them. */
+var PANEL_ROWS = 3;
+function capPanelRows(){
+  var body = $('panelBody');
+  body.style.maxHeight = '';
+  /* Collapsed means display:none, and every height inside reads 0 - capping
+     to that would stick the panel shut when it reopens. togglePanel calls
+     this again on the way back up. */
+  if (state.mode !== 'atlas' || $('panel').classList.contains('collapsed')) return;
+  var rows = body.querySelectorAll('.row');
+  /* Nothing to clamp: the empty-filter explainer, or a list already shorter
+     than the cap. Leaving max-height unset lets .panel's own 62% ceiling
+     apply, which is the right behaviour for both. */
+  if (rows.length <= PANEL_ROWS) return;
+  var h = 0;
+  for (var i = 0; i < PANEL_ROWS; i++) h += rows[i].offsetHeight;
+  body.style.maxHeight = h + 'px';
+  /* The panel just changed height, and it overlays the map rather than
+     resizing it, so nothing else will notice: --panel-h lifts HERE's controls
+     clear of the panel and the same number is the map's bottom padding. */
+  syncMapPadding();
 }
 
 /* The route chooser. Absent, not empty, when there is only one route: on a
@@ -2059,6 +2099,11 @@ document.addEventListener('click',function(e){
 function togglePanel(){
   var c=$('panel').classList.toggle('collapsed');
   $('panelTab').setAttribute('aria-expanded', String(!c));
+  /* Re-measure on the way back up: the cap could not be computed while the
+     body was display:none, so a panel reopened without this would come back
+     uncapped and take half the screen again. capPanelRows ends in its own
+     syncMapPadding, so only the collapse path still needs the call below. */
+  if (!c) { capPanelRows(); return; }
   /* The panel overlays the map rather than resizing it, so the observer
      never fires for this one — but the padding it contributes changed, and
      route fits read that padding. */

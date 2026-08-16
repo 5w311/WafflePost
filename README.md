@@ -238,6 +238,9 @@ this bar came out with an unselected tab painted light-on-light because of it.
 Every tap target in the bar is at least 34px in its smaller dimension; it is
 the primary navigation and it is used at the wheel.
 
+The panel below the map is capped to three rows for the same reason — see
+*v4.4.0* in the version history.
+
 Search keeps about 167px, and the placeholder shortens to "City, exit, stop".
 That is measured with `scrollWidth` against `clientWidth` in the field rather
 than with canvas metrics, which called a 9px overflow a fit and shipped
@@ -661,8 +664,8 @@ address starts with a house number and names the row's own state, and that
 leaderboard.
 
 `run.js` prints one `ok <name> N passed` line per file and then `all green`,
-or names the files that failed. It does not sum the assertions — at v4.3.0
-they come to 1,076 across twelve files, added up from those lines.
+or names the files that failed. It does not sum the assertions — at v4.4.0
+they come to 1,081 across twelve files, added up from those lines.
 
 ## Two version strings, on purpose
 
@@ -677,7 +680,7 @@ Same reasoning as FuelPost, different perishable thing:
   stopped existing; the requirement was "always on screen", not "in the
   header", and the panel tab is on screen in both modes whether the panel is
   open or collapsed. Bump only when the rows are re-audited.
-- **`APP_VERSION`** (`4.3.0`) — the code. Shown in the **legend card**.
+- **`APP_VERSION`** (`4.4.0`) — the code. Shown in the **legend card**.
   Bumped for every shipped change, and stamped onto every `lib/` URL as a
   cache-buster.
 
@@ -697,6 +700,27 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v4.4.0
+
+**The atlas list shows three rows, then scrolls.** The panel ran to
+`max-height:62%` and took half the screen from the map, which is the thing the
+app is for. Three is enough to compare a walk against the next one down while
+leaving the map dominant: on a 393×852 phone the panel goes from up to 528px
+to **303px**, and the map keeps 441 of the stage against the panel's 303.
+
+The cap is **measured, not a constant**. Rows are not a fixed height — one
+carrying *read first* or *+1 more stop* is a pill taller than one that is not,
+and every part of a row scales with the driver's text size — so `capPanelRows()`
+sums the first three real rows after each render. A hardcoded px cap would cut
+the third row in half on one phone and float a gap under it on another, and
+would drift silently the first time `rowHtml` changed.
+
+Atlas only. Route's panel holds the option chooser and the ordered stop list,
+which are read as a sequence rather than browsed. Fewer than three rows, or the
+empty-filter explainer, leave the cap unset and fall back to the panel's own
+62% ceiling. Reopening a collapsed panel re-measures, because the body is
+`display:none` while collapsed and every height inside it reads 0.
 
 ### v4.3.0
 
