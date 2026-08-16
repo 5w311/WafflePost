@@ -664,8 +664,8 @@ address starts with a house number and names the row's own state, and that
 leaderboard.
 
 `run.js` prints one `ok <name> N passed` line per file and then `all green`,
-or names the files that failed. It does not sum the assertions — at v4.4.0
-they come to 1,081 across twelve files, added up from those lines.
+or names the files that failed. It does not sum the assertions — at v4.5.0
+they come to 1,090 across twelve files, added up from those lines.
 
 ## Two version strings, on purpose
 
@@ -680,7 +680,7 @@ Same reasoning as FuelPost, different perishable thing:
   stopped existing; the requirement was "always on screen", not "in the
   header", and the panel tab is on screen in both modes whether the panel is
   open or collapsed. Bump only when the rows are re-audited.
-- **`APP_VERSION`** (`4.4.0`) — the code. Shown in the **legend card**.
+- **`APP_VERSION`** (`4.5.0`) — the code. Shown in the **legend card**.
   Bumped for every shipped change, and stamped onto every `lib/` URL as a
   cache-buster.
 
@@ -700,6 +700,29 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v4.5.0
+
+**The stop sheet stands exactly where the panel does.** It ran to
+`max-height:78%` — most of the map — and because it is bottom-anchored at
+z-900 it covered HERE's layers button, which is the only way to reach
+Satellite. It is now capped to `--sheet-max`, the panel's height while
+expanded, so the map above the fold is the same rectangle whether a driver is
+reading the list or one stop. 78% survives only as the pre-measurement
+fallback for the first paint.
+
+Matching the panel does not by itself solve the blocking, because the panel
+can be collapsed to its 42px tab with a sheet open over it. So the control
+lift moved to its own variable: **`--chrome-h`** is whichever of the panel and
+an open sheet is taller, and `.H_l_bottom` / `.H_imprint` use it.
+`--panel-h` still exists and still feeds `setPadding` alone — folding the
+sheet into it would shift the map at the moment a driver tapped a pin.
+
+Capping the height put Close and Share below the fold, so the sheet became a
+flex column with one scrolling child and a pinned action row. `position:sticky`
+was the first attempt and the wrong one: content that follows the stuck bar in
+flow renders straight through underneath it, which put the note over the
+buttons.
 
 ### v4.4.0
 
