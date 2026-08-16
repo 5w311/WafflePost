@@ -191,6 +191,59 @@ Marshall TX and Beaumont TX both show in every unfiltered list, marked
 **read first**, because the thing a driver needs to know about those stops is
 worth a row rather than an omission.
 
+## One bar above the map
+
+Everything above the map is a single row: the **W** tile, a segmented mode
+control, search, and one icon button. Measured on a 393pt Dynamic Island phone
+with a 59px top inset, that is **108px, down from 228px** — three stacked bands
+(header, mode tabs, toolbar) doing a job FuelPost does in about 110.
+
+Most of what went was not the header. It was that two buttons had an entire
+row of their own, and that the header stacked its own padding *on top of* the
+safe area inset:
+
+```css
+padding-top: calc(10px + env(safe-area-inset-top,0px))   /* 69px on a 15 Pro */
+padding-top: max(8px, env(safe-area-inset-top,0px))      /* the inset is the gap */
+```
+
+The wordmark went with it — the tile carries the W and the app name is on the
+home screen — and the tile came down from 34px to 28.
+
+**The bar can never be hidden, and that is a rule rather than a preference.**
+`setMode` used to hide the whole toolbar in Route mode. It cannot any more: the
+mode control lives *inside* the bar now, so hiding it would stand a driver in
+Route with no way back to Atlas. What swaps is only what is Atlas-only —
+search, the filter half of the popover, and the filter badge. The tile, the
+segmented control and the icon button are always there.
+`test/structure.test.js` pins this three ways: no `hidden` class in the markup,
+no `$('bar')` inside `setMode`, and no `hidden` applied to the bar anywhere in
+the app script.
+
+**One icon button, both modes, deliberately.** In Atlas it opens the filters
+with the legend appended below them; in Route, where a filter means nothing, it
+opens the legend alone. That is not only a pixel decision — Route still draws
+pins and walk strips, so a legend hidden behind an Atlas-only control would be
+unreachable exactly where it is still being read. The filter count badge shows
+in Atlas only, for the same reason in reverse: a count of active filters over a
+legend is a number about nothing on screen. The count itself keeps ticking, so
+coming back to Atlas shows the right number.
+
+**The restyle is visual, not semantic.** The mode control is still a
+`role="tablist"` of two `role="tab"` buttons driven by `aria-selected`, with the
+same `mAtlas` / `mRoute` ids. It is deliberately *not* the `.seg` class the
+vehicle profile uses: that is a group of `aria-pressed` toggles, this picks one
+of two views, and `.seg button` also outranks a bare class — the first cut of
+this bar came out with an unselected tab painted light-on-light because of it.
+Every tap target in the bar is at least 34px in its smaller dimension; it is
+the primary navigation and it is used at the wheel.
+
+Search keeps about 167px, and the placeholder shortens to "City, exit, stop".
+That is measured with `scrollWidth` against `clientWidth` in the field rather
+than with canvas metrics, which called a 9px overflow a fit and shipped
+"City, exit, sto" in the first pass. The margin it needed came out of the bar's
+gap and the tabs' side padding, never out of a tap target.
+
 ## The key draws the map now
 
 Through 2.x the Atlas tab called nothing — Leaflet with CARTO's free basemap
@@ -608,20 +661,23 @@ address starts with a house number and names the row's own state, and that
 leaderboard.
 
 `run.js` prints one `ok <name> N passed` line per file and then `all green`,
-or names the files that failed. It does not sum the assertions — at v3.4.1
-they come to 965 across twelve files, counted by hand.
+or names the files that failed. It does not sum the assertions — at v4.3.0
+they come to 1,076 across twelve files, added up from those lines.
 
 ## Two version strings, on purpose
 
 Same reasoning as FuelPost, different perishable thing:
 
 - **`ATLAS_REV`** (`Atlas Rev 09-2026`) — which edition of the walkability
-  audit the rows came from. Shown in the **header**, because stores open and
-  close: Troutville's did not exist a year before this revision, and a pair
-  that has closed is a wasted exit at 3am. A driver cannot tell stale atlas
-  data from current atlas data without it. Bump only when the rows are
-  re-audited.
-- **`APP_VERSION`** (`4.2.0`) — the code. Shown in the **legend card**.
+  audit the rows came from. Shown in the **panel tab**, beside the pair
+  count, because stores open and close: Troutville's did not exist a year
+  before this revision, and a pair that has closed is a wasted exit at 3am. A
+  driver cannot tell stale atlas data from current atlas data without it.
+  It lived in the header until v4.3.0 collapsed the chrome and the header
+  stopped existing; the requirement was "always on screen", not "in the
+  header", and the panel tab is on screen in both modes whether the panel is
+  open or collapsed. Bump only when the rows are re-audited.
+- **`APP_VERSION`** (`4.3.0`) — the code. Shown in the **legend card**.
   Bumped for every shipped change, and stamped onto every `lib/` URL as a
   cache-buster.
 
@@ -641,6 +697,28 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v4.3.0
+
+**Three chrome bands become one.** Header, mode tabs and toolbar collapse into
+a single row — W tile, segmented mode control, search, one icon button —
+taking the chrome above the map from **228px to 108px** on a Dynamic Island
+phone. The wordmark went, the tile shrank to 28px, the two header buttons
+became one, and `calc(10px + inset)` became `max(8px, inset)` so the safe area
+stops being paid for twice.
+
+The atlas revision did **not** go with the header. It moved to the panel tab's
+summary slot, reading `55 pairs  Rev 09-2026`, because the argument for it —
+stores open and close, and stale atlas data is indistinguishable from current
+without it — was about being permanently visible, not about which band it sat
+in. The panel tab is on screen in both modes, open or collapsed. It costs the
+slot's old contents: the route's mile count, which the drawer summary and the
+panel body both still state.
+
+`setMode` no longer hides the bar, and cannot: the mode control lives inside
+it, so hiding it would strand a driver in Route mode. Only search, the filter
+section and the badge are Atlas-only. Pinned three ways in
+`test/structure.test.js`. See *One bar above the map* above.
 
 ### v4.2.0
 
@@ -773,11 +851,11 @@ the icon width against a 0.80 limit, rather than assumed. The first attempt
 came out at 0.804, just over, and was redrawn.
 
 **`display: standalone`**, deliberately. This app was already built like one:
-`html` and `body` are `overflow:hidden`, the header pads for
+`html` and `body` are `overflow:hidden`, the bar pads for
 `env(safe-area-inset-top)` and the panel for the bottom. The URL bar was only
 ever taking map away from a driver.
 
-`theme_color` is `#14110E`, the header black. `--char` is declared once and
+`theme_color` is `#14110E`, the chrome black. `--char` is declared once and
 never themed, so that single static value is correct in both light and dark
 rather than a compromise between them.
 

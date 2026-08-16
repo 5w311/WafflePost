@@ -112,13 +112,58 @@ if (mfRef) {
 }
 
 t.eq((src.match(/^var ATLAS_REV   = /m) || []).length, 1, 'one ATLAS_REV declaration');
-t.eq(src.indexOf('id="revLine"') !== -1, true, 'the atlas revision has a home in the header');
+// v4.3.0 moved the rev out of the header (there is no header) into the panel
+// tab's summary slot. The requirement it satisfies is unchanged and is written
+// out in the head comment: a driver cannot tell stale atlas data from current
+// atlas data without it, so it must be permanently on screen. Assert it is
+// still WRITTEN somewhere, not merely that a constant exists - a rev nothing
+// renders is the failure this guards.
+t.eq(/\$\('panelSummary'\)\.textContent\s*=\s*ATLAS_REV/.test(src), true,
+     'the atlas revision has a home in the panel tab');
 
 // Two tabs, and only two. Near me and Corridor were removed at v2.0.0; this
 // fails if a third quietly reappears without the README being updated.
-t.eq((src.match(/class="mode" role="tab"/g) || []).length, 2, 'exactly two mode tabs');
+// The class changed with v4.3.0's segmented control; the roles did not.
+t.eq((src.match(/class="modetab" role="tab"/g) || []).length, 2, 'exactly two mode tabs');
 t.eq(src.indexOf('id="mAtlas"') !== -1 && src.indexOf('id="mRoute"') !== -1, true,
      'and they are Atlas and Route');
+// A tablist, not a toggle group. The vehicle profile control uses aria-pressed
+// because it IS a group of toggles; this picks one of two views. Someone
+// "making them consistent" is the way this regresses.
+t.eq(/role="tablist"[\s\S]{0,240}id="mAtlas"/.test(src), true, 'the mode tabs live in a tablist');
+t.eq(/id="mAtlas" aria-selected/.test(src) && /id="mRoute" aria-selected/.test(src), true,
+     'and are driven by aria-selected, not aria-pressed');
+
+// ---- the bar can never be hidden (v4.3.0) ----
+// The mode control lives in the bar now. Hiding the bar in Route mode - which
+// is exactly what setMode used to do to the toolbar it replaced - would strand
+// a driver in Route with no way back to Atlas. This is the one way this change
+// can go badly wrong, so it is pinned three ways: not in the markup, not in
+// setMode, not anywhere in the app script.
+t.eq(/<div class="bar" id="bar">/.test(src), true, 'the bar exists and carries no hidden class');
+var setModeSrc = (src.match(/function setMode\(m\)\{[\s\S]*?\n\}/) || [''])[0];
+t.eq(setModeSrc.length > 0, true, 'found setMode');
+t.eq(/\$\('bar'\)/.test(setModeSrc), false, 'setMode never touches the bar element');
+t.eq(/\$\('bar'\)[\s\S]{0,80}hidden/.test(src), false,
+     'nothing anywhere adds hidden to the bar');
+// And the pieces that DO swap are still swapping, so the assertion above is
+// not passing merely because setMode stopped doing anything.
+t.eq(/\$\('searchWrap'\)\.classList\.toggle\('hidden'/.test(setModeSrc), true,
+     'search is Atlas-only');
+t.eq(/\$\('filterSection'\)\.classList\.toggle\('hidden'/.test(setModeSrc), true,
+     'the filter half of the popover is Atlas-only');
+// One button, both modes: the legend is reachable in Route, where pins and
+// walk strips are still on screen and still need explaining.
+t.eq((src.match(/id="chromeBtn"/g) || []).length, 1, 'exactly one chrome button');
+t.eq(/\$\('fDot'\)\.classList\.toggle\('hidden', n2===0 \|\| state\.mode!=='atlas'\)/.test(src), true,
+     'the filter badge shows in Atlas only');
+
+// max(), not calc(). calc(10px + inset) stacks a gap on top of an inset that
+// exists to BE that gap - 69px of top padding on a Dynamic Island phone.
+t.eq(/padding-top:calc\([\d.]+px \+ env\(safe-area-inset-top/.test(src), false,
+     'the bar does not stack padding on top of the safe area inset');
+t.eq(/padding-top:max\([\d.]+px, env\(safe-area-inset-top,0px\)\)/.test(src), true,
+     'it takes the larger of the two');
 
 // The range inputs are gone on purpose. A reappearing "hours" or "mph" field
 // means the break planner crept back in.
