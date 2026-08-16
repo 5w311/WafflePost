@@ -176,6 +176,30 @@ t.eq(/capPanelRows\(\)/.test(toggleSrc), true, 'reopening the panel re-caps it')
 t.eq(/state\.mode !== 'atlas'[\s\S]{0,120}return;/.test(src), true,
      'Route mode keeps its own panel: the cap is Atlas only');
 
+// ---- the stop sheet stands where the panel does (v4.5.0) ----
+// It ran to 78% of the stage, and because it is bottom-anchored at z-900 it
+// covered HERE's layers button - the only way to reach Satellite.
+t.eq(/max-height:78%/.test(src), false, 'the sheet no longer runs to 78% of the stage');
+t.eq(/max-height:var\(--sheet-max, 78%\)/.test(src), true,
+     'it is capped to the panel height, with 78% only as a pre-measurement fallback');
+// --sheet-max is recorded from the EXPANDED panel: collapsed it is a 42px tab.
+t.eq(/classList\.contains\('collapsed'\)[\s\S]{0,160}--sheet-max/.test(src), true,
+     'the cap comes from the expanded panel, never the collapsed tab');
+// HERE's controls clear whichever bottom sheet is taller. Folding this into
+// --panel-h would have made the map jump when a sheet opened, because that
+// number is also the map's bottom padding.
+t.eq(/--chrome-h/.test(src), true, 'the control lift has its own variable');
+t.eq(/\.H_l_bottom\{bottom:calc\(var\(--chrome-h/.test(src), true,
+     'and the bottom controls use it');
+t.eq(/setPadding\(MAP_FIT_MARGIN, MAP_FIT_MARGIN,\s*h \+ MAP_FIT_MARGIN/.test(src), true,
+     'the map padding still comes from the panel alone: a sheet must not move the map');
+// Flex column, not position:sticky. Sticky let content that follows the bar in
+// flow render straight through underneath it.
+t.eq(/\.sheet-actions\{[^}]*position:sticky/.test(src), false,
+     'the action row is not sticky');
+t.eq(/class="sheet-scroll"/.test(src), true, 'the sheet has one scrolling child');
+t.eq(/\.sheet\.show\{display:flex\}/.test(src), true, 'and the sheet itself is a flex column');
+
 // max(), not calc(). calc(10px + inset) stacks a gap on top of an inset that
 // exists to BE that gap - 69px of top padding on a Dynamic Island phone.
 t.eq(/padding-top:calc\([\d.]+px \+ env\(safe-area-inset-top/.test(src), false,

@@ -329,10 +329,17 @@ html[data-theme=dark] .gpsnote{color:#E8B96B}
    them clear of its top edge, tracking collapse and expand. The imprint's
    offsets are inline styles from mapsjs-core.js and need !important; the
    .H_l_* rules come from mapsjs-ui.css, which this block already outranks
-   on document order. */
+   on document order.
+
+   --chrome-h rather than --panel-h since v4.5.0: the stop sheet is bottom
+   anchored too, and at 900 it outranks the 600 below, so a sheet taller than
+   the panel put the layers button back underneath something. --chrome-h is
+   whichever of the two is currently taller, so the controls clear the real
+   bottom edge instead of the panel's. --panel-h still exists and still feeds
+   the map's padding: opening a sheet must not move the map. */
 .H_ui{z-index:600}
-.H_l_bottom{bottom:calc(var(--panel-h,0px) + 16px)}
-.H_imprint{z-index:600!important;bottom:var(--panel-h,0px)!important}
+.H_l_bottom{bottom:calc(var(--chrome-h, var(--panel-h,0px)) + 16px)}
+.H_imprint{z-index:600!important;bottom:var(--chrome-h, var(--panel-h,0px))!important}
 .panel{position:absolute;left:0;right:0;bottom:0;max-height:62%;background:var(--surface);
   border-top:1px solid var(--line);display:flex;flex-direction:column;border-radius:14px 14px 0 0;
   box-shadow:0 -6px 24px rgba(0,0,0,.14);padding-bottom:env(safe-area-inset-bottom,0px);z-index:500}
@@ -383,11 +390,24 @@ html[data-theme=dark] .mile{color:#E8B96B}
 .endpin{width:16px;height:16px;border-radius:50%;border:3px solid var(--char);
   background:var(--sign)}
 
+/* The stop sheet stands exactly where the panel does. It used to run to 78%
+   of the stage - most of the map - and because it is bottom anchored at z-900
+   it covered HERE's layers button, which is the only way to reach Satellite.
+   Matching the panel's own height means the map area above the fold is the
+   same rectangle whether a driver is reading the list or one stop, and the
+   controls that already sit clear of the panel stay clear of this too.
+   --sheet-max is the panel's height while EXPANDED: a collapsed panel is a
+   42px tab, and capping the sheet to that would leave a sliver. 78% survives
+   as the fallback for the first paint, before anything has been measured. */
 .sheet{position:absolute;inset:auto 0 0 0;background:var(--surface);z-index:900;
   border-radius:14px 14px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.28);
-  padding:14px 16px calc(18px + env(safe-area-inset-bottom,0px));max-height:78%;
-  overflow-y:auto;display:none}
-.sheet.show{display:block}
+  max-height:var(--sheet-max, 78%);overflow:hidden;
+  display:none;flex-direction:column}
+.sheet.show{display:flex}
+/* The one scrolling child. Padding lives here rather than on .sheet so the
+   detail scrolls under the card's top edge instead of under a padding gap. */
+.sheet-scroll{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:14px 16px 0}
 .sheet h2{margin:0 0 2px;font-size:19px}
 .sheet .sub{color:var(--sub);font-size:13px;margin-bottom:12px}
 .bigft{display:flex;align-items:baseline;gap:8px;margin:2px 0 4px}
@@ -402,7 +422,11 @@ html[data-theme=dark] .mile{color:#E8B96B}
 .note{background:var(--bg);border-left:3px solid var(--sign);padding:9px 11px;
   border-radius:0 8px 8px 0;font-size:13.5px;margin:10px 0}
 .note.warn{border-left-color:var(--danger-text)}
-.sheet-actions{display:flex;gap:8px;margin-top:12px}
+/* Pinned by flex, not by sticky - see the note in openSheet. The hairline is
+   the affordance that says the detail above continues past it; without it a
+   card clipped at a kv border reads as complete. */
+.sheet-actions{display:flex;gap:8px;flex:none;border-top:1px solid var(--line);
+  padding:10px 16px calc(14px + env(safe-area-inset-bottom,0px))}
 .act{flex:1;padding:11px;border-radius:10px;border:1px solid var(--line);background:var(--bg);
   font-weight:700;font-size:13.5px;cursor:pointer}
 .act.primary{background:var(--sign);border-color:var(--sign);color:var(--char)}
@@ -652,27 +676,27 @@ var __mods={};
 function require(p){return __mods[p.replace(/^\.\//,'').replace(/\.js$/,'')];}
 var module={exports:{}};
 </script>
-<script src="lib/waffledist.js?v=4.4.0"></script>
+<script src="lib/waffledist.js?v=4.5.0"></script>
 <script>__mods.waffledist=module.exports;module={exports:{}};</script>
-<script src="lib/atlasfilter.js?v=4.4.0"></script>
+<script src="lib/atlasfilter.js?v=4.5.0"></script>
 <script>__mods.atlasfilter=module.exports;module={exports:{}};</script>
-<script src="lib/routewaffles.js?v=4.4.0"></script>
+<script src="lib/routewaffles.js?v=4.5.0"></script>
 <script>__mods.routewaffles=module.exports;module={exports:{}};</script>
-<script src="lib/vehicleprofile.js?v=4.4.0"></script>
+<script src="lib/vehicleprofile.js?v=4.5.0"></script>
 <script>__mods.vehicleprofile=module.exports;module={exports:{}};</script>
-<script src="lib/triptext.js?v=4.4.0"></script>
+<script src="lib/triptext.js?v=4.5.0"></script>
 <script>__mods.triptext=module.exports;module={exports:{}};</script>
-<script src="lib/escape.js?v=4.4.0"></script>
+<script src="lib/escape.js?v=4.5.0"></script>
 <script>__mods.escape=module.exports;module={exports:{}};</script>
-<script src="lib/flexible-polyline.js?v=4.4.0"></script>
+<script src="lib/flexible-polyline.js?v=4.5.0"></script>
 <script>__mods['flexible-polyline']=module.exports;module={exports:{}};</script>
-<script src="lib/autosuggest.js?v=4.4.0"></script>
+<script src="lib/autosuggest.js?v=4.5.0"></script>
 <script>__mods.autosuggest=module.exports;module={exports:{}};</script>
-<script src="lib/location.js?v=4.4.0"></script>
+<script src="lib/location.js?v=4.5.0"></script>
 <script>__mods.location=module.exports;module={exports:{}};</script>
-<script src="lib/routeoptions.js?v=4.4.0"></script>
+<script src="lib/routeoptions.js?v=4.5.0"></script>
 <script>__mods.routeoptions=module.exports;module={exports:{}};</script>
-<script src="lib/baselayer.js?v=4.4.0"></script>
+<script src="lib/baselayer.js?v=4.5.0"></script>
 <script>__mods.baselayer=module.exports;module={exports:{}};</script>
 
 <script>
@@ -724,7 +748,7 @@ var HERE_API_KEY = '7RDploUiahAnm08IZA9X7YSbb0Qh99pvqV2NCNQX_Hg';
    APP_VERSION - the code. Shown in the legend card. Bumped every change,
                 and stamped onto every lib/ URL as a cache-buster. */
 var ATLAS_REV   = 'Atlas Rev 09-2026';
-var APP_VERSION = '4.4.0';
+var APP_VERSION = '4.5.0';
 
 /* ===== DATA ==========================================================
    55 rows - 54 walkable exits plus one honorary - carrying 65 pairings,
@@ -966,9 +990,36 @@ function syncMapPadding(){
   var p = document.getElementById('panel');
   var h = p ? Math.round(p.getBoundingClientRect().height) : 0;
   document.documentElement.style.setProperty('--panel-h', h+'px');
+  /* The sheet is capped to the panel's EXPANDED height, so this is recorded
+     only while the body is actually showing. Collapsed, the panel is a 42px
+     tab, and a sheet capped to that would be a sliver with a Close button
+     somewhere below the fold. */
+  if (p && !p.classList.contains('collapsed')) {
+    document.documentElement.style.setProperty('--sheet-max', h+'px');
+  }
+  syncChromeH();
   if (!map) return;
   map.getViewPort().setPadding(MAP_FIT_MARGIN, MAP_FIT_MARGIN,
                                h + MAP_FIT_MARGIN, MAP_FIT_MARGIN);
+}
+
+/* How far up HERE's own controls have to sit, which is NOT the same question
+   as how much bottom padding the map wants. The panel and the stop sheet are
+   both anchored to the bottom, and the sheet is z-900 against the controls'
+   600, so whichever is taller is what would cover the layers button. Feeding
+   the controls the larger of the two keeps them reachable in every
+   combination - including a collapsed panel with a sheet open over it, which
+   is the case matching the sheet to the panel does not by itself solve.
+
+   Deliberately NOT folded into --panel-h: that number is also the map's
+   bottom padding, and making it jump when a sheet opens would shift the map
+   under the driver's finger at the moment they tapped a pin. */
+function syncChromeH(){
+  var p = document.getElementById('panel'), s = document.getElementById('sheet');
+  var ph = p ? Math.round(p.getBoundingClientRect().height) : 0;
+  var sh = (s && s.classList.contains('show'))
+         ? Math.round(s.getBoundingClientRect().height) : 0;
+  document.documentElement.style.setProperty('--chrome-h', Math.max(ph, sh)+'px');
 }
 
 /* HERE's canvas only re-measures on a real window resize or an explicit
@@ -1455,7 +1506,14 @@ function openSheet(row){
   if (!row) return;
   var b=BRAND[row.brand]||BRAND.IND, tier=wd.tierFor(row.feet);
   var tierLabel = wd.TIERS.filter(function(t){return t.id===tier;})[0].label;
-  var h='<h2>'+esc(row.city)+', '+esc(row.state)+'</h2>'+
+  /* Scroll region and action row are SIBLINGS, not one scrolling block. The
+     sheet is capped to the panel's height now, and a stop with a note and two
+     addresses overruns it - which put Close and Share below the fold on a card
+     the driver had just opened. position:sticky was the first fix and the
+     wrong one: content that sits after the stuck bar in flow renders straight
+     through underneath it, so the note showed up over the buttons. A flex
+     column with one scrolling child cannot do that. */
+  var h='<div class="sheet-scroll"><h2>'+esc(row.city)+', '+esc(row.state)+'</h2>'+
     '<div class="sub">'+esc(row.corridor)+' &middot; exit '+esc(row.exit)+'</div>'+
     '<div class="bigft"><b>'+row.feet.toLocaleString('en-US')+'</b><span>feet &middot; '+
       walkLabel(row.feet)+' each way</span></div>'+
@@ -1494,11 +1552,16 @@ function openSheet(row){
     var warn = (row.flags||[]).indexOf('caution')!==-1;
     h += '<div class="note'+(warn?' warn':'')+'">'+esc(row.note)+'</div>';
   }
-  h += '<div class="sheet-actions"><button class="act" id="sheetClose">Close</button>'+
+  h += '</div><div class="sheet-actions"><button class="act" id="sheetClose">Close</button>'+
        '<button class="act primary" id="sheetShare">Share stop</button></div>';
   var sheet=$('sheet');
   sheet.innerHTML=h; sheet.classList.add('show');
-  $('sheetClose').addEventListener('click',function(){ sheet.classList.remove('show'); });
+  /* Both ways round: the sheet is now part of what HERE's controls have to
+     clear, so its appearance and its dismissal both move them. */
+  syncChromeH();
+  $('sheetClose').addEventListener('click',function(){
+    sheet.classList.remove('show'); syncChromeH();
+  });
   $('sheetShare').addEventListener('click',function(){ share(tt.formatStopText(row,ATLAS_REV)); });
   if (map) map.setCenter({lat:row.lat,lng:row.lon}, true);
 }
@@ -2068,7 +2131,12 @@ function setMode(m){
   $('searchWrap').classList.toggle('hidden', m!=='atlas');
   $('filterSection').classList.toggle('hidden', m!=='atlas');
   $('drawer').classList.toggle('hidden', m!=='route');
+  /* A mode change dismisses the sheet, which changes what HERE's controls
+     have to clear. render()'s own path to syncChromeH runs only when the cap
+     applies - not in Route, not when a filter leaves fewer than three rows -
+     so the controls would otherwise stay lifted over a sheet that is gone. */
   $('sheet').classList.remove('show');
+  syncChromeH();
   closePops(); render();
   /* Returning to Atlas clears the route but does NOT refit — the startup
      fit was the one and only automatic camera move. */
