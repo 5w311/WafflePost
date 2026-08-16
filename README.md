@@ -664,7 +664,7 @@ address starts with a house number and names the row's own state, and that
 leaderboard.
 
 `run.js` prints one `ok <name> N passed` line per file and then `all green`,
-or names the files that failed. It does not sum the assertions — at v4.6.1
+or names the files that failed. It does not sum the assertions — at v4.6.2
 they come to 1,094 across twelve files, added up from those lines.
 
 ## Two version strings, on purpose
@@ -680,7 +680,7 @@ Same reasoning as FuelPost, different perishable thing:
   stopped existing; the requirement was "always on screen", not "in the
   header", and the panel tab is on screen in both modes whether the panel is
   open or collapsed. Bump only when the rows are re-audited.
-- **`APP_VERSION`** (`4.6.1`) — the code. Shown in the **legend card**.
+- **`APP_VERSION`** (`4.6.2`) — the code. Shown in the **legend card**.
   Bumped for every shipped change, and stamped onto every `lib/` URL as a
   cache-buster.
 
@@ -700,6 +700,29 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v4.6.2
+
+**The comparison itself fell, and the investigation closes.** v4.6.1 left
+"why does FuelPost not darken?" open with three candidates, the third being
+"FuelPost's icon may differ for a reason nobody has looked for." Looked:
+FuelPost's `apple-touch-icon` is itself near-black — mean luminance **39/255**
+with 80% of pixels darker than 40, against WafflePost's **165/255**, measured
+from the two repos' own assets. Dark treatment is invisible on an icon that is
+already dark, so FuelPost "not darkening" was never evidence that any
+configuration escapes the treatment. The comparison that motivated the whole
+arc — v3.6.2's correction, v4.6.0's experiment — carried no information about
+markup at all.
+
+Standing explanation, at its true strength: iOS most likely applies the same
+generated-dark treatment to every web clip, and WafflePost's is conspicuous
+only because its source icon is bright. The bookmark-clip build v4.6.1 named
+as the next experiment lost its motivation with the comparison — what pointed
+at it was FuelPost, and FuelPost is explained by its asset. v3.6.1's original
+close stands, now with the evidence it lacked: the only control is the
+per-device Home Screen setting, and it belongs to the user.
+
+Comment and README only; no markup, assets, or tests moved.
 
 ### v4.6.1
 
@@ -721,6 +744,8 @@ alternatives needs a build with neither the manifest nor the legacy metas, a
 genuine bookmark clip, which has not been run. Two other candidates are
 untested: iOS may key on any home-screen-capable declaration whatever its
 form, or FuelPost's icon may differ for a reason nobody has looked for.
+
+> The second candidate landed. See **v4.6.2** above.
 
 The inverted test assertion flips back, deliberately and in the same change as
 the comment rewrite — which is what its own comment said to do.
@@ -921,8 +946,11 @@ is that per-device setting, and it belongs to the user, not the app.
 > than the evidence supported, so v4.6.0 removed the manifest link to find
 > out — and the icon was **still dark** after a delete-and-re-add. The link
 > was not the lever; v4.6.1 put it back. The original sentence turns out to
-> be right about the outcome and still wrong about the reasoning, and *why*
-> FuelPost differs is open. See **v4.6.0 / v4.6.1** below.
+> be right about the outcome and still wrong about the reasoning. v4.6.2
+> then closed the last gap: FuelPost differs because its icon is already
+> near-black, so darkening was never visible on it. The comparison carried
+> no information, and this entry's original sentence stands in full. See
+> **v4.6.0 – v4.6.2** below.
 
 The app's own header tile was ruled out first, by pixels rather than by
 reading: `--sign` and `--char` are declared once in `:root` and the dark
