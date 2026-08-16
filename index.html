@@ -6,18 +6,34 @@
 <title>WafflePost</title>
 <meta name="description" content="Every Waffle House in America you can walk to from a truck stop.">
 
-<!-- Home screen and browser tab: the same sign-yellow tile with a black W
-     that sits next to the wordmark in the header, rendered out as PNG.
-     Baked rather than reused, because the header's W is drawn in whatever
-     the DEVICE calls system-ui - SF Pro on iOS, Roboto on Android - and an
-     icon has to be one fixed image. Liberation Sans is the metric twin of
-     Arial and the closest stand-in available.
+<!-- Home screen and browser tab: a char tile carrying a sign-yellow W over a
+     flat four-by-four waffle grid, matching the tile in the bar. Inverted at
+     v4.6.3 from the yellow-ground, black-W mark that shipped from v3.5.0.
+     Baked rather than reused, because the bar's W is drawn in whatever the
+     DEVICE calls system-ui - SF Pro on iOS, Roboto on Android - and an icon
+     has to be one fixed image. Liberation Sans is the metric twin of Arial
+     and the closest stand-in available. scripts/icons.py bakes all six from
+     one description; it is the only place the geometry lives.
+
+     THE INVERSION IS NOT A FIX FOR THE DARK ICON PROBLEM. The next person to
+     read this will assume it is, so: six candidate designs were rendered and
+     pushed through a simulated dark crush, and every one lost comparable
+     contrast. No icon design defeats the transform - see the dark icon
+     section below, where the mechanism is investigated and closed. This mark
+     ships because it is a better mark and because it DEGRADES GRACEFULLY:
+     darkened, a dark tile with a yellow W still reads as a dark icon with a
+     legible W, where a bright yellow tile crushed to near-black read as a
+     bright icon that had gone wrong. That is the entire claim. It buys
+     appearance, not contrast.
 
      Deliberately square and fully opaque, with no corner radius of its own:
      iOS masks apple-touch-icon with its own superellipse, so a source that
      rounds its own corners shows dark wedges through that mask, and any
-     transparency is composited onto black. The 5px radius on .tile is a
-     header detail; on the home screen the OS owns the shape.
+     transparency is composited onto black. An alpha channel therefore buys
+     nothing and risks that wedge, which is why every file is flat RGB and why
+     structure.test.js asserts it on the committed bytes rather than trusting
+     the bake. The 5px radius on .tile is a bar detail; on the home screen the
+     OS owns the shape.
 
      iOS reads apple-touch-icon and nothing else here. Android reads the
      manifest below, which is where its home screen LABEL comes from - left
@@ -26,9 +42,21 @@
      by structure.test.js, which is why v4.6.0's experiment cost the label
      nothing while it ran.) It carries icons at the two sizes Android asks
      for plus a maskable variant, because a launcher that crops to a circle
-     will clip a full-bleed glyph: the maskable W is drawn smaller so its
-     diagonal fits inside the centre-80% safe zone (measured at 0.745 of the
-     icon, where 0.80 is the limit), while the plain ones stay full size.
+     will clip a full-bleed glyph.
+
+     THE MASKABLE AND PLAIN 512 ARE NOW BYTE-IDENTICAL FILES. They used to
+     differ, because the old plain W was drawn full size and the maskable one
+     shrunk to fit. The new W sits at 0.62 of the icon and needs no shrink:
+     measured pixel by pixel on the baked file, its furthest yellow pixel is
+     at radius 0.380 against the centre-80% circle's 0.400, so a circular crop
+     clips NONE of it. (Its bounding-box diagonal is 0.767, which overstates
+     the risk - the box corners are empty. The direct measurement is the one
+     that decides, and scripts/icons.py checks the box against the 0.80 limit
+     as a cheap guard on top.) Both files still ship because the manifest
+     declares purpose "maskable" separately and a launcher may fetch either;
+     they simply happen to have the same contents. The grid's outer wells ARE
+     clipped by a circular crop, and that is intended - the grid is background
+     texture and only the W has to survive the mask.
 
      display:standalone, deliberately. This app was already built like one -
      html and body are overflow:hidden, the bar pads for
@@ -41,13 +69,16 @@
      MADE, NOT A WALL.
 
      Confirmed on device: iOS 18 and later let the home screen restyle every
-     icon on it - Edit > Customize > Default / Dark / Clear / Tinted - and
+     icon on it - Edit > Customize / Default / Dark / Clear / Tinted - and
      the default, Automatic, follows the system appearance. Setting Light
-     restores the yellow icon, so the darkening is that setting acting on
-     this app, not a bad asset. The PNGs were checked separately and are
-     right: 180x180, RGB with no alpha, every sampled pixel #FFC72C. A flat
-     raster has no variant slots, so iOS generates the dark and tinted
-     versions itself from this PNG.
+     restored the original yellow icon, so the darkening is that setting
+     acting on this app, not a bad asset. The PNGs were checked separately
+     and were right - 180x180, RGB with no alpha - and the current set is
+     checked the same way by scripts/icons.py and by structure.test.js. A
+     flat raster has no variant slots, so iOS generates the dark and tinted
+     versions itself from whatever one PNG it is given. That is still true of
+     the v4.6.3 mark; the mark only changes what the generated version looks
+     like, not whether one gets generated.
 
      THE MANIFEST WAS NOT THE LEVER. RUN, OBSERVED, REFUTED - v4.6.0 out,
      v4.6.1 back. This paragraph is the finding; the ones after it are what
@@ -204,7 +235,23 @@ input,select,textarea{font-size:16px}
    moment the light theme is picked. */
 .bar{background:var(--char);color:#fff;display:flex;align-items:center;gap:7px;
   padding:8px 10px;padding-top:max(8px, env(safe-area-inset-top,0px));flex:none}
-.tile{width:28px;height:28px;border-radius:5px;background:var(--sign);color:var(--char);
+/* Matches the home screen icon as of v4.6.3: char ground, sign yellow W. No
+   waffle grid here - the tile is 28px since the chrome collapse and the grid's
+   wells are under 2px at that size, which is noise rather than texture.
+
+   THE HAIRLINE IS NOT DECORATION. The bar is --char too, so a char tile has
+   no luminance edge against it and stops reading as a tile at all - the W
+   would float in the bar looking like stray text. #332C24 is the icon's own
+   waffle colour, so the border ties the two marks together rather than
+   introducing a third value. Reverting the fill to yellow is the wrong fix
+   and is why this comment exists.
+
+   The W stays LIVE TEXT in system-ui while the icon is baked Liberation Sans.
+   That is not an inconsistency to tidy up: see the icon comment in the head -
+   the device decides what system-ui means, so there is no single header W to
+   export, which is the whole reason the icon is baked in the first place. */
+.tile{width:28px;height:28px;border-radius:5px;background:var(--char);color:var(--sign);
+  border:1px solid #332C24;
   display:grid;place-items:center;font-weight:900;font-size:17px;letter-spacing:-.04em;flex:none}
 
 /* Pill group. 34px minimum in the smaller dimension, like every other target
@@ -707,27 +754,27 @@ var __mods={};
 function require(p){return __mods[p.replace(/^\.\//,'').replace(/\.js$/,'')];}
 var module={exports:{}};
 </script>
-<script src="lib/waffledist.js?v=4.6.2"></script>
+<script src="lib/waffledist.js?v=4.6.3"></script>
 <script>__mods.waffledist=module.exports;module={exports:{}};</script>
-<script src="lib/atlasfilter.js?v=4.6.2"></script>
+<script src="lib/atlasfilter.js?v=4.6.3"></script>
 <script>__mods.atlasfilter=module.exports;module={exports:{}};</script>
-<script src="lib/routewaffles.js?v=4.6.2"></script>
+<script src="lib/routewaffles.js?v=4.6.3"></script>
 <script>__mods.routewaffles=module.exports;module={exports:{}};</script>
-<script src="lib/vehicleprofile.js?v=4.6.2"></script>
+<script src="lib/vehicleprofile.js?v=4.6.3"></script>
 <script>__mods.vehicleprofile=module.exports;module={exports:{}};</script>
-<script src="lib/triptext.js?v=4.6.2"></script>
+<script src="lib/triptext.js?v=4.6.3"></script>
 <script>__mods.triptext=module.exports;module={exports:{}};</script>
-<script src="lib/escape.js?v=4.6.2"></script>
+<script src="lib/escape.js?v=4.6.3"></script>
 <script>__mods.escape=module.exports;module={exports:{}};</script>
-<script src="lib/flexible-polyline.js?v=4.6.2"></script>
+<script src="lib/flexible-polyline.js?v=4.6.3"></script>
 <script>__mods['flexible-polyline']=module.exports;module={exports:{}};</script>
-<script src="lib/autosuggest.js?v=4.6.2"></script>
+<script src="lib/autosuggest.js?v=4.6.3"></script>
 <script>__mods.autosuggest=module.exports;module={exports:{}};</script>
-<script src="lib/location.js?v=4.6.2"></script>
+<script src="lib/location.js?v=4.6.3"></script>
 <script>__mods.location=module.exports;module={exports:{}};</script>
-<script src="lib/routeoptions.js?v=4.6.2"></script>
+<script src="lib/routeoptions.js?v=4.6.3"></script>
 <script>__mods.routeoptions=module.exports;module={exports:{}};</script>
-<script src="lib/baselayer.js?v=4.6.2"></script>
+<script src="lib/baselayer.js?v=4.6.3"></script>
 <script>__mods.baselayer=module.exports;module={exports:{}};</script>
 
 <script>
@@ -779,7 +826,7 @@ var HERE_API_KEY = '7RDploUiahAnm08IZA9X7YSbb0Qh99pvqV2NCNQX_Hg';
    APP_VERSION - the code. Shown in the legend card. Bumped every change,
                 and stamped onto every lib/ URL as a cache-buster. */
 var ATLAS_REV   = 'Atlas Rev 09-2026';
-var APP_VERSION = '4.6.2';
+var APP_VERSION = '4.6.3';
 
 /* ===== DATA ==========================================================
    55 rows - 54 walkable exits plus one honorary - carrying 65 pairings,

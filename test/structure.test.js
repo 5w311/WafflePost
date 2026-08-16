@@ -134,6 +134,33 @@ if (mf) {
        'a maskable icon is declared');
 }
 
+// ---- every shipped icon is flat RGB (v4.6.3) ----
+// iOS composites transparency onto black, so an alpha channel buys nothing and
+// risks a black wedge showing through the superellipse mask. A regeneration
+// that forgets the flatten looks perfect on a desktop and is wrong on a phone,
+// which is exactly the class of change no other assertion here would catch.
+// Read from the PNG header rather than by decoding: bytes 24 (bit depth) and
+// 25 (colour type) of the IHDR, which is always the first chunk. Colour type 2
+// is truecolour RGB; 6 is RGBA and 4 is grey+alpha, both of which fail.
+['apple-touch-icon.png', 'icon-192.png', 'icon-512.png',
+ 'icon-maskable-512.png', 'favicon-32.png', 'favicon-16.png'].forEach(function (name) {
+  var p = path.join(__dirname, '..', name);
+  t.eq(fs.existsSync(p), true, name + ' is in the repo');
+  if (!fs.existsSync(p)) return;
+  var buf = fs.readFileSync(p);
+  t.eq(buf.slice(1, 4).toString('ascii'), 'PNG', name + ' is a PNG');
+  t.eq(buf.readUInt8(25), 2, name + ' is flat RGB with no alpha channel');
+});
+
+// The maskable and plain 512 are the same file since v4.6.3: the W sits inside
+// the circular safe zone unshrunk, so there is nothing for the maskable one to
+// do differently. Both still ship because the manifest names them separately
+// and a launcher may fetch either. If a future mark needs a real shrink this
+// assertion is the one to change, deliberately, with the head comment.
+t.eq(fs.readFileSync(path.join(__dirname, '..', 'icon-512.png'))
+       .equals(fs.readFileSync(path.join(__dirname, '..', 'icon-maskable-512.png'))), true,
+     'the maskable and plain 512 are byte-identical');
+
 // With the manifest unlinked, THIS is Android's home screen label. It is the
 // difference between the experiment costing installability only and it costing
 // the app's name as well.
