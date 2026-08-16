@@ -37,7 +37,7 @@ lib/flexible-polyline.js  HERE's reference decoder, vendored unmodified (MIT)
 test/*.test.js            plain-node tests, no framework
 test/_assert.js           two assertions and a reporter; that is the whole framework
 test/run.js               runs every test file and fails the run if any file fails
-scripts/icons.py          bakes all six icon PNGs from one description; --check verifies the committed bytes
+scripts/icons.py          VERIFIES the shipped icon PNGs - flatten, sizes, byte-identity, maskable safe circle
 scripts/remeasure.js      geocodes each truck stop and re-derives feet; regenerates the CSV
 scripts/remeasure-report.txt  provenance of every surviving figure, every judgment call
 data/atlas.csv            REGENERATED from DATA by scripts/remeasure.js - never hand-edit
@@ -665,7 +665,7 @@ address starts with a house number and names the row's own state, and that
 leaderboard.
 
 `run.js` prints one `ok <name> N passed` line per file and then `all green`,
-or names the files that failed. It does not sum the assertions — at v4.7.0
+or names the files that failed. It does not sum the assertions — at v4.7.1
 they come to 1,124 across twelve files, added up from those lines.
 
 ## Two version strings, on purpose
@@ -681,7 +681,7 @@ Same reasoning as FuelPost, different perishable thing:
   stopped existing; the requirement was "always on screen", not "in the
   header", and the panel tab is on screen in both modes whether the panel is
   open or collapsed. Bump only when the rows are re-audited.
-- **`APP_VERSION`** (`4.7.0`) — the code. Shown in the **legend card**.
+- **`APP_VERSION`** (`4.7.1`) — the code. Shown in the **legend card**.
   Bumped for every shipped change, and stamped onto every `lib/` URL as a
   cache-buster.
 
@@ -701,6 +701,28 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v4.7.1
+
+**The supplied icon assets go in, replacing a stand-in.** The six PNGs that
+came with the v4.6.3 brief were not found in the session, so that release
+baked an approximation from the brief's specification and said so. The real
+files were sitting in the session's upload directory the whole time. They are
+in now, byte-for-byte.
+
+The differences were small and entirely in the stand-in's favour to correct:
+the supplied W spans **0.582 × 0.426** against the bake's 0.620 × 0.452, its
+bounding-box diagonal is **0.721** (the brief's stated 0.724 — accurate for
+these files all along; the gap was the stand-in's font), and its waffle wells
+are `#2E261E` rather than `#332C24`. Its furthest yellow pixel sits at radius
+**0.359**, comfortably clear of the maskable safe circle's 0.400.
+
+**`scripts/icons.py` loses its generator.** A generator that cannot reproduce
+what ships is worse than none — it invites someone to run it and quietly
+replace hand-made assets with an approximation. What remains is the half that
+was earning its place: it measures the shipped bytes for the flatten, the
+sizes, the byte-identity of the two 512s, and the safe-circle geometry that
+needs a decoder and so cannot live in the node tests.
 
 ### v4.7.0
 
@@ -752,17 +774,17 @@ appearance, not contrast.
 
 **The maskable and plain 512 are now byte-identical**, asserted. The old plain
 W was full size and the maskable one shrunk to fit; the new W needs no shrink.
-Measured pixel by pixel on the baked file, its furthest yellow pixel sits at
-radius **0.380** against the centre-80% circle's 0.400, so a circular crop
-clips none of it. (Bounding-box diagonal is 0.767, which overstates the risk —
+Measured pixel by pixel on the shipped file, its furthest yellow pixel sits at
+radius **0.359** against the centre-80% circle's 0.400, so a circular crop
+clips none of it. (Bounding-box diagonal is 0.721, which overstates the risk —
 the box corners are empty.) Both files still ship because the manifest names
 them separately. The grid's outer wells *are* clipped by a circular crop; that
 is intended, the grid is texture and only the W has to survive.
 
-**`scripts/icons.py` is new**, because the icons were previously baked outside
-the repo with only prose recording how. Every measurement the head comment
-asserts is now executable, and `--check` verifies the committed bytes against
-a fresh bake.
+**`scripts/icons.py` is new.** It measures what prose cannot: the flatten, the
+sizes, the byte-identity of the two 512s, and the W against the maskable safe
+circle. (It briefly also *generated* the icons — see v4.7.1 for why that half
+did not survive.)
 
 **The bar tile follows**, char with a yellow W and no grid — the wells are
 under 2px at 28px. The bar is char too, so the tile gets a `#332C24` hairline
