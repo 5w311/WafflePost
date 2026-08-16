@@ -158,6 +158,24 @@ t.eq((src.match(/id="chromeBtn"/g) || []).length, 1, 'exactly one chrome button'
 t.eq(/\$\('fDot'\)\.classList\.toggle\('hidden', n2===0 \|\| state\.mode!=='atlas'\)/.test(src), true,
      'the filter badge shows in Atlas only');
 
+// ---- the atlas list shows three rows, then scrolls (v4.4.0) ----
+// The panel ran to max-height:62% and took half the screen from the thing the
+// app is for. The cap is MEASURED from the first three real rows rather than
+// hardcoded, because a row carrying a pill is taller than one that is not and
+// a px constant would cut the third row in half on some phones.
+t.eq(/var PANEL_ROWS = 3;/.test(src), true, 'the atlas list is capped at three rows');
+t.eq(/rows\[i\]\.offsetHeight/.test(src), true,
+     'the cap is measured from real rows, not a hardcoded pixel height');
+// Called from BOTH places it has to be: after every render, and again when the
+// panel is reopened - the body is display:none while collapsed, so every
+// height inside it reads 0 and a cap computed then would stick it shut.
+var renderSrc = (src.match(/function render\(\)\{[\s\S]*?\n\}/) || [''])[0];
+var toggleSrc = (src.match(/function togglePanel\(\)\{[\s\S]*?\n\}/) || [''])[0];
+t.eq(/capPanelRows\(\)/.test(renderSrc), true, 'render re-caps the list');
+t.eq(/capPanelRows\(\)/.test(toggleSrc), true, 'reopening the panel re-caps it');
+t.eq(/state\.mode !== 'atlas'[\s\S]{0,120}return;/.test(src), true,
+     'Route mode keeps its own panel: the cap is Atlas only');
+
 // max(), not calc(). calc(10px + inset) stacks a gap on top of an inset that
 // exists to BE that gap - 69px of top padding on a Dynamic Island phone.
 t.eq(/padding-top:calc\([\d.]+px \+ env\(safe-area-inset-top/.test(src), false,
