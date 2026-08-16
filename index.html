@@ -69,24 +69,36 @@
      comparison with FuelPost has some other cause, and the manifest was
      costing Android installability for nothing. It is back.
 
-     What is NOT established, and must not be written up as though it were:
-     WHY FuelPost differs. "iOS keys on standalone-ness itself" is the
-     leading remaining explanation and it is still only that - the experiment
-     that would separate it from the alternatives is a build with neither the
-     manifest nor the legacy metas, i.e. a genuine bookmark clip, and that has
-     not been run. Two other candidates are untested: iOS may key on the
-     presence of any home-screen-capable declaration whatever its form, or
-     FuelPost's icon may differ for a reason nobody has looked for yet.
+     AND THEN THE COMPARISON ITSELF FELL. v4.6.1 left "why FuelPost differs"
+     open, with "FuelPost's icon may differ for a reason nobody has looked
+     for" listed third of three candidates. Someone looked. FuelPost's
+     apple-touch-icon is itself near-black - measured from its repo's own
+     icons/icon-180.png: mean luminance 39/255, with 80% of pixels darker
+     than 40. WafflePost's tile measures 165/255. Dark treatment is
+     invisible on an icon that is already dark, so FuelPost "not darkening"
+     was never evidence that any configuration escapes the treatment - it is
+     what a darkened black icon looks like. The comparison carried no
+     information about markup at all, which is consistent with what the
+     v4.6.0 experiment found the hard way.
+
+     So the standing explanation, stated at its true strength: iOS most
+     likely applies the same generated-dark treatment to every web clip, and
+     WafflePost's is conspicuous only because its source icon is bright.
+     There is no observed case anywhere in this investigation of a bright
+     web clip icon escaping Dark appearance. The bookmark-clip-versus-
+     installed distinction reported at the iOS 18 rollout never had local
+     evidence behind it, and the bookmark-clip build that v4.6.1 named as
+     the next experiment lost its motivation with the comparison - what
+     pointed at it was FuelPost, and FuelPost is explained by its asset.
 
      Re-checked on iOS 26: there is still no documented mechanism for a web
      app to opt out of, or supply a variant for, the Dark icon appearance -
-     developers are asking for exactly this control on the iOS 26 forums with
-     no Apple answer, and web apps still get one flat raster with no
-     appearance slots. There is nothing pending to wait for, and after this
-     experiment there is no known markup that changes the outcome. That is a
-     stronger statement than the repo could make before v4.6.0 and a weaker
-     one than "impossible" - the untested build above is the next thing to
-     try, if anyone judges the icon worth a URL bar.
+     developers are asking for exactly this control on the iOS 26 forums
+     with no Apple answer, and web apps still get one flat raster with no
+     appearance slots. After v4.6.0 there is also no known markup that
+     changes the outcome. v3.6.1's original close stands, now with the
+     evidence it lacked: the only control is the per-device Home Screen
+     setting, and it belongs to the user, not the app.
 
      Serving the manifest link to Android only, by sniffing the UA, is
      rejected rather than unconsidered. It would buy both halves, and it is
@@ -695,27 +707,27 @@ var __mods={};
 function require(p){return __mods[p.replace(/^\.\//,'').replace(/\.js$/,'')];}
 var module={exports:{}};
 </script>
-<script src="lib/waffledist.js?v=4.6.1"></script>
+<script src="lib/waffledist.js?v=4.6.2"></script>
 <script>__mods.waffledist=module.exports;module={exports:{}};</script>
-<script src="lib/atlasfilter.js?v=4.6.1"></script>
+<script src="lib/atlasfilter.js?v=4.6.2"></script>
 <script>__mods.atlasfilter=module.exports;module={exports:{}};</script>
-<script src="lib/routewaffles.js?v=4.6.1"></script>
+<script src="lib/routewaffles.js?v=4.6.2"></script>
 <script>__mods.routewaffles=module.exports;module={exports:{}};</script>
-<script src="lib/vehicleprofile.js?v=4.6.1"></script>
+<script src="lib/vehicleprofile.js?v=4.6.2"></script>
 <script>__mods.vehicleprofile=module.exports;module={exports:{}};</script>
-<script src="lib/triptext.js?v=4.6.1"></script>
+<script src="lib/triptext.js?v=4.6.2"></script>
 <script>__mods.triptext=module.exports;module={exports:{}};</script>
-<script src="lib/escape.js?v=4.6.1"></script>
+<script src="lib/escape.js?v=4.6.2"></script>
 <script>__mods.escape=module.exports;module={exports:{}};</script>
-<script src="lib/flexible-polyline.js?v=4.6.1"></script>
+<script src="lib/flexible-polyline.js?v=4.6.2"></script>
 <script>__mods['flexible-polyline']=module.exports;module={exports:{}};</script>
-<script src="lib/autosuggest.js?v=4.6.1"></script>
+<script src="lib/autosuggest.js?v=4.6.2"></script>
 <script>__mods.autosuggest=module.exports;module={exports:{}};</script>
-<script src="lib/location.js?v=4.6.1"></script>
+<script src="lib/location.js?v=4.6.2"></script>
 <script>__mods.location=module.exports;module={exports:{}};</script>
-<script src="lib/routeoptions.js?v=4.6.1"></script>
+<script src="lib/routeoptions.js?v=4.6.2"></script>
 <script>__mods.routeoptions=module.exports;module={exports:{}};</script>
-<script src="lib/baselayer.js?v=4.6.1"></script>
+<script src="lib/baselayer.js?v=4.6.2"></script>
 <script>__mods.baselayer=module.exports;module={exports:{}};</script>
 
 <script>
@@ -767,7 +779,7 @@ var HERE_API_KEY = '7RDploUiahAnm08IZA9X7YSbb0Qh99pvqV2NCNQX_Hg';
    APP_VERSION - the code. Shown in the legend card. Bumped every change,
                 and stamped onto every lib/ URL as a cache-buster. */
 var ATLAS_REV   = 'Atlas Rev 09-2026';
-var APP_VERSION = '4.6.1';
+var APP_VERSION = '4.6.2';
 
 /* ===== DATA ==========================================================
    55 rows - 54 walkable exits plus one honorary - carrying 65 pairings,
