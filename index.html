@@ -781,27 +781,27 @@ var __mods={};
 function require(p){return __mods[p.replace(/^\.\//,'').replace(/\.js$/,'')];}
 var module={exports:{}};
 </script>
-<script src="lib/waffledist.js?v=4.8.0"></script>
+<script src="lib/waffledist.js?v=4.9.0"></script>
 <script>__mods.waffledist=module.exports;module={exports:{}};</script>
-<script src="lib/atlasfilter.js?v=4.8.0"></script>
+<script src="lib/atlasfilter.js?v=4.9.0"></script>
 <script>__mods.atlasfilter=module.exports;module={exports:{}};</script>
-<script src="lib/routewaffles.js?v=4.8.0"></script>
+<script src="lib/routewaffles.js?v=4.9.0"></script>
 <script>__mods.routewaffles=module.exports;module={exports:{}};</script>
-<script src="lib/vehicleprofile.js?v=4.8.0"></script>
+<script src="lib/vehicleprofile.js?v=4.9.0"></script>
 <script>__mods.vehicleprofile=module.exports;module={exports:{}};</script>
-<script src="lib/triptext.js?v=4.8.0"></script>
+<script src="lib/triptext.js?v=4.9.0"></script>
 <script>__mods.triptext=module.exports;module={exports:{}};</script>
-<script src="lib/escape.js?v=4.8.0"></script>
+<script src="lib/escape.js?v=4.9.0"></script>
 <script>__mods.escape=module.exports;module={exports:{}};</script>
-<script src="lib/flexible-polyline.js?v=4.8.0"></script>
+<script src="lib/flexible-polyline.js?v=4.9.0"></script>
 <script>__mods['flexible-polyline']=module.exports;module={exports:{}};</script>
-<script src="lib/autosuggest.js?v=4.8.0"></script>
+<script src="lib/autosuggest.js?v=4.9.0"></script>
 <script>__mods.autosuggest=module.exports;module={exports:{}};</script>
-<script src="lib/location.js?v=4.8.0"></script>
+<script src="lib/location.js?v=4.9.0"></script>
 <script>__mods.location=module.exports;module={exports:{}};</script>
-<script src="lib/routeoptions.js?v=4.8.0"></script>
+<script src="lib/routeoptions.js?v=4.9.0"></script>
 <script>__mods.routeoptions=module.exports;module={exports:{}};</script>
-<script src="lib/baselayer.js?v=4.8.0"></script>
+<script src="lib/baselayer.js?v=4.9.0"></script>
 <script>__mods.baselayer=module.exports;module={exports:{}};</script>
 
 <script>
@@ -852,13 +852,21 @@ var HERE_API_KEY = '7RDploUiahAnm08IZA9X7YSbb0Qh99pvqV2NCNQX_Hg';
                 above rather than satisfy it somewhere cheaper.
    APP_VERSION - the code. Shown in the legend card. Bumped every change,
                 and stamped onto every lib/ URL as a cache-buster. */
-var ATLAS_REV   = 'Atlas Rev 10-2026';
-var APP_VERSION = '4.8.0';
+var ATLAS_REV   = 'Atlas Rev 11-2026';
+var APP_VERSION = '4.9.0';
 
 /* ===== DATA ==========================================================
-   58 rows - 57 walkable exits plus one honorary - carrying 68 pairings,
-   63 of them inside the 0.4 mi line, across thirteen corridors and
-   fifteen states.
+   60 rows - 59 walkable exits plus one honorary - carrying 72 pairings,
+   67 of them inside the 0.4 mi line, across fourteen corridors and
+   fifteen states. I-520 is the first three-digit corridor here.
+
+   OAK GROVE MO IS THE FIRST ROW WHERE STRAIGHT-LINE IS NOT THE WALK. Its
+   Petro and TA sit across I-70 from the store, so their real distances are
+   the Broadway overpass rather than the numbers stored here. Every other
+   pair on this atlas is same-side frontage, which is what made a haversine a
+   fair proxy in the first place; that row's note says so explicitly. If a
+   second such pair ever appears, this is the point at which `feet` needs a
+   companion field rather than a note.
 
    The 10-2026 edition adds three rows on three corridors the original
    sweep never audited at all - I-44 Springfield MO, I-35 Oklahoma City
@@ -908,6 +916,7 @@ var DATA = [
 {feet:190,corridor:'I-75',state:'GA',exit:'293',city:'Cartersville',ts:'JP Truck Center',brand:'IND',lat:34.24090,lon:-84.77486,addr:'2310 Highway 411 NE, Cartersville, GA 30121-5129',flags:[],note:'Parking is $20.'},
 {feet:205,corridor:'I-12',state:'LA',exit:'40',city:'Hammond',ts:'Pilot',brand:'PIL',lat:30.47809,lon:-90.45646,addr:'2101 SW Railroad Ave, Hammond, LA 70403',flags:['diner'],alt:[{ts:'Petro Stopping Center #310',feet:506,brand:'PET',tsAddr:'2100 SW Railroad Ave'}],note:'Invisible to every exit guide — they all list the Thomas St store two miles off. A Pilot night clerk named Lucas is the reason this row exists.'},
 {feet:238,corridor:'I-10',state:'FL',exit:'142',city:'Marianna',ts:'Pilot',brand:'PIL',lat:30.72596,lon:-85.18602,addr:'2215 Highway 71, Marianna, FL 32448-2541',flags:[],note:'Pilot is 2209 FL-71, the store is 2215. Next door.'},
+{feet:246,corridor:'I-520',state:'GA',exit:'9',city:'Augusta',ts:'C Mart',brand:'IND',lat:33.39936,lon:-82.00515,addr:'3408 Mike Padgett Hwy, Augusta, GA 30906',tsAddr:'3403 Mike Padgett Hwy',flags:['scale','smalllot','caution'],note:'\u00245 to park overnight, no showers, and under twenty spaces. The store closes at midnight, and does not open until 8am at weekends. Reviews warn NOT to U-turn at the light to get back on I-520 \u2014 drivers get ticketed for it \u2014 and say to turn around behind the Circle K instead. One states the walk plainly: the lot is very limited, but you can go across the street to a Waffle House. This is the shortest walk on the atlas to a paid, showerless, midnight-closing stop.'},  // First three-digit corridor on the atlas. uniq() sorts corridors by +slice(2), so I-520 lands after I-95 rather than near I-5 - numerically correct, deliberately not special-cased.
 {feet:252,corridor:'I-10',state:'TX',exit:'877',city:'Orange',ts:'Pilot',brand:'PIL',lat:30.11405,lon:-93.82053,addr:'2310 Highway 62 S, Orange, TX 77630-8321',flags:['diner'],note:'There is a Denny\u2019s inside the Pilot. Drivers walk 900 ft past it anyway.'},  // Directories disagree between exit 872 and 877 for this stretch. Whichever number they print, Flying J #735 is at a separate interchange 3-4 mi west and is NOT walkable from this store; only the Pilot shares the interchange.
 {feet:272,corridor:'I-80',state:'OH',exit:'234',city:'Hubbard',ts:'Flying J #697',brand:'FJ',lat:41.18165,lon:-80.56990,addr:'2284 Gala St, Hubbard, OH 44425-3202',tsAddr:'2226 N Main St',flags:[],note:''},
 {feet:301,corridor:'I-75',state:'OH',exit:'36',city:'Franklin',ts:'Pilot',brand:'PIL',lat:39.54266,lon:-84.29161,addr:'6840 OH-123, Franklin, OH 45005',flags:[],note:''},
@@ -921,6 +930,7 @@ var DATA = [
 {feet:417,corridor:'I-75',state:'FL',exit:'224',city:'Ellenton',ts:'ONE9 Travel Center #89',brand:'ONE9',lat:27.52768,lon:-82.51312,addr:'1515 51st Ave E, Ellenton, FL 34222-2634',flags:['smalllot'],note:'Drivers report no reliable overnight parking and tight maneuvering - fuel and showers, effectively.'},
 {feet:419,corridor:'I-95',state:'GA',exit:'87',city:'Richmond Hill',ts:'TA',brand:'TA',lat:31.92471,lon:-81.33386,addr:'56 Sommers Blvd, Richmond Hill, GA 31324-8885',flags:[],note:''},
 {feet:429,corridor:'I-75',state:'FL',exit:'341',city:'Ocala',ts:'Marion Oaks Pilot',brand:'PIL',lat:29.02599,lon:-82.15995,addr:'2065 SW CR-484, Ocala, FL 34473-4013',flags:[],note:''},
+{feet:432,corridor:'I-70',state:'MO',exit:'28',city:'Oak Grove',ts:'QuikTrip',brand:'IND',lat:39.01206,lon:-94.12829,addr:'451 S Broadway, Oak Grove, MO 64075',tsAddr:'309 S Broadway',flags:[],alt:[{ts:'Petro Travel Center',feet:1298,brand:'PET',tsAddr:'301 SW 1st St'},{ts:'TA Travel Center',feet:2087,brand:'TA',tsAddr:'100 N Broadway'}],note:'THE PETRO AND THE TA ARE ACROSS I-70. Their straight-line figures are real but the WALK is not: you cannot cross an interstate, so both mean the Broadway overpass and both are materially longer on foot than the numbers say. Every other pair on this atlas is same-side frontage, which is why straight-line has been a fair proxy until here. The QuikTrip is same-side and is the honest primary \u2014 a large-format travel store with truck parking that reviewers thank them for, but no showers and no service bays. Park there and walk 432 ft, or take the Petro or the TA for real facilities and accept the crossing.'},  // NOT the Oak Grove KY that the 09-2026 re-audit purged - different state, different corridor, different exit. The primary is the QuikTrip because the atlas sorts on WALK, and promoting the Petro for being the better truck stop would break that.
 {feet:479,corridor:'I-95',state:'GA',exit:'109',city:'Port Wentworth',ts:'Pilot',brand:'PIL',lat:32.18745,lon:-81.19410,addr:'6941 GA Highway 21, Port Wentworth, GA 31407-9799',flags:[],note:''},
 {feet:501,corridor:'I-10',state:'FL',exit:'258',city:'Madison',ts:'Fast Track Travel Center',brand:'IND',lat:30.39877,lon:-83.35780,addr:'145 SE Bandit St, Madison, FL 32340',flags:[],note:'$10 showers. A review puts it "right across the street from the waffle house".'},
 {feet:506,corridor:'I-95',state:'SC',exit:'77',city:'St. George',ts:'Flying J',brand:'FJ',lat:33.19459,lon:-80.60380,addr:'127 Motel Dr, St George, SC 29477-7800',flags:[],note:'A driver of 26 years called this the cleanest one he had used.'},
@@ -1635,25 +1645,32 @@ function openSheet(row){
      through underneath it, so the note showed up over the buttons. A flex
      column with one scrolling child cannot do that. */
   var h='<div class="sheet-scroll"><h2>'+esc(row.city)+', '+esc(row.state)+'</h2>'+
-    '<div class="sub">'+esc(row.corridor)+' &middot; exit '+esc(row.exit)+'</div>'+
-    '<div class="bigft"><b>'+row.feet.toLocaleString('en-US')+'</b><span>feet &middot; '+
-      walkLabel(row.feet)+' each way</span></div>'+
-    '<div class="walkscale"><div class="ends"><span>'+esc(b.name)+'</span><span>Waffle House</span></div>'+
-      stripHtml(row.feet)+'<div style="font-size:11px;color:var(--sub);margin-top:5px">'+
-      esc(tierLabel)+' &middot; the mark is the 0.4 mi walkable line</div></div>';
+    '<div class="sub">'+esc(row.corridor)+' &middot; exit '+esc(row.exit)+'</div>';
 
-  /* A CAUTION NOTE IS HOISTED ABOVE THE DETAIL ROWS. Since v4.5.0 the sheet is
-     capped to the panel's height and scrolls, and a stop with four kv rows
-     pushes its note past the fold - which for Springfield MO means "OVERNIGHT
-     PARKING IS PROHIBITED" arriving only if the driver thinks to scroll a card
-     they have just opened. A warning that has to be looked for is not a
-     warning. Ordinary notes stay in their old place at the bottom: they are
-     context, and hoisting them all would push the walk detail down for every
-     row to serve a minority of them. */
+  /* A CAUTION NOTE COMES FIRST - above the distance, not merely above the
+     detail rows. Since v4.5.0 the sheet is capped to the panel's height and
+     scrolls, so anything below roughly 235px needs a deliberate scroll on a
+     card the driver has just opened, and a warning that has to be looked for
+     is not a warning.
+
+     v4.8.0 hoisted these above the kv rows, which was enough for Springfield's
+     one-line ban and NOT enough for Augusta's: paid parking, no showers, a
+     midnight close and a ticketed U-turn is four facts, and with the headline
+     figure and the walk scale above it only the first was on screen. The
+     number is this app's headline everywhere else; on the three rows carrying
+     a hazard, the hazard outranks it.
+
+     Ordinary notes stay at the bottom. They are context, and hoisting them
+     all would push the walk detail down for fifty-seven rows to serve three. */
   var warn = (row.flags||[]).indexOf('caution') !== -1;
   if (warn && row.note) h += '<div class="note warn">'+esc(row.note)+'</div>';
 
-  h += '<div class="kv"><span>Truck stop</span><span>'+esc(row.ts)+'</span></div>';
+  h += '<div class="bigft"><b>'+row.feet.toLocaleString('en-US')+'</b><span>feet &middot; '+
+      walkLabel(row.feet)+' each way</span></div>'+
+    '<div class="walkscale"><div class="ends"><span>'+esc(b.name)+'</span><span>Waffle House</span></div>'+
+      stripHtml(row.feet)+'<div style="font-size:11px;color:var(--sub);margin-top:5px">'+
+      esc(tierLabel)+' &middot; the mark is the 0.4 mi walkable line</div></div>'+
+    '<div class="kv"><span>Truck stop</span><span>'+esc(row.ts)+'</span></div>';
   (row.alt||[]).forEach(function(a){
     h += '<div class="kv"><span>Also here</span><span>'+esc(a.ts)+' &middot; '+
       a.feet.toLocaleString('en-US')+' ft'+

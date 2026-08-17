@@ -10,7 +10,7 @@ WafflePost answers *can I get a plate of hashbrowns without moving the truck*.
 
 Two tabs:
 
-- **Atlas** — map and list of all 58 exits, filterable by corridor, state,
+- **Atlas** — map and list of all 60 exits, filterable by corridor, state,
   truck stop chain, walk distance and free text. Every row, distance and
   filter is computed locally; only the basemap under the pins is fetched.
 - **Route** — pickup and delivery with address autosuggest and a "use my
@@ -81,11 +81,11 @@ they are on opposite sides of a mile-wide interchange.
 Counts, reconciled, because three different numbers are all correct about
 different things:
 
-- **58 exits** — rows in `DATA`. 57 walkable plus one honorary member,
-  across thirteen corridors and fifteen states.
-- **68 pairings listed** — every truck stop named, including the second,
+- **60 exits** — rows in `DATA`. 59 walkable plus one honorary member,
+  across fourteen corridors and fifteen states.
+- **72 pairings listed** — every truck stop named, including the second,
   third and fourth stop at exits that have them.
-- **63 pairings within 0.4 mi** — the headline number. The other 5 sit past
+- **67 pairings within 0.4 mi** — the headline number. The other 5 sit past
   the line. Four are alternates, labelled *(past the line)* in the stop sheet
   rather than dropped, because at 3am a 3,274 ft walk you know about beats a
   1,483 ft walk into a full lot. The fifth is Bishopville's own primary stop
@@ -143,6 +143,63 @@ mistaken for data: Texarkana TX I-30 exit 223 (5329 N State Line Ave, a
 possible RaceTrac with truck parking, unverified); Rolla MO on I-44 (1405
 Martin Springs Dr, same-exit adjacency unverified); Plainfield IN I-70 exit 66
 (5018 Cambridge Way, unverified).
+
+### The 11-2026 additions, and two measured rejections
+
+Two rows in, two out. **All four candidates arrived with distances estimated
+from street addresses, and measurement changed three of the four verdicts.**
+
+| candidate | reported | measured | verdict |
+|---|---|---|---|
+| Augusta GA, I-520 exit 9 | ~550 ft | **246 ft** | in |
+| Oak Grove MO, I-70 exit 28 | TA/Petro pair | **432 ft** to an unlisted QuikTrip | in |
+| Arkadelphia AR, I-30 exit 78 | ~500 ft | **2,379 ft** | rejected |
+| Augusta GA, I-520 exit 7 | 0.3–0.6 mi | **3.03 mi** | rejected |
+
+**I-520 is the first three-digit corridor on the atlas.** `uniq()` sorts
+corridors by `+c.slice(2)`, so it lands after I-95 rather than near I-5 —
+numerically correct, and deliberately not special-cased.
+
+**Augusta's note leads with the cost, not the distance.** It is the shortest
+walk on the atlas to a paid, showerless, midnight-closing stop: $5 to park
+overnight, under twenty spaces, no showers, store closed midnight to 8am at
+weekends, and reviews warning not to U-turn at the light back onto I-520
+because drivers get ticketed — turn around behind the Circle K instead.
+
+**Oak Grove is the first row where straight-line is not the walk.** Its Petro
+(1,298 ft) and TA (2,087 ft) sit *across I-70* from the store. Those figures
+are real but the walk is not: you cannot cross an interstate, so both mean the
+Broadway overpass. Every other pair on this atlas is same-side frontage, which
+is what made a haversine a fair proxy in the first place. The QuikTrip at
+432 ft is same-side and is the honest primary — a large-format travel store
+with free truck parking per reviews, but no showers and no service bays. The
+atlas sorts on *walk*, so promoting the Petro for being the better truck stop
+would break the one thing the ordering means.
+
+**Arkadelphia is rejected, and deliberately not admitted as a second
+honorary.** At 2,379 ft it sits close to Bishopville's 2,392, so the move is
+obvious and wrong. Bishopville earned honorary status on an explicit driver
+review describing truckers walking it; no comparable evidence exists here.
+**Honorary is an evidence standard, not a distance band**, and admitting a
+second on distance alone would quietly convert it into one. It is the second
+same-street pair to fail this way — Waffle House at 123 Valley St and Pilot
+#492 at 170 Valley St look adjacent by address and are at opposite ends of the
+road. Recorded here so nobody re-finds and re-adds it.
+
+**Augusta exit 7 is killed, not parked.** The reported Pumping Station 25 at
+3671 Peach Orchard Rd is a BP measuring 3.03 mi from the Waffle House, and its
+own reviews say truck parking has been discontinued.
+
+**Swept and closed as genuinely empty:** I-45, I-269, I-459, I-985, I-575,
+I-185, I-565, I-840, I-440 (all three legs), I-140 (both legs), I-240 Memphis.
+I-240 is worth its own line: it has a genuine Love's at exit 21, but the
+Waffle House that would have paired with it is permanently closed. That is a
+pair that existed and no longer does.
+
+**Still only partially swept — do not mark closed:** I-70 east of Ohio and
+across Illinois, plus Missouri at O'Fallon 217, Wentzville 208, St Charles
+229B and Blue Springs 18, and Ohio at Reynoldsburg 110, Columbus 94, Dayton
+38, Englewood 29 and Brookville 21.
 
 ### The 09-2026 re-audit
 
@@ -718,14 +775,14 @@ address starts with a house number and names the row's own state, and that
 leaderboard.
 
 `run.js` prints one `ok <name> N passed` line per file and then `all green`,
-or names the files that failed. It does not sum the assertions — at v4.8.0
-they come to 1,168 across twelve files, added up from those lines.
+or names the files that failed. It does not sum the assertions — at v4.9.0
+they come to 1,203 across twelve files, added up from those lines.
 
 ## Two version strings, on purpose
 
 Same reasoning as FuelPost, different perishable thing:
 
-- **`ATLAS_REV`** (`Atlas Rev 10-2026`) — which edition of the walkability
+- **`ATLAS_REV`** (`Atlas Rev 11-2026`) — which edition of the walkability
   audit the rows came from. Shown in the **panel tab**, beside the pair
   count, because stores open and close: Troutville's did not exist a year
   before this revision, and a pair that has closed is a wasted exit at 3am. A
@@ -734,7 +791,7 @@ Same reasoning as FuelPost, different perishable thing:
   stopped existing; the requirement was "always on screen", not "in the
   header", and the panel tab is on screen in both modes whether the panel is
   open or collapsed. Bump only when the rows are re-audited.
-- **`APP_VERSION`** (`4.8.0`) — the code. Shown in the **legend card**.
+- **`APP_VERSION`** (`4.9.0`) — the code. Shown in the **legend card**.
   Bumped for every shipped change, and stamped onto every `lib/` URL as a
   cache-buster.
 
@@ -754,6 +811,33 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v4.9.0
+
+**Two rows in, two rejected, and measurement decided three of the four.**
+Augusta GA (I-520, 246 ft) and Oak Grove MO (I-70, 432 ft) go in; Arkadelphia
+AR (2,379 ft measured against ~500 reported) and Augusta exit 7 (3.03 mi
+against 0.3–0.6 reported) do not. 58 exits become 60, 68 pairings become 72,
+`ATLAS_REV` moves to **Rev 11-2026**.
+
+**I-520 is the first three-digit corridor** — it sorts after I-95 by
+`+c.slice(2)`, which is numerically right and deliberately not special-cased.
+
+**Oak Grove breaks an assumption the atlas has always relied on**: its Petro
+and TA are across I-70, so straight-line is not the walk for the first time.
+Its note says so explicitly, and the `DATA` comment records that a second such
+pair would mean `feet` needs a companion field rather than a note.
+
+**Arkadelphia is not admitted as a second honorary**, though its 2,379 ft sits
+beside Bishopville's 2,392. Honorary is an evidence standard, not a distance
+band.
+
+**A `caution` note now renders above the headline figure**, not merely above
+the detail rows as in v4.8.0. Springfield's one-line ban fitted; Augusta's
+four facts — paid parking, no showers, midnight close, ticketed U-turn — did
+not, with only the first on screen. On the three rows carrying a hazard, the
+hazard outranks the number. Verified by measuring each phrase against the
+fold, not the note's bounding box.
 
 ### v4.8.0
 
