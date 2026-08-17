@@ -4,6 +4,7 @@ feet,corridor,state,exit,city,truck_stop,lat,lon,waffle_house_address,truck_stop
 190,I-75,GA,293,Cartersville,JP Truck Center,34.2409,-84.77486,"2310 Highway 411 NE, Cartersville, GA 30121-5129",
 205,I-12,LA,40,Hammond,Pilot,30.47809,-90.45646,"2101 SW Railroad Ave, Hammond, LA 70403",
 238,I-10,FL,142,Marianna,Pilot,30.72596,-85.18602,"2215 Highway 71, Marianna, FL 32448-2541",
+246,I-520,GA,9,Augusta,C Mart,33.39936,-82.00515,"3408 Mike Padgett Hwy, Augusta, GA 30906",3403 Mike Padgett Hwy
 252,I-10,TX,877,Orange,Pilot,30.11405,-93.82053,"2310 Highway 62 S, Orange, TX 77630-8321",
 272,I-80,OH,234,Hubbard,Flying J #697,41.18165,-80.5699,"2284 Gala St, Hubbard, OH 44425-3202",2226 N Main St
 301,I-75,OH,36,Franklin,Pilot,39.54266,-84.29161,"6840 OH-123, Franklin, OH 45005",
@@ -17,6 +18,7 @@ feet,corridor,state,exit,city,truck_stop,lat,lon,waffle_house_address,truck_stop
 417,I-75,FL,224,Ellenton,ONE9 Travel Center #89,27.52768,-82.51312,"1515 51st Ave E, Ellenton, FL 34222-2634",
 419,I-95,GA,87,Richmond Hill,TA,31.92471,-81.33386,"56 Sommers Blvd, Richmond Hill, GA 31324-8885",
 429,I-75,FL,341,Ocala,Marion Oaks Pilot,29.02599,-82.15995,"2065 SW CR-484, Ocala, FL 34473-4013",
+432,I-70,MO,28,Oak Grove,QuikTrip,39.01206,-94.12829,"451 S Broadway, Oak Grove, MO 64075",309 S Broadway
 479,I-95,GA,109,Port Wentworth,Pilot,32.18745,-81.1941,"6941 GA Highway 21, Port Wentworth, GA 31407-9799",
 501,I-10,FL,258,Madison,Fast Track Travel Center,30.39877,-83.3578,"145 SE Bandit St, Madison, FL 32340",
 506,I-95,SC,77,St. George,Flying J,33.19459,-80.6038,"127 Motel Dr, St George, SC 29477-7800",
