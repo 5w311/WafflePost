@@ -10,7 +10,7 @@ WafflePost answers *can I get a plate of hashbrowns without moving the truck*.
 
 Two tabs:
 
-- **Atlas** — map and list of all 55 exits, filterable by corridor, state,
+- **Atlas** — map and list of all 58 exits, filterable by corridor, state,
   truck stop chain, walk distance and free text. Every row, distance and
   filter is computed locally; only the basemap under the pins is fetched.
 - **Route** — pickup and delivery with address autosuggest and a "use my
@@ -81,15 +81,68 @@ they are on opposite sides of a mile-wide interchange.
 Counts, reconciled, because three different numbers are all correct about
 different things:
 
-- **55 exits** — rows in `DATA`. 54 walkable plus one honorary member.
-- **65 pairings listed** — every truck stop named, including the second,
+- **58 exits** — rows in `DATA`. 57 walkable plus one honorary member,
+  across thirteen corridors and fifteen states.
+- **68 pairings listed** — every truck stop named, including the second,
   third and fourth stop at exits that have them.
-- **60 pairings within 0.4 mi** — the headline number. The other 5 sit past
+- **63 pairings within 0.4 mi** — the headline number. The other 5 sit past
   the line. Four are alternates, labelled *(past the line)* in the stop sheet
   rather than dropped, because at 3am a 3,274 ft walk you know about beats a
   1,483 ft walk into a full lot. The fifth is Bishopville's own primary stop
   at 2,380 ft — the honorary row below, which carries no such label because
   the tag is only emitted on alternates.
+
+### The 10-2026 additions, and the corridors that came back empty
+
+Three rows go in, on **three corridors the original sweep never audited at
+all** — the first atlas addition since the purge, and it follows the rules the
+purge set.
+
+| | corridor | walk | stop |
+|---|---|---|---|
+| Springfield MO, exit 80B | I-44 | **303 ft** | Rapid Robert's Travel Plaza |
+| Oklahoma City OK, exit 137 | I-35 | **754 ft** | Love's Travel Stop #205 |
+| London OH, exit 79 | I-70 | **927 ft** | Pilot Travel Center |
+
+Ten corridors become thirteen; Oklahoma and Missouri are new states.
+**Oklahoma City takes the westernmost pin from Winnie TX**, whose note had
+called itself the western frontier and no longer does.
+
+**The distances are measured, and that matters here.** The research pass
+reported Springfield at "about 350 ft" and Oklahoma City at "about 600 ft",
+both estimated from street addresses and phrases like *next door*. Measured by
+haversine from geocoded coordinates they are **303** and **754** — off by
+roughly a quarter in *opposite* directions. An estimate that reads plausibly
+is exactly the failure mode the 09-2026 purge existed to remove.
+
+Springfield is the shortest walk on the atlas **you cannot sleep at**:
+overnight parking is prohibited, the store runs 5am–11:30pm, and a driver
+review points to the Flying J at exit 72 for a full-service stop. Its note
+says so first, and since v4.8.0 a `caution` note is hoisted **above** the
+detail rows in the stop sheet, because the sheet scrolls and a warning below
+the fold is a warning nobody reads.
+
+London OH has a near miss recorded in the source rather than added: the TA at
+940 US-42 shares the interchange but measures **2,436 ft** — 0.46 mi, past the
+line — so it is not an alternate, and a comment on the row says why so nobody
+adds it later.
+
+**Corridors swept and closed.** I-45 Houston–Dallas was swept exit by exit and
+is genuinely empty: every I-45 Waffle House sits at an exit with only
+car-scale fuel, or its nearest truck stop is at a different interchange. The
+Ennis Buc-ee's does not allow semis and the Love's is at exit 249; Huntsville
+exit 118 has a Pilot and a TA but no Waffle House.
+
+**Corridors partially swept — provisional negatives, not proven zeros.** The
+other 26 returned no confirmed pair, but the research budget ran out partway
+through. **I-30, I-70 beyond London, I-71 and I-64** sit inside Waffle House
+country and deserve a second pass. Do not treat these as closed.
+
+**Thin leads, deliberately not rows.** Recorded so they are not lost and not
+mistaken for data: Texarkana TX I-30 exit 223 (5329 N State Line Ave, a
+possible RaceTrac with truck parking, unverified); Rolla MO on I-44 (1405
+Martin Springs Dr, same-exit adjacency unverified); Plainfield IN I-70 exit 66
+(5018 Cambridge Way, unverified).
 
 ### The 09-2026 re-audit
 
@@ -665,14 +718,14 @@ address starts with a house number and names the row's own state, and that
 leaderboard.
 
 `run.js` prints one `ok <name> N passed` line per file and then `all green`,
-or names the files that failed. It does not sum the assertions — at v4.7.1
-they come to 1,124 across twelve files, added up from those lines.
+or names the files that failed. It does not sum the assertions — at v4.8.0
+they come to 1,168 across twelve files, added up from those lines.
 
 ## Two version strings, on purpose
 
 Same reasoning as FuelPost, different perishable thing:
 
-- **`ATLAS_REV`** (`Atlas Rev 09-2026`) — which edition of the walkability
+- **`ATLAS_REV`** (`Atlas Rev 10-2026`) — which edition of the walkability
   audit the rows came from. Shown in the **panel tab**, beside the pair
   count, because stores open and close: Troutville's did not exist a year
   before this revision, and a pair that has closed is a wasted exit at 3am. A
@@ -681,7 +734,7 @@ Same reasoning as FuelPost, different perishable thing:
   stopped existing; the requirement was "always on screen", not "in the
   header", and the panel tab is on screen in both modes whether the panel is
   open or collapsed. Bump only when the rows are re-audited.
-- **`APP_VERSION`** (`4.7.1`) — the code. Shown in the **legend card**.
+- **`APP_VERSION`** (`4.8.0`) — the code. Shown in the **legend card**.
   Bumped for every shipped change, and stamped onto every `lib/` URL as a
   cache-buster.
 
@@ -701,6 +754,28 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v4.8.0
+
+**Three new rows on three never-audited corridors.** Springfield MO (I-44,
+303 ft), Oklahoma City OK (I-35, 754 ft) and London OH (I-70, 927 ft). Ten
+corridors become thirteen, 55 exits become 58, 65 pairings become 68, and
+Oklahoma City takes the westernmost pin from Winnie TX. `ATLAS_REV` moves to
+**Rev 10-2026**, which is what it is for.
+
+Distances are **measured from coordinates, not estimated** — the research pass
+said "about 350 ft" and "about 600 ft"; the haversine says 303 and 754.
+
+**A `caution` note is now hoisted above the detail rows in the stop sheet.**
+Springfield's *overnight parking is prohibited* landed below the fold, because
+the sheet has been capped to the panel's height since v4.5.0 and four detail
+rows push a note past it. A warning that has to be looked for is not a
+warning. Ordinary notes stay at the bottom, where they are context rather than
+a hazard.
+
+`data/atlas.csv` regenerated from `DATA` — three added lines and nothing else
+touched. The corridors swept empty, the partially-swept list and the thin
+leads are all recorded above so nobody sweeps them twice.
 
 ### v4.7.1
 

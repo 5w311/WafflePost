@@ -781,27 +781,27 @@ var __mods={};
 function require(p){return __mods[p.replace(/^\.\//,'').replace(/\.js$/,'')];}
 var module={exports:{}};
 </script>
-<script src="lib/waffledist.js?v=4.7.1"></script>
+<script src="lib/waffledist.js?v=4.8.0"></script>
 <script>__mods.waffledist=module.exports;module={exports:{}};</script>
-<script src="lib/atlasfilter.js?v=4.7.1"></script>
+<script src="lib/atlasfilter.js?v=4.8.0"></script>
 <script>__mods.atlasfilter=module.exports;module={exports:{}};</script>
-<script src="lib/routewaffles.js?v=4.7.1"></script>
+<script src="lib/routewaffles.js?v=4.8.0"></script>
 <script>__mods.routewaffles=module.exports;module={exports:{}};</script>
-<script src="lib/vehicleprofile.js?v=4.7.1"></script>
+<script src="lib/vehicleprofile.js?v=4.8.0"></script>
 <script>__mods.vehicleprofile=module.exports;module={exports:{}};</script>
-<script src="lib/triptext.js?v=4.7.1"></script>
+<script src="lib/triptext.js?v=4.8.0"></script>
 <script>__mods.triptext=module.exports;module={exports:{}};</script>
-<script src="lib/escape.js?v=4.7.1"></script>
+<script src="lib/escape.js?v=4.8.0"></script>
 <script>__mods.escape=module.exports;module={exports:{}};</script>
-<script src="lib/flexible-polyline.js?v=4.7.1"></script>
+<script src="lib/flexible-polyline.js?v=4.8.0"></script>
 <script>__mods['flexible-polyline']=module.exports;module={exports:{}};</script>
-<script src="lib/autosuggest.js?v=4.7.1"></script>
+<script src="lib/autosuggest.js?v=4.8.0"></script>
 <script>__mods.autosuggest=module.exports;module={exports:{}};</script>
-<script src="lib/location.js?v=4.7.1"></script>
+<script src="lib/location.js?v=4.8.0"></script>
 <script>__mods.location=module.exports;module={exports:{}};</script>
-<script src="lib/routeoptions.js?v=4.7.1"></script>
+<script src="lib/routeoptions.js?v=4.8.0"></script>
 <script>__mods.routeoptions=module.exports;module={exports:{}};</script>
-<script src="lib/baselayer.js?v=4.7.1"></script>
+<script src="lib/baselayer.js?v=4.8.0"></script>
 <script>__mods.baselayer=module.exports;module={exports:{}};</script>
 
 <script>
@@ -852,13 +852,26 @@ var HERE_API_KEY = '7RDploUiahAnm08IZA9X7YSbb0Qh99pvqV2NCNQX_Hg';
                 above rather than satisfy it somewhere cheaper.
    APP_VERSION - the code. Shown in the legend card. Bumped every change,
                 and stamped onto every lib/ URL as a cache-buster. */
-var ATLAS_REV   = 'Atlas Rev 09-2026';
-var APP_VERSION = '4.7.1';
+var ATLAS_REV   = 'Atlas Rev 10-2026';
+var APP_VERSION = '4.8.0';
 
 /* ===== DATA ==========================================================
-   55 rows - 54 walkable exits plus one honorary - carrying 65 pairings,
-   60 of them inside the 0.4 mi line, after the 09-2026 re-audit purged
-   twelve rows and renamed twenty-one placeholder operators: ten rows
+   58 rows - 57 walkable exits plus one honorary - carrying 68 pairings,
+   63 of them inside the 0.4 mi line, across thirteen corridors and
+   fifteen states.
+
+   The 10-2026 edition adds three rows on three corridors the original
+   sweep never audited at all - I-44 Springfield MO, I-35 Oklahoma City
+   and I-70 London OH - and Oklahoma City takes the westernmost pin from
+   Winnie TX. Their distances are MEASURED from geocoded coordinates, not
+   estimated: the research pass reported "about 350 ft" for Springfield
+   and "about 600 ft" for Oklahoma City, and the haversine says 303 and
+   754. Both estimates were off by roughly a quarter, in opposite
+   directions, which is why this atlas does not accept a number derived
+   from an address.
+
+   Before that, the 09-2026 re-audit purged twelve rows and renamed
+   twenty-one placeholder operators: ten rows
    whose claimed truck stop does not exist, plus Kingsland GA and Oak
    Grove KY, whose own re-audit addresses geocoded 2.7 and 1.1 miles from
    their Waffle House at house-number precision. The dominant failure was
@@ -898,7 +911,8 @@ var DATA = [
 {feet:252,corridor:'I-10',state:'TX',exit:'877',city:'Orange',ts:'Pilot',brand:'PIL',lat:30.11405,lon:-93.82053,addr:'2310 Highway 62 S, Orange, TX 77630-8321',flags:['diner'],note:'There is a Denny\u2019s inside the Pilot. Drivers walk 900 ft past it anyway.'},  // Directories disagree between exit 872 and 877 for this stretch. Whichever number they print, Flying J #735 is at a separate interchange 3-4 mi west and is NOT walkable from this store; only the Pilot shares the interchange.
 {feet:272,corridor:'I-80',state:'OH',exit:'234',city:'Hubbard',ts:'Flying J #697',brand:'FJ',lat:41.18165,lon:-80.56990,addr:'2284 Gala St, Hubbard, OH 44425-3202',tsAddr:'2226 N Main St',flags:[],note:''},
 {feet:301,corridor:'I-75',state:'OH',exit:'36',city:'Franklin',ts:'Pilot',brand:'PIL',lat:39.54266,lon:-84.29161,addr:'6840 OH-123, Franklin, OH 45005',flags:[],note:''},
-{feet:336,corridor:'I-10',state:'TX',exit:'829',city:'Winnie',ts:'JP Truck Stop',brand:'IND',lat:29.83065,lon:-94.38455,addr:'243 Spur 5, Winnie, TX 77665-7308',flags:['scale','free'],alt:[{ts:'Bingo Travel Plaza',feet:935,brand:'IND'}],note:'The western frontier of walkable waffles. Bingo next door has boudin in the warmers and showers its reviewers rate over the majors.'},
+{feet:303,corridor:'I-44',state:'MO',exit:'80B',city:'Springfield',ts:"Rapid Robert's Travel Plaza",brand:'IND',lat:37.25389,lon:-93.26542,addr:'3135 N Glenstone Ave, Springfield, MO 65803',tsAddr:'3165 N Glenstone Ave',flags:['scale','smalllot','caution'],note:'OVERNIGHT PARKING IS PROHIBITED \u2014 fine for a break, not for the night. The store runs 5am to 11:30pm. A driver review says the ban plainly and sends you to the Flying J at exit 72 for a full-service stop; another confirms the walk. The shortest walk on this atlas that you cannot sleep at.'},
+{feet:336,corridor:'I-10',state:'TX',exit:'829',city:'Winnie',ts:'JP Truck Stop',brand:'IND',lat:29.83065,lon:-94.38455,addr:'243 Spur 5, Winnie, TX 77665-7308',flags:['scale','free'],alt:[{ts:'Bingo Travel Plaza',feet:935,brand:'IND'}],note:'Bingo next door has boudin in the warmers and showers its reviewers rate over the majors.'},
 {feet:383,corridor:'I-10',state:'AL',exit:'13',city:'Theodore',ts:'Pilot',brand:'PIL',lat:30.56010,lon:-88.20673,addr:'7031 Theodore Dawes Rd, Theodore, AL 36582-4077',flags:['scale','free'],note:''},  // Pilot store #302, not #508 - check the locator against the right number before deciding this row is wrong.
 {feet:386,corridor:'I-20',state:'TX',exit:'596',city:'Longview',ts:'RaceTrac',brand:'IND',lat:32.44855,lon:-94.72351,addr:'3107 Estes Pkwy, Longview, TX 75602-4233',flags:[],note:'One of the big-format RaceTracs — semi parking confirmed by drivers.'},
 {feet:390,corridor:'I-10',state:'LA',exit:'209',city:'LaPlace',ts:'TA Express #0479',brand:'TA',lat:30.08712,lon:-90.44526,addr:'4304 New Highway 51, Laplace, LA 70068',tsAddr:'4301 S Main St',flags:[],note:'4301 Main St and 4304 Main St.'},
@@ -918,6 +932,7 @@ var DATA = [
 {feet:678,corridor:'I-10',state:'FL',exit:'70',city:'DeFuniak Springs',ts:"Love's",brand:'LOV',lat:30.73580,lon:-86.34972,addr:'17837 ST HWY 285 S, Defuniak Springs, FL 32435',flags:[],note:'Two Waffle Houses at this exit; the Love\u2019s pairs with the farther one.'},
 {feet:687,corridor:'I-85',state:'GA',exit:'149',city:'Commerce',ts:'TA',brand:'TA',lat:34.25187,lon:-83.46108,addr:'30789 US-441 S, Commerce, GA 30529-6654',flags:[],note:'The only walkable pair on all 666 miles of I-85.'},
 {feet:716,corridor:'I-75',state:'GA',exit:'345',city:'Ringgold',ts:'Circle K Travel Center',brand:'IND',lat:34.89051,lon:-85.07438,addr:'11292 Highway 41, Ringgold, GA 30736-8690',tsAddr:'11418 Hwy 41',flags:[],note:''},
+{feet:754,corridor:'I-35',state:'OK',exit:'137',city:'Oklahoma City',ts:"Love's Travel Stop #205",brand:'LOV',lat:35.59206,lon:-97.43605,addr:'12009 N I-35 Service Rd, Oklahoma City, OK 73131',tsAddr:'12225 N I-35 Service Rd',flags:['scale','smalllot'],note:'Both sit on the same I-35 northbound service road. Directories say 18 truck spaces, one says 20, and a driver review calls parking limited \u2014 treat it as a small lot that fills early. Oklahoma\u2019s first atlas row, and the westernmost on the whole map.'},
 {feet:791,corridor:'I-95',state:'SC',exit:'119',city:'Manning',ts:'TA #179',brand:'TA',lat:33.70314,lon:-80.24317,addr:'3021 Paxville Hwy, Manning, SC 29102-6449',flags:[],note:''},  // Country Pride is gone, replaced by quick-service brands - the diner flag left with it, 09-2026.
 {feet:795,corridor:'I-65',state:'AL',exit:'334',city:'Priceville',ts:'Pilot #441',brand:'PIL',lat:34.53579,lon:-86.90990,addr:'3305 Point Mallard Pkwy SE, Decatur, AL 35603',tsAddr:'3240 Point Mallard Pkwy',flags:[],note:''},
 {feet:799,corridor:'I-10',state:'FL',exit:'343',city:'Baldwin',ts:'TA',brand:'TA',lat:30.28307,lon:-81.98388,addr:'1066 US Highway 301 S, Jacksonville, FL 32234',flags:[],note:''},
@@ -928,6 +943,7 @@ var DATA = [
 {feet:883,corridor:'I-75',state:'FL',exit:'161',city:'Punta Gorda',ts:'Pilot #94',brand:'PIL',lat:26.89615,lon:-82.00744,addr:'9092 Mac Dr, Punta Gorda, FL 33950-4309',tsAddr:'26505 Jones Loop Rd',flags:[],note:''},
 {feet:889,corridor:'I-75',state:'GA',exit:'16',city:'Valdosta',ts:'Big Foot Travel Center #946',brand:'IND',lat:30.82016,lon:-83.31170,addr:'1819 W Hill Ave, Valdosta, GA 31601-5110',flags:['smalllot'],note:'About six spaces, cash-only pricing.'},
 {feet:892,corridor:'I-10',state:'FL',exit:'26',city:'Milton',ts:"Love's (Garcon Point)",brand:'LOV',lat:30.57642,lon:-87.03186,addr:'3921 Garcon Point Rd, Milton, FL 32583-9048',flags:[],note:'Two Waffle Houses at this exit; the Love\u2019s pairs with the farther one.'},
+{feet:927,corridor:'I-70',state:'OH',exit:'79',city:'London',ts:'Pilot Travel Center',brand:'PIL',lat:39.95746,lon:-83.37227,addr:'1245 US-42, London, OH 43140',tsAddr:'1365 US-42',flags:[],note:'Concrete barriers went up at the Waffle House and there is no truck parking there any more \u2014 park at the Pilot and walk, which is what this app is for. The Pilot\u2019s own reviews name the pairing and report 125 spaces. A recent review mentions the store closing for a remodel, so look before relying on it.'},  // The TA at 940 US-42 is at this same interchange and measures 2436 ft - 0.46 mi, a near miss past the line, so it is NOT an alternate. Recorded here so nobody adds it later. Its reviews also mention $20 parking.
 {feet:963,corridor:'I-75',state:'KY',exit:'41',city:'London',ts:'London Auto/Truck Center',brand:'IND',lat:37.14930,lon:-84.11636,addr:'76 Austin Ln, London, KY 40741-8335',tsAddr:'15 Dogpatch Trading Ctr',flags:['diner'],note:'The Scale Dodger diner is on site - yes, that is its real name. Inside the Dogpatch Trading Center.'},
 {feet:969,corridor:'I-10',state:'TX',exit:'848',city:'Beaumont',ts:'Petro Stopping Center #304',brand:'PET',lat:30.03970,lon:-94.15429,addr:'3865 Interstate 10 S, Beaumont, TX 77705',flags:['diner','caution'],note:'The Iron Skillet is gone - it is a Black Bear Diner now. One driver fueled here, got verbal OK to park, and was threatened with a tow mid-meal. Eat fast.'},
 {feet:1041,corridor:'I-95',state:'MD',exit:'109',city:'Elkton',ts:'Flying J',brand:'FJ',lat:39.63551,lon:-75.80539,addr:'261 Belle Hill Rd, Elkton, MD 21921-5132',flags:[],note:'The northern terminus of walkable waffles. Delaware has none on I-95.'},
@@ -1624,8 +1640,20 @@ function openSheet(row){
       walkLabel(row.feet)+' each way</span></div>'+
     '<div class="walkscale"><div class="ends"><span>'+esc(b.name)+'</span><span>Waffle House</span></div>'+
       stripHtml(row.feet)+'<div style="font-size:11px;color:var(--sub);margin-top:5px">'+
-      esc(tierLabel)+' &middot; the mark is the 0.4 mi walkable line</div></div>'+
-    '<div class="kv"><span>Truck stop</span><span>'+esc(row.ts)+'</span></div>';
+      esc(tierLabel)+' &middot; the mark is the 0.4 mi walkable line</div></div>';
+
+  /* A CAUTION NOTE IS HOISTED ABOVE THE DETAIL ROWS. Since v4.5.0 the sheet is
+     capped to the panel's height and scrolls, and a stop with four kv rows
+     pushes its note past the fold - which for Springfield MO means "OVERNIGHT
+     PARKING IS PROHIBITED" arriving only if the driver thinks to scroll a card
+     they have just opened. A warning that has to be looked for is not a
+     warning. Ordinary notes stay in their old place at the bottom: they are
+     context, and hoisting them all would push the walk detail down for every
+     row to serve a minority of them. */
+  var warn = (row.flags||[]).indexOf('caution') !== -1;
+  if (warn && row.note) h += '<div class="note warn">'+esc(row.note)+'</div>';
+
+  h += '<div class="kv"><span>Truck stop</span><span>'+esc(row.ts)+'</span></div>';
   (row.alt||[]).forEach(function(a){
     h += '<div class="kv"><span>Also here</span><span>'+esc(a.ts)+' &middot; '+
       a.feet.toLocaleString('en-US')+' ft'+
@@ -1653,10 +1681,8 @@ function openSheet(row){
      It describes the WAFFLE HOUSE, because that is the point the coordinate
      marks; the truck stop has its own row above. */
   if (row.addr) h += '<div class="kv"><span>Waffle House</span><span>'+esc(row.addr)+'</span></div>';
-  if (row.note) {
-    var warn = (row.flags||[]).indexOf('caution')!==-1;
-    h += '<div class="note'+(warn?' warn':'')+'">'+esc(row.note)+'</div>';
-  }
+  /* Already emitted above the detail rows when it is a caution. */
+  if (row.note && !warn) h += '<div class="note">'+esc(row.note)+'</div>';
   h += '</div><div class="sheet-actions"><button class="act" id="sheetClose">Close</button>'+
        '<button class="act primary" id="sheetShare">Share stop</button></div>';
   var sheet=$('sheet');

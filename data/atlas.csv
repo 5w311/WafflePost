@@ -7,6 +7,7 @@ feet,corridor,state,exit,city,truck_stop,lat,lon,waffle_house_address,truck_stop
 252,I-10,TX,877,Orange,Pilot,30.11405,-93.82053,"2310 Highway 62 S, Orange, TX 77630-8321",
 272,I-80,OH,234,Hubbard,Flying J #697,41.18165,-80.5699,"2284 Gala St, Hubbard, OH 44425-3202",2226 N Main St
 301,I-75,OH,36,Franklin,Pilot,39.54266,-84.29161,"6840 OH-123, Franklin, OH 45005",
+303,I-44,MO,80B,Springfield,Rapid Robert's Travel Plaza,37.25389,-93.26542,"3135 N Glenstone Ave, Springfield, MO 65803",3165 N Glenstone Ave
 336,I-10,TX,829,Winnie,JP Truck Stop,29.83065,-94.38455,"243 Spur 5, Winnie, TX 77665-7308",
 383,I-10,AL,13,Theodore,Pilot,30.5601,-88.20673,"7031 Theodore Dawes Rd, Theodore, AL 36582-4077",
 386,I-20,TX,596,Longview,RaceTrac,32.44855,-94.72351,"3107 Estes Pkwy, Longview, TX 75602-4233",
@@ -27,6 +28,7 @@ feet,corridor,state,exit,city,truck_stop,lat,lon,waffle_house_address,truck_stop
 678,I-10,FL,70,DeFuniak Springs,Love's,30.7358,-86.34972,"17837 ST HWY 285 S, Defuniak Springs, FL 32435",
 687,I-85,GA,149,Commerce,TA,34.25187,-83.46108,"30789 US-441 S, Commerce, GA 30529-6654",
 716,I-75,GA,345,Ringgold,Circle K Travel Center,34.89051,-85.07438,"11292 Highway 41, Ringgold, GA 30736-8690",11418 Hwy 41
+754,I-35,OK,137,Oklahoma City,Love's Travel Stop #205,35.59206,-97.43605,"12009 N I-35 Service Rd, Oklahoma City, OK 73131",12225 N I-35 Service Rd
 791,I-95,SC,119,Manning,TA #179,33.70314,-80.24317,"3021 Paxville Hwy, Manning, SC 29102-6449",
 795,I-65,AL,334,Priceville,Pilot #441,34.53579,-86.9099,"3305 Point Mallard Pkwy SE, Decatur, AL 35603",3240 Point Mallard Pkwy
 799,I-10,FL,343,Baldwin,TA,30.28307,-81.98388,"1066 US Highway 301 S, Jacksonville, FL 32234",
@@ -37,6 +39,7 @@ feet,corridor,state,exit,city,truck_stop,lat,lon,waffle_house_address,truck_stop
 883,I-75,FL,161,Punta Gorda,Pilot #94,26.89615,-82.00744,"9092 Mac Dr, Punta Gorda, FL 33950-4309",26505 Jones Loop Rd
 889,I-75,GA,16,Valdosta,Big Foot Travel Center #946,30.82016,-83.3117,"1819 W Hill Ave, Valdosta, GA 31601-5110",
 892,I-10,FL,26,Milton,Love's (Garcon Point),30.57642,-87.03186,"3921 Garcon Point Rd, Milton, FL 32583-9048",
+927,I-70,OH,79,London,Pilot Travel Center,39.95746,-83.37227,"1245 US-42, London, OH 43140",1365 US-42
 963,I-75,KY,41,London,London Auto/Truck Center,37.1493,-84.11636,"76 Austin Ln, London, KY 40741-8335",15 Dogpatch Trading Ctr
 969,I-10,TX,848,Beaumont,Petro Stopping Center #304,30.0397,-94.15429,"3865 Interstate 10 S, Beaumont, TX 77705",
 1041,I-95,MD,109,Elkton,Flying J,39.63551,-75.80539,"261 Belle Hill Rd, Elkton, MD 21921-5132",
