@@ -238,9 +238,21 @@ t.eq(/state\.mode !== 'atlas'[\s\S]{0,120}return;/.test(src), true,
 t.eq(/max-height:78%/.test(src), false, 'the sheet no longer runs to 78% of the stage');
 t.eq(/max-height:var\(--sheet-max, 78%\)/.test(src), true,
      'it is capped to the panel height, with 78% only as a pre-measurement fallback');
-// --sheet-max is recorded from the EXPANDED panel: collapsed it is a 42px tab.
-t.eq(/classList\.contains\('collapsed'\)[\s\S]{0,160}--sheet-max/.test(src), true,
-     'the cap comes from the expanded panel, never the collapsed tab');
+// --sheet-max is written in exactly one place, and that place is the CAPPED
+// path of capPanelRows. Two things fall out of that and both matter:
+//   - collapsed, capPanelRows returns before reaching it, so the cap is never
+//     taken from the 42px tab (v4.5.0's requirement, now by structure rather
+//     than by its own conditional);
+//   - filtered, the cap is not reached either, so narrowing a search cannot
+//     shrink the stop sheet (v4.10.0 - it used to, and a one-result search
+//     came up with a card half the height it had a keystroke earlier).
+var capSrc = (src.match(/function capPanelRows\(\)\{[\s\S]*?\n\}/) || [''])[0];
+t.eq((src.match(/--sheet-max'/g) || []).length, 1, '--sheet-max is written in one place');
+t.eq(/--sheet-max/.test(capSrc), true, 'and that place is capPanelRows');
+t.eq(/classList\.contains\('collapsed'\)[\s\S]{0,80}return;/.test(capSrc), true,
+     'which returns before writing it when the panel is collapsed');
+t.eq(/rows\.length <= PANEL_ROWS\) return;[\s\S]*--sheet-max/.test(capSrc), true,
+     'and when the list is shorter than the cap, so a filter cannot shrink the sheet');
 // HERE's controls clear whichever bottom sheet is taller. Folding this into
 // --panel-h would have made the map jump when a sheet opened, because that
 // number is also the map's bottom padding.

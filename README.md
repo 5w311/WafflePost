@@ -10,7 +10,7 @@ WafflePost answers *can I get a plate of hashbrowns without moving the truck*.
 
 Two tabs:
 
-- **Atlas** — map and list of all 60 exits, filterable by corridor, state,
+- **Atlas** — map and list of all 61 exits, filterable by corridor, state,
   truck stop chain, walk distance and free text. Every row, distance and
   filter is computed locally; only the basemap under the pins is fetched.
 - **Route** — pickup and delivery with address autosuggest and a "use my
@@ -78,14 +78,25 @@ That last step is the whole method. Exit guides list distance from the ramp,
 which routinely puts a Waffle House and a truck stop at "0.2 mi" each when
 they are on opposite sides of a mile-wide interchange.
 
+**A corridor-by-corridor sweep has a blind spot: concurrencies.** Where two
+interstates run together, each pass assumes the other covered the shared
+exits, and neither does. Florence KY was found by *driving it* — it sits on
+the I-71/I-75 concurrency, and the I-71 sweep had checked the corridor, found
+Carrollton exit 44, and reported it empty. This will recur, so the unchecked
+concurrencies inside Waffle House country are named here rather than
+rediscovered: **I-20/I-59 through Birmingham, I-40/I-85 through Greensboro,
+I-24/I-59 near Chattanooga, I-55/I-70 near St Louis, and I-64/I-75 through
+Lexington.** That is a list of places to look, not a claim that pairs exist
+there.
+
 Counts, reconciled, because three different numbers are all correct about
 different things:
 
-- **60 exits** — rows in `DATA`. 59 walkable plus one honorary member,
+- **61 exits** — rows in `DATA`. 60 walkable plus one honorary member,
   across fourteen corridors and fifteen states.
-- **72 pairings listed** — every truck stop named, including the second,
+- **73 pairings listed** — every truck stop named, including the second,
   third and fourth stop at exits that have them.
-- **67 pairings within 0.4 mi** — the headline number. The other 5 sit past
+- **68 pairings within 0.4 mi** — the headline number. The other 5 sit past
   the line. Four are alternates, labelled *(past the line)* in the stop sheet
   rather than dropped, because at 3am a 3,274 ft walk you know about beats a
   1,483 ft walk into a full lot. The fifth is Bishopville's own primary stop
@@ -775,14 +786,14 @@ address starts with a house number and names the row's own state, and that
 leaderboard.
 
 `run.js` prints one `ok <name> N passed` line per file and then `all green`,
-or names the files that failed. It does not sum the assertions — at v4.9.0
-they come to 1,203 across twelve files, added up from those lines.
+or names the files that failed. It does not sum the assertions — at v4.10.0
+they come to 1,219 across twelve files, added up from those lines.
 
 ## Two version strings, on purpose
 
 Same reasoning as FuelPost, different perishable thing:
 
-- **`ATLAS_REV`** (`Atlas Rev 11-2026`) — which edition of the walkability
+- **`ATLAS_REV`** (`Atlas Rev 12-2026`) — which edition of the walkability
   audit the rows came from. Shown in the **panel tab**, beside the pair
   count, because stores open and close: Troutville's did not exist a year
   before this revision, and a pair that has closed is a wasted exit at 3am. A
@@ -791,7 +802,7 @@ Same reasoning as FuelPost, different perishable thing:
   stopped existing; the requirement was "always on screen", not "in the
   header", and the panel tab is on screen in both modes whether the panel is
   open or collapsed. Bump only when the rows are re-audited.
-- **`APP_VERSION`** (`4.9.0`) — the code. Shown in the **legend card**.
+- **`APP_VERSION`** (`4.10.0`) — the code. Shown in the **legend card**.
   Bumped for every shipped change, and stamped onto every `lib/` URL as a
   cache-buster.
 
@@ -811,6 +822,46 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v4.10.0
+
+**Florence KY, I-75 exit 181, 557 ft** — a TA Travel Center at 7777 Burlington
+Pike, same side of the road as the store at 7673. Found by driving it. 60
+exits become 61, `ATLAS_REV` moves to **Rev 12-2026**. I-75 goes to fifteen
+rows, Kentucky to three, and TA to nine — the most of any chain here.
+
+**Found in a concurrency gap**, which is the reusable part. Florence sits
+where I-71 and I-75 run together, and the I-71 sweep had already declared that
+corridor empty; a corridor-by-corridor pass drops anything belonging to two
+corridors at once. The methodology section above now names this failure mode
+and lists the other unchecked concurrencies.
+
+**Two layout fixes fell out of verifying it.** The stop sheet's height came
+from the panel's *live* height, so narrowing a search shrank the panel and the
+sheet shrank with it — filter to one result and a stop's card came up half the
+height it had a keystroke earlier, with its note pushed off the bottom. Nothing
+about one stop's detail depends on how many others matched a search, so
+`--sheet-max` now comes from the capped full-list height, written in one place.
+And an ordinary note moved above the detail rows: v4.8.0 had argued against
+hoisting all notes because it "would push the walk detail down", which was true
+of hoisting above the *figure* and is not true of this position — the headline
+and walk scale do not move, only the note and the kv rows swap.
+
+**Known shortfall, recorded rather than papered over:** Florence's note is
+175px against 48px of visible card, so the repair-shop clause and the 3.1
+rating sit about a line below the fold. Pulling them up needs ~40 characters
+cut from the congestion sentence, and the only cuttable part is detail the
+brief specified. Faithful content beat one more line.
+
+**No `caution` flag, deliberately.** At 3.1 stars it is the lowest-rated stop
+on the atlas, and flagging it would be the obvious move. `caution` has meant
+one thing here: something that bites a driver who *parks* — Beaumont's tow
+threat mid-meal, Marshall's midnight gate, Augusta's ticketed U-turn. A
+congested lot and a bad repair shop are reasons to choose a different stop,
+not hazards of choosing this one. Diluting the flag to mean "mediocre" would
+make it useless where it means "you will lose your load or your evening." Both
+go in the note instead, where a driver reads them and decides. No `smalllot`
+either — the lot is busy, not small.
 
 ### v4.9.0
 
