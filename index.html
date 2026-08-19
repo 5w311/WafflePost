@@ -781,27 +781,27 @@ var __mods={};
 function require(p){return __mods[p.replace(/^\.\//,'').replace(/\.js$/,'')];}
 var module={exports:{}};
 </script>
-<script src="lib/waffledist.js?v=4.9.0"></script>
+<script src="lib/waffledist.js?v=4.10.0"></script>
 <script>__mods.waffledist=module.exports;module={exports:{}};</script>
-<script src="lib/atlasfilter.js?v=4.9.0"></script>
+<script src="lib/atlasfilter.js?v=4.10.0"></script>
 <script>__mods.atlasfilter=module.exports;module={exports:{}};</script>
-<script src="lib/routewaffles.js?v=4.9.0"></script>
+<script src="lib/routewaffles.js?v=4.10.0"></script>
 <script>__mods.routewaffles=module.exports;module={exports:{}};</script>
-<script src="lib/vehicleprofile.js?v=4.9.0"></script>
+<script src="lib/vehicleprofile.js?v=4.10.0"></script>
 <script>__mods.vehicleprofile=module.exports;module={exports:{}};</script>
-<script src="lib/triptext.js?v=4.9.0"></script>
+<script src="lib/triptext.js?v=4.10.0"></script>
 <script>__mods.triptext=module.exports;module={exports:{}};</script>
-<script src="lib/escape.js?v=4.9.0"></script>
+<script src="lib/escape.js?v=4.10.0"></script>
 <script>__mods.escape=module.exports;module={exports:{}};</script>
-<script src="lib/flexible-polyline.js?v=4.9.0"></script>
+<script src="lib/flexible-polyline.js?v=4.10.0"></script>
 <script>__mods['flexible-polyline']=module.exports;module={exports:{}};</script>
-<script src="lib/autosuggest.js?v=4.9.0"></script>
+<script src="lib/autosuggest.js?v=4.10.0"></script>
 <script>__mods.autosuggest=module.exports;module={exports:{}};</script>
-<script src="lib/location.js?v=4.9.0"></script>
+<script src="lib/location.js?v=4.10.0"></script>
 <script>__mods.location=module.exports;module={exports:{}};</script>
-<script src="lib/routeoptions.js?v=4.9.0"></script>
+<script src="lib/routeoptions.js?v=4.10.0"></script>
 <script>__mods.routeoptions=module.exports;module={exports:{}};</script>
-<script src="lib/baselayer.js?v=4.9.0"></script>
+<script src="lib/baselayer.js?v=4.10.0"></script>
 <script>__mods.baselayer=module.exports;module={exports:{}};</script>
 
 <script>
@@ -852,13 +852,20 @@ var HERE_API_KEY = '7RDploUiahAnm08IZA9X7YSbb0Qh99pvqV2NCNQX_Hg';
                 above rather than satisfy it somewhere cheaper.
    APP_VERSION - the code. Shown in the legend card. Bumped every change,
                 and stamped onto every lib/ URL as a cache-buster. */
-var ATLAS_REV   = 'Atlas Rev 11-2026';
-var APP_VERSION = '4.9.0';
+var ATLAS_REV   = 'Atlas Rev 12-2026';
+var APP_VERSION = '4.10.0';
 
 /* ===== DATA ==========================================================
-   60 rows - 59 walkable exits plus one honorary - carrying 72 pairings,
-   67 of them inside the 0.4 mi line, across fourteen corridors and
+   61 rows - 60 walkable exits plus one honorary - carrying 73 pairings,
+   68 of them inside the 0.4 mi line, across fourteen corridors and
    fifteen states. I-520 is the first three-digit corridor here.
+
+   Florence KY came out of a CONCURRENCY GAP, which is a sweep failure worth
+   knowing about: it sits where I-71 and I-75 run together, and a
+   corridor-by-corridor pass drops anything belonging to two corridors at once
+   because each pass assumes the other covered it. The I-71 sweep reported the
+   corridor empty. The README methodology section lists the other unchecked
+   concurrencies inside Waffle House country.
 
    OAK GROVE MO IS THE FIRST ROW WHERE STRAIGHT-LINE IS NOT THE WALK. Its
    Petro and TA sit across I-70 from the store, so their real distances are
@@ -934,6 +941,8 @@ var DATA = [
 {feet:479,corridor:'I-95',state:'GA',exit:'109',city:'Port Wentworth',ts:'Pilot',brand:'PIL',lat:32.18745,lon:-81.19410,addr:'6941 GA Highway 21, Port Wentworth, GA 31407-9799',flags:[],note:''},
 {feet:501,corridor:'I-10',state:'FL',exit:'258',city:'Madison',ts:'Fast Track Travel Center',brand:'IND',lat:30.39877,lon:-83.35780,addr:'145 SE Bandit St, Madison, FL 32340',flags:[],note:'$10 showers. A review puts it "right across the street from the waffle house".'},
 {feet:506,corridor:'I-95',state:'SC',exit:'77',city:'St. George',ts:'Flying J',brand:'FJ',lat:33.19459,lon:-80.60380,addr:'127 Motel Dr, St George, SC 29477-7800',flags:[],note:'A driver of 26 years called this the cleanest one he had used.'},
+{feet:557,corridor:'I-75',state:'KY',exit:'181',city:'Florence',ts:'TA Travel Center',brand:'TA',lat:39.00051,lon:-84.64279,addr:'7673 Burlington Pike, Florence, KY 41042',tsAddr:'7777 Burlington Pike',flags:[],note:'Chronically congested \u2014 a review says it is always backed up and asks management to fix the traffic flow \u2014 and several drivers warn off the repair shop specifically, reporting overcharging and botched work. Fine for parking and eating otherwise. Open 24 hours, service bays on site. Rated 3.1, the lowest-rated stop on the atlas.'},  // NO caution flag, deliberately. Caution has meant one thing here: something that bites a driver who parks. Beaumont is a tow threat mid-meal, Marshall a paid crater lot with a midnight gate, Augusta a ticket for the U-turn. A congested lot and a bad repair shop are reasons to choose a DIFFERENT stop, not hazards of choosing this one, and diluting caution to mean "mediocre" makes it useless where it means "you will lose your load or your evening". Not smalllot either - the lot is busy, not small.
+// FOUND IN A CONCURRENCY GAP. Florence sits where I-71 and I-75 run together. The last sweep checked I-71, found Carrollton x44, and called the corridor empty; Florence was never looked at, because a corridor-by-corridor sweep drops anything belonging to two corridors at once - each pass assumes the other covered it. Listed as I-75 to match Walton six exits south and the way the exit is numbered. See the README methodology section for the other unchecked concurrencies.
 {feet:596,corridor:'I-10',state:'MS',exit:'31',city:'Gulfport',ts:'Flying J',brand:'FJ',lat:30.42038,lon:-89.13606,addr:'9282 Canal Rd, Gulfport, MS 39503-9086',flags:[],note:"Mississippi's only walkable pair, on the whole interstate system."},
 {feet:608,corridor:'I-75',state:'GA',exit:'149',city:'Byron',ts:'Byron Gas N Go',brand:'IND',lat:32.65804,lon:-83.74741,addr:'241 GA Highway 49 N, Byron, GA 31008-4008',flags:[],note:''},  // Do NOT upgrade this row to a Pilot: Pilot #267 is at exit 146, three miles south - the obvious stop to reach for, and the wrong one.
 {feet:618,corridor:'I-75',state:'GA',exit:'11',city:'Valdosta',ts:'Pilot',brand:'PIL',lat:30.75253,lon:-83.27228,addr:'3487 Madison Hwy, Valdosta, GA 31601-8634',flags:['limited'],note:'Reviews report delivery-only hours at this store.'},
@@ -1121,13 +1130,6 @@ function syncMapPadding(){
   var p = document.getElementById('panel');
   var h = p ? Math.round(p.getBoundingClientRect().height) : 0;
   document.documentElement.style.setProperty('--panel-h', h+'px');
-  /* The sheet is capped to the panel's EXPANDED height, so this is recorded
-     only while the body is actually showing. Collapsed, the panel is a 42px
-     tab, and a sheet capped to that would be a sliver with a Close button
-     somewhere below the fold. */
-  if (p && !p.classList.contains('collapsed')) {
-    document.documentElement.style.setProperty('--sheet-max', h+'px');
-  }
   syncChromeH();
   if (!map) return;
   map.getViewPort().setPadding(MAP_FIT_MARGIN, MAP_FIT_MARGIN,
@@ -1543,6 +1545,17 @@ function capPanelRows(){
   var h = 0;
   for (var i = 0; i < PANEL_ROWS; i++) h += rows[i].offsetHeight;
   body.style.maxHeight = h + 'px';
+  /* --sheet-max is set HERE, and only on the capped path, which is what keeps
+     the stop sheet a stable size. v4.5.0 set it from the panel's live height
+     on every sync, so narrowing the search shrank the panel and the sheet
+     shrank with it - filter down to one result and a stop's card came up half
+     the height it had a keystroke earlier, with its note pushed off the
+     bottom. Nothing about one stop's detail depends on how many OTHER stops
+     matched a search. The capped height is the full-list height, it is
+     computed at boot before any filtering, and a narrower list now leaves it
+     alone. */
+  document.documentElement.style.setProperty('--sheet-max',
+    $('panel').getBoundingClientRect().height + 'px');
   /* The panel just changed height, and it overlays the map rather than
      resizing it, so nothing else will notice: --panel-h lifts HERE's controls
      clear of the panel and the same number is the map's bottom padding. */
@@ -1669,8 +1682,24 @@ function openSheet(row){
       walkLabel(row.feet)+' each way</span></div>'+
     '<div class="walkscale"><div class="ends"><span>'+esc(b.name)+'</span><span>Waffle House</span></div>'+
       stripHtml(row.feet)+'<div style="font-size:11px;color:var(--sub);margin-top:5px">'+
-      esc(tierLabel)+' &middot; the mark is the 0.4 mi walkable line</div></div>'+
-    '<div class="kv"><span>Truck stop</span><span>'+esc(row.ts)+'</span></div>';
+      esc(tierLabel)+' &middot; the mark is the 0.4 mi walkable line</div></div>';
+
+  /* An ordinary note sits ABOVE the detail rows, below the walk. v4.8.0 put
+     these at the bottom and argued that hoisting them all "would push the walk
+     detail down for fifty-seven rows to serve three" - true of hoisting above
+     the FIGURE, which is what that change was doing, and not true here. This
+     position moves nothing: the headline and the walk scale stay exactly where
+     they were, and only the note and the kv rows swap.
+
+     It matters because the sheet is capped to the panel's height. Florence KY
+     carries the congestion and the repair shop in its note and no flags at all
+     - correctly, since neither bites a driver who parks - and behind two kv
+     rows only a line and a half of it was on screen. The note is the human
+     intelligence about a stop; the kv rows are reference. The reference can be
+     the thing you scroll for. */
+  if (row.note && !warn) h += '<div class="note">'+esc(row.note)+'</div>';
+
+  h += '<div class="kv"><span>Truck stop</span><span>'+esc(row.ts)+'</span></div>';
   (row.alt||[]).forEach(function(a){
     h += '<div class="kv"><span>Also here</span><span>'+esc(a.ts)+' &middot; '+
       a.feet.toLocaleString('en-US')+' ft'+
@@ -1698,8 +1727,7 @@ function openSheet(row){
      It describes the WAFFLE HOUSE, because that is the point the coordinate
      marks; the truck stop has its own row above. */
   if (row.addr) h += '<div class="kv"><span>Waffle House</span><span>'+esc(row.addr)+'</span></div>';
-  /* Already emitted above the detail rows when it is a caution. */
-  if (row.note && !warn) h += '<div class="note">'+esc(row.note)+'</div>';
+
   h += '</div><div class="sheet-actions"><button class="act" id="sheetClose">Close</button>'+
        '<button class="act primary" id="sheetShare">Share stop</button></div>';
   var sheet=$('sheet');
