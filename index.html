@@ -781,27 +781,27 @@ var __mods={};
 function require(p){return __mods[p.replace(/^\.\//,'').replace(/\.js$/,'')];}
 var module={exports:{}};
 </script>
-<script src="lib/waffledist.js?v=4.10.0"></script>
+<script src="lib/waffledist.js?v=4.11.0"></script>
 <script>__mods.waffledist=module.exports;module={exports:{}};</script>
-<script src="lib/atlasfilter.js?v=4.10.0"></script>
+<script src="lib/atlasfilter.js?v=4.11.0"></script>
 <script>__mods.atlasfilter=module.exports;module={exports:{}};</script>
-<script src="lib/routewaffles.js?v=4.10.0"></script>
+<script src="lib/routewaffles.js?v=4.11.0"></script>
 <script>__mods.routewaffles=module.exports;module={exports:{}};</script>
-<script src="lib/vehicleprofile.js?v=4.10.0"></script>
+<script src="lib/vehicleprofile.js?v=4.11.0"></script>
 <script>__mods.vehicleprofile=module.exports;module={exports:{}};</script>
-<script src="lib/triptext.js?v=4.10.0"></script>
+<script src="lib/triptext.js?v=4.11.0"></script>
 <script>__mods.triptext=module.exports;module={exports:{}};</script>
-<script src="lib/escape.js?v=4.10.0"></script>
+<script src="lib/escape.js?v=4.11.0"></script>
 <script>__mods.escape=module.exports;module={exports:{}};</script>
-<script src="lib/flexible-polyline.js?v=4.10.0"></script>
+<script src="lib/flexible-polyline.js?v=4.11.0"></script>
 <script>__mods['flexible-polyline']=module.exports;module={exports:{}};</script>
-<script src="lib/autosuggest.js?v=4.10.0"></script>
+<script src="lib/autosuggest.js?v=4.11.0"></script>
 <script>__mods.autosuggest=module.exports;module={exports:{}};</script>
-<script src="lib/location.js?v=4.10.0"></script>
+<script src="lib/location.js?v=4.11.0"></script>
 <script>__mods.location=module.exports;module={exports:{}};</script>
-<script src="lib/routeoptions.js?v=4.10.0"></script>
+<script src="lib/routeoptions.js?v=4.11.0"></script>
 <script>__mods.routeoptions=module.exports;module={exports:{}};</script>
-<script src="lib/baselayer.js?v=4.10.0"></script>
+<script src="lib/baselayer.js?v=4.11.0"></script>
 <script>__mods.baselayer=module.exports;module={exports:{}};</script>
 
 <script>
@@ -852,8 +852,8 @@ var HERE_API_KEY = '7RDploUiahAnm08IZA9X7YSbb0Qh99pvqV2NCNQX_Hg';
                 above rather than satisfy it somewhere cheaper.
    APP_VERSION - the code. Shown in the legend card. Bumped every change,
                 and stamped onto every lib/ URL as a cache-buster. */
-var ATLAS_REV   = 'Atlas Rev 12-2026';
-var APP_VERSION = '4.10.0';
+var ATLAS_REV   = 'Atlas Rev 13-2026';
+var APP_VERSION = '4.11.0';
 
 /* ===== DATA ==========================================================
    61 rows - 60 walkable exits plus one honorary - carrying 73 pairings,
@@ -928,8 +928,11 @@ var DATA = [
 {feet:272,corridor:'I-80',state:'OH',exit:'234',city:'Hubbard',ts:'Flying J #697',brand:'FJ',lat:41.18165,lon:-80.56990,addr:'2284 Gala St, Hubbard, OH 44425-3202',tsAddr:'2226 N Main St',flags:[],note:''},
 {feet:301,corridor:'I-75',state:'OH',exit:'36',city:'Franklin',ts:'Pilot',brand:'PIL',lat:39.54266,lon:-84.29161,addr:'6840 OH-123, Franklin, OH 45005',flags:[],note:''},
 {feet:303,corridor:'I-44',state:'MO',exit:'80B',city:'Springfield',ts:"Rapid Robert's Travel Plaza",brand:'IND',lat:37.25389,lon:-93.26542,addr:'3135 N Glenstone Ave, Springfield, MO 65803',tsAddr:'3165 N Glenstone Ave',flags:['scale','smalllot','caution'],note:'OVERNIGHT PARKING IS PROHIBITED \u2014 fine for a break, not for the night. The store runs 5am to 11:30pm. A driver review says the ban plainly and sends you to the Flying J at exit 72 for a full-service stop; another confirms the walk. The shortest walk on this atlas that you cannot sleep at.'},
+{feet:322,corridor:'I-40',state:'AR',exit:'142',city:'Maumelle',ts:'Morgan SuperStop',brand:'IND',lat:34.88456,lon:-92.38292,addr:'20514 Highway 365 N, North Little Rock, AR 72113',tsAddr:'20515 Highway 365 N',flags:['scale','smalllot','caution'],note:'PAY BEFORE YOU KNOW YOU HAVE A SPACE. The lot is split between company-leased, paid and free spaces, and drivers report paying twelve dollars and then finding nothing open; one review says flatly that the whole lot is leased to another company so it is not really a truck stop. Others park fine. Same shape as Marshall TX. CAT scale on site.'},  // Arkansas returns after Russellville was purged. City is Maumelle, mailing address North Little Rock - the same split Priceville/Decatur has.
 {feet:336,corridor:'I-10',state:'TX',exit:'829',city:'Winnie',ts:'JP Truck Stop',brand:'IND',lat:29.83065,lon:-94.38455,addr:'243 Spur 5, Winnie, TX 77665-7308',flags:['scale','free'],alt:[{ts:'Bingo Travel Plaza',feet:935,brand:'IND'}],note:'Bingo next door has boudin in the warmers and showers its reviewers rate over the majors.'},
+{feet:347,corridor:'I-65',state:'KY',exit:'121',city:'Brooks',ts:'Pilot Travel Center #356',brand:'PIL',lat:38.06160,lon:-85.70231,addr:'2021 E Blue Lick Rd, Shepherdsville, KY 40165',tsAddr:'2050 E Blue Lick Rd',flags:['scale'],note:'About 90 spaces, CAT scale, Subway and Taco Bell on site.'},  // EXIT 121, and NOT the Shepherdsville exit 117 the 09-2026 re-audit purged as a failed row. Four miles apart, same mailing town. Listed under Brooks so the two are not reconciled later.
 {feet:383,corridor:'I-10',state:'AL',exit:'13',city:'Theodore',ts:'Pilot',brand:'PIL',lat:30.56010,lon:-88.20673,addr:'7031 Theodore Dawes Rd, Theodore, AL 36582-4077',flags:['scale','free'],note:''},  // Pilot store #302, not #508 - check the locator against the right number before deciding this row is wrong.
+{feet:385,corridor:'I-81',state:'VA',exit:'98',city:'Dublin',ts:'A-Plus Dublin Travel Plaza',brand:'IND',lat:37.08237,lon:-80.68993,addr:'4614 Cleburne Blvd, Dublin, VA 24084',tsAddr:'4625 Cleburne Blvd',flags:['smalllot'],note:'About 25 truck spaces, two showers, laundry, and a Walmart next door that also allows truck parking. A driver review calls it a hidden gem. Showers are five dollars and the recurring complaint is that they are not clean.'},  // NAME TRAP. The adjacent business at 4622 Cleburne trades as Liberty and is a 7-Eleven fuel station, NOT the truck stop - same phone, same site, different establishment. An earlier draft named Liberty and was wrong. The parking and showers are A-Plus.
 {feet:386,corridor:'I-20',state:'TX',exit:'596',city:'Longview',ts:'RaceTrac',brand:'IND',lat:32.44855,lon:-94.72351,addr:'3107 Estes Pkwy, Longview, TX 75602-4233',flags:[],note:'One of the big-format RaceTracs — semi parking confirmed by drivers.'},
 {feet:390,corridor:'I-10',state:'LA',exit:'209',city:'LaPlace',ts:'TA Express #0479',brand:'TA',lat:30.08712,lon:-90.44526,addr:'4304 New Highway 51, Laplace, LA 70068',tsAddr:'4301 S Main St',flags:[],note:'4301 Main St and 4304 Main St.'},
 {feet:394,corridor:'I-10',state:'LA',exit:'115',city:'Henderson',ts:'Henderson Travel Plaza',brand:'IND',lat:30.31355,lon:-91.83292,addr:'2998 Grandpoint Hwy, Breaux Bridge, LA 70517-7738',flags:[],alt:[{ts:'Bayou Belle Truck Stop Casino',feet:2315,brand:'IND'}],note:'The 394 ft stop is rough. Bayou Belle up the same road is the classier night: 4.2 stars, casino, confirmed overnight parking.'},
@@ -955,13 +958,19 @@ var DATA = [
 {feet:791,corridor:'I-95',state:'SC',exit:'119',city:'Manning',ts:'TA #179',brand:'TA',lat:33.70314,lon:-80.24317,addr:'3021 Paxville Hwy, Manning, SC 29102-6449',flags:[],note:''},  // Country Pride is gone, replaced by quick-service brands - the diner flag left with it, 09-2026.
 {feet:795,corridor:'I-65',state:'AL',exit:'334',city:'Priceville',ts:'Pilot #441',brand:'PIL',lat:34.53579,lon:-86.90990,addr:'3305 Point Mallard Pkwy SE, Decatur, AL 35603',tsAddr:'3240 Point Mallard Pkwy',flags:[],note:''},
 {feet:799,corridor:'I-10',state:'FL',exit:'343',city:'Baldwin',ts:'TA',brand:'TA',lat:30.28307,lon:-81.98388,addr:'1066 US Highway 301 S, Jacksonville, FL 32234',flags:[],note:''},
+{feet:820,corridor:'I-70',state:'OH',exit:'94',city:'Columbus',ts:'Pilot Travel Center #213',brand:'PIL',lat:39.97172,lon:-83.09753,addr:'900 N Wilson Rd, Columbus, OH 43204',tsAddr:'3600 Interchange Rd',flags:['scale','smalllot','caution'],note:'FULL AFTER SIX AND THE RESERVATION MAY NOT HELP: reviews are consistent that the lot fills in the evening, and one driver found his paid reservation useless because staff would not wake anyone after ten. Arrive early or do not count on it. A review states the walk directly - for breakfast they would walk down the street five minutes and eat at the Waffle House. Wendy\u2019s on site.'},
 {feet:838,corridor:'I-24',state:'TN',exit:'64',city:'La Vergne',ts:'Pilot #52',brand:'PIL',lat:35.99889,lon:-86.59777,addr:'108 Enterprise Blvd, La Vergne, TN 37086-3544',tsAddr:'535 Waldron Rd',flags:[],note:''},
+{feet:851,corridor:'I-40',state:'TN',exit:'374',city:'Knoxville',ts:'TA Travel Center',brand:'TA',lat:35.90759,lon:-84.14755,addr:'507 Lovell Rd, Knoxville, TN 37932',tsAddr:'608 Lovell Rd',flags:['scale'],note:'CAT scale, showers and unpaid parking, 785 ratings.'},  // EXIT 374, resolved rather than guessed: Lovell Rd IS exit 374 and exit 373 is Campbell Station Rd, 1.75 mi west. Google lists the store at 373 and is wrong. Second concurrency row after Florence KY - I-40 and I-75 run together here, and 374 is an I-40 number, so it is filed under I-40.
+// NEARLY LOST TO A STALE CLOSURE FLAG: a research pass read this TA as closed off a directory. It is open, with recent reviews. Do not trust a closure flag without a second source.
+// The Pilot at 314 Lovell is 2472 ft and is NOT an alternate - past the line, and its reviews describe a lot not built for trucks.
 {feet:858,corridor:'I-95',state:'VA',exit:'104',city:'Carmel Church',ts:'Flying J #749',brand:'FJ',lat:37.93494,lon:-77.47452,addr:'24148 Welcome Way Dr, Ruther Glen, VA 22546',tsAddr:'24279 Rogers Clark Blvd',flags:[],note:''},
 {feet:860,corridor:'I-95',state:'SC',exit:'5',city:'Hardeeville',ts:'Pilot',brand:'PIL',lat:32.27079,lon:-81.08075,addr:'16877 Whyte Hardee Blvd, Hardeeville, SC 29927-6940',flags:[],note:''},
 {feet:861,corridor:'I-10',state:'LA',exit:'64',city:'Jennings',ts:'Jennings Travel Plaza',brand:'IND',lat:30.24020,lon:-92.66398,addr:'1635 N Lake Arthur Ave, Jennings, LA 70546-3613',flags:['scale','diner'],note:'Cajun sit-down restaurant, scales, casino. A driver review calls the walk "30 seconds".'},
+{feet:865,corridor:'I-10',state:'LA',exit:'101',city:'Lafayette',ts:'TA Travel Center #161',brand:'TA',lat:30.25432,lon:-92.03743,addr:'1800 N University Ave, Lafayette, LA 70507',tsAddr:'1701 N University Ave',flags:['scale','diner'],note:'128 spaces with 24 reserved or paid, 9 showers, 3 service bays. Rated 3.6, with recent complaints about dead fuel islands and a laundry running without water. Usable, not pleasant.'},  // The Valero at 1734 N University sits BETWEEN the two and is not an alternate: about ten truck spaces, which is a car stop with a diesel lane rather than somewhere to leave a rig.
 {feet:883,corridor:'I-75',state:'FL',exit:'161',city:'Punta Gorda',ts:'Pilot #94',brand:'PIL',lat:26.89615,lon:-82.00744,addr:'9092 Mac Dr, Punta Gorda, FL 33950-4309',tsAddr:'26505 Jones Loop Rd',flags:[],note:''},
 {feet:889,corridor:'I-75',state:'GA',exit:'16',city:'Valdosta',ts:'Big Foot Travel Center #946',brand:'IND',lat:30.82016,lon:-83.31170,addr:'1819 W Hill Ave, Valdosta, GA 31601-5110',flags:['smalllot'],note:'About six spaces, cash-only pricing.'},
 {feet:892,corridor:'I-10',state:'FL',exit:'26',city:'Milton',ts:"Love's (Garcon Point)",brand:'LOV',lat:30.57642,lon:-87.03186,addr:'3921 Garcon Point Rd, Milton, FL 32583-9048',flags:[],note:'Two Waffle Houses at this exit; the Love\u2019s pairs with the farther one.'},
+{feet:924,corridor:'I-95',state:'VA',exit:'92',city:'Ashland',ts:'TA Travel Center',brand:'TA',lat:37.75868,lon:-77.46587,addr:'808 England St, Ashland, VA 23005',tsAddr:'100 N Carter Rd',flags:['scale','smalllot'],note:'183 spaces including Reserve-It paid reserved, 11 showers, CAT scale, two service bays. Drivers report empty spaces even at weekends, so the small-lot flag here is about the paid allocation rather than the size. Recent reviews are rough on the bathrooms and the service bay.'},  // WALK VERIFIED BY SATELLITE, because the brief flagged it as a possible Oak Grove repeat. It is not: both sit WEST of I-95, and the interstate runs about 1150 ft east of the store - farther than the 924 ft walk itself - so the straight line never approaches it. Surface streets the whole way.
 {feet:927,corridor:'I-70',state:'OH',exit:'79',city:'London',ts:'Pilot Travel Center',brand:'PIL',lat:39.95746,lon:-83.37227,addr:'1245 US-42, London, OH 43140',tsAddr:'1365 US-42',flags:[],note:'Concrete barriers went up at the Waffle House and there is no truck parking there any more \u2014 park at the Pilot and walk, which is what this app is for. The Pilot\u2019s own reviews name the pairing and report 125 spaces. A recent review mentions the store closing for a remodel, so look before relying on it.'},  // The TA at 940 US-42 is at this same interchange and measures 2436 ft - 0.46 mi, a near miss past the line, so it is NOT an alternate. Recorded here so nobody adds it later. Its reviews also mention $20 parking.
 {feet:963,corridor:'I-75',state:'KY',exit:'41',city:'London',ts:'London Auto/Truck Center',brand:'IND',lat:37.14930,lon:-84.11636,addr:'76 Austin Ln, London, KY 40741-8335',tsAddr:'15 Dogpatch Trading Ctr',flags:['diner'],note:'The Scale Dodger diner is on site - yes, that is its real name. Inside the Dogpatch Trading Center.'},
 {feet:969,corridor:'I-10',state:'TX',exit:'848',city:'Beaumont',ts:'Petro Stopping Center #304',brand:'PET',lat:30.03970,lon:-94.15429,addr:'3865 Interstate 10 S, Beaumont, TX 77705',flags:['diner','caution'],note:'The Iron Skillet is gone - it is a Black Bear Diner now. One driver fueled here, got verbal OK to park, and was threatened with a tow mid-meal. Eat fast.'},
@@ -972,6 +981,7 @@ var DATA = [
 {feet:1282,corridor:'I-20',state:'GA',exit:'19',city:'Temple',ts:'Pilot',brand:'PIL',lat:33.72270,lon:-85.02881,addr:'543 Carrollton St, Temple, GA 30179',flags:[],alt:[{ts:'Flying J',feet:1442,brand:'FJ'}],note:'Both majors sit at this exit. Exit 19, not 24 — the guides get this wrong.'},
 {feet:1483,corridor:'I-75',state:'GA',exit:'201',city:'Jackson',ts:'Flying J',brand:'FJ',lat:33.20347,lon:-84.06293,addr:'3201 W Highway 36, Jackson, GA 30233',flags:[],alt:[{ts:'TA',feet:1725,brand:'TA'},{ts:"Love's",feet:2192,brand:'LOV'},{ts:'Pilot',feet:3274,brand:'PIL'}],note:'More major chains walkable from one Waffle House than anywhere else in the country.'},
 {feet:1588,corridor:'I-10',state:'LA',exit:'266',city:'Slidell',ts:'TA',brand:'TA',lat:30.28517,lon:-89.74616,addr:'1728 Gause Blvd E, Slidell, LA 70461-5530',flags:[],note:''},
+{feet:1647,corridor:'I-95',state:'SC',exit:'170',city:'Florence',ts:'Pilot Travel Center #62',brand:'PIL',lat:34.26226,lon:-79.70032,addr:'2880 N Williston Rd, Florence, SC 29506',tsAddr:'3006 N Williston Rd',flags:['scale','diner'],note:'75 spaces, 8 diesel lanes, 6 showers, CAT scale, Wendy\u2019s. A long walk rather than a short one, but comfortably inside the line.'},  // Reported at 440 ft and measures 1647: the research picked the wrong coordinate from two conflicting sources. NOT the Florence KY row six hundred miles north. The Buc-ee\u2019s at this exit is not an alternate - Buc-ee\u2019s prohibits semis company-wide.
 {feet:1657,corridor:'I-75',state:'FL',exit:'329',city:'Wildwood',ts:'TA Wildwood',brand:'TA',lat:28.87188,lon:-82.09006,addr:'7954 NE 8th Way, Wildwood, FL 34785-8458',tsAddr:'556 State Route 44',flags:[],note:''},
 {feet:1792,corridor:'I-10',state:'LA',exit:'151',city:'Port Allen',ts:"Love's",brand:'LOV',lat:30.45000,lon:-91.24561,addr:'112 S Lobdell Hwy, Port Allen, LA 70767-4117',flags:[],note:''},
 {feet:1913,corridor:'I-20',state:'TX',exit:'501',city:'Terrell',ts:'Valero Terrell Travel Plaza',brand:'IND',lat:32.70430,lon:-96.27687,addr:'1612 State Highway 34 S, Terrell, TX 75160-5407',flags:['smalllot'],note:'About fifteen spaces. TA #233 at exit 503 is the fallback, about 1.9 mi.'},

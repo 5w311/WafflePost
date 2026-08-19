@@ -9,8 +9,11 @@ feet,corridor,state,exit,city,truck_stop,lat,lon,waffle_house_address,truck_stop
 272,I-80,OH,234,Hubbard,Flying J #697,41.18165,-80.5699,"2284 Gala St, Hubbard, OH 44425-3202",2226 N Main St
 301,I-75,OH,36,Franklin,Pilot,39.54266,-84.29161,"6840 OH-123, Franklin, OH 45005",
 303,I-44,MO,80B,Springfield,Rapid Robert's Travel Plaza,37.25389,-93.26542,"3135 N Glenstone Ave, Springfield, MO 65803",3165 N Glenstone Ave
+322,I-40,AR,142,Maumelle,Morgan SuperStop,34.88456,-92.38292,"20514 Highway 365 N, North Little Rock, AR 72113",20515 Highway 365 N
 336,I-10,TX,829,Winnie,JP Truck Stop,29.83065,-94.38455,"243 Spur 5, Winnie, TX 77665-7308",
+347,I-65,KY,121,Brooks,Pilot Travel Center #356,38.0616,-85.70231,"2021 E Blue Lick Rd, Shepherdsville, KY 40165",2050 E Blue Lick Rd
 383,I-10,AL,13,Theodore,Pilot,30.5601,-88.20673,"7031 Theodore Dawes Rd, Theodore, AL 36582-4077",
+385,I-81,VA,98,Dublin,A-Plus Dublin Travel Plaza,37.08237,-80.68993,"4614 Cleburne Blvd, Dublin, VA 24084",4625 Cleburne Blvd
 386,I-20,TX,596,Longview,RaceTrac,32.44855,-94.72351,"3107 Estes Pkwy, Longview, TX 75602-4233",
 390,I-10,LA,209,LaPlace,TA Express #0479,30.08712,-90.44526,"4304 New Highway 51, Laplace, LA 70068",4301 S Main St
 394,I-10,LA,115,Henderson,Henderson Travel Plaza,30.31355,-91.83292,"2998 Grandpoint Hwy, Breaux Bridge, LA 70517-7738",
@@ -35,13 +38,17 @@ feet,corridor,state,exit,city,truck_stop,lat,lon,waffle_house_address,truck_stop
 791,I-95,SC,119,Manning,TA #179,33.70314,-80.24317,"3021 Paxville Hwy, Manning, SC 29102-6449",
 795,I-65,AL,334,Priceville,Pilot #441,34.53579,-86.9099,"3305 Point Mallard Pkwy SE, Decatur, AL 35603",3240 Point Mallard Pkwy
 799,I-10,FL,343,Baldwin,TA,30.28307,-81.98388,"1066 US Highway 301 S, Jacksonville, FL 32234",
+820,I-70,OH,94,Columbus,Pilot Travel Center #213,39.97172,-83.09753,"900 N Wilson Rd, Columbus, OH 43204",3600 Interchange Rd
 838,I-24,TN,64,La Vergne,Pilot #52,35.99889,-86.59777,"108 Enterprise Blvd, La Vergne, TN 37086-3544",535 Waldron Rd
+851,I-40,TN,374,Knoxville,TA Travel Center,35.90759,-84.14755,"507 Lovell Rd, Knoxville, TN 37932",608 Lovell Rd
 858,I-95,VA,104,Carmel Church,Flying J #749,37.93494,-77.47452,"24148 Welcome Way Dr, Ruther Glen, VA 22546",24279 Rogers Clark Blvd
 860,I-95,SC,5,Hardeeville,Pilot,32.27079,-81.08075,"16877 Whyte Hardee Blvd, Hardeeville, SC 29927-6940",
 861,I-10,LA,64,Jennings,Jennings Travel Plaza,30.2402,-92.66398,"1635 N Lake Arthur Ave, Jennings, LA 70546-3613",
+865,I-10,LA,101,Lafayette,TA Travel Center #161,30.25432,-92.03743,"1800 N University Ave, Lafayette, LA 70507",1701 N University Ave
 883,I-75,FL,161,Punta Gorda,Pilot #94,26.89615,-82.00744,"9092 Mac Dr, Punta Gorda, FL 33950-4309",26505 Jones Loop Rd
 889,I-75,GA,16,Valdosta,Big Foot Travel Center #946,30.82016,-83.3117,"1819 W Hill Ave, Valdosta, GA 31601-5110",
 892,I-10,FL,26,Milton,Love's (Garcon Point),30.57642,-87.03186,"3921 Garcon Point Rd, Milton, FL 32583-9048",
+924,I-95,VA,92,Ashland,TA Travel Center,37.75868,-77.46587,"808 England St, Ashland, VA 23005",100 N Carter Rd
 927,I-70,OH,79,London,Pilot Travel Center,39.95746,-83.37227,"1245 US-42, London, OH 43140",1365 US-42
 963,I-75,KY,41,London,London Auto/Truck Center,37.1493,-84.11636,"76 Austin Ln, London, KY 40741-8335",15 Dogpatch Trading Ctr
 969,I-10,TX,848,Beaumont,Petro Stopping Center #304,30.0397,-94.15429,"3865 Interstate 10 S, Beaumont, TX 77705",
@@ -52,6 +59,7 @@ feet,corridor,state,exit,city,truck_stop,lat,lon,waffle_house_address,truck_stop
 1282,I-20,GA,19,Temple,Pilot,33.7227,-85.02881,"543 Carrollton St, Temple, GA 30179",
 1483,I-75,GA,201,Jackson,Flying J,33.20347,-84.06293,"3201 W Highway 36, Jackson, GA 30233",
 1588,I-10,LA,266,Slidell,TA,30.28517,-89.74616,"1728 Gause Blvd E, Slidell, LA 70461-5530",
+1647,I-95,SC,170,Florence,Pilot Travel Center #62,34.26226,-79.70032,"2880 N Williston Rd, Florence, SC 29506",3006 N Williston Rd
 1657,I-75,FL,329,Wildwood,TA Wildwood,28.87188,-82.09006,"7954 NE 8th Way, Wildwood, FL 34785-8458",556 State Route 44
 1792,I-10,LA,151,Port Allen,Love's,30.45,-91.24561,"112 S Lobdell Hwy, Port Allen, LA 70767-4117",
 1913,I-20,TX,501,Terrell,Valero Terrell Travel Plaza,32.7043,-96.27687,"1612 State Highway 34 S, Terrell, TX 75160-5407",
