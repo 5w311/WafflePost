@@ -10,7 +10,7 @@ WafflePost answers *can I get a plate of hashbrowns without moving the truck*.
 
 Two tabs:
 
-- **Atlas** — map and list of all 61 exits, filterable by corridor, state,
+- **Atlas** — map and list of all 69 exits, filterable by corridor, state,
   truck stop chain, walk distance and free text. Every row, distance and
   filter is computed locally; only the basemap under the pins is fetched.
 - **Route** — pickup and delivery with address autosuggest and a "use my
@@ -92,11 +92,11 @@ there.
 Counts, reconciled, because three different numbers are all correct about
 different things:
 
-- **61 exits** — rows in `DATA`. 60 walkable plus one honorary member,
-  across fourteen corridors and fifteen states.
-- **73 pairings listed** — every truck stop named, including the second,
+- **69 exits** — rows in `DATA`. 68 walkable plus one honorary member,
+  across fifteen corridors and sixteen states.
+- **81 pairings listed** — every truck stop named, including the second,
   third and fourth stop at exits that have them.
-- **68 pairings within 0.4 mi** — the headline number. The other 5 sit past
+- **76 pairings within 0.4 mi** — the headline number. The other 5 sit past
   the line. Four are alternates, labelled *(past the line)* in the stop sheet
   rather than dropped, because at 3am a 3,274 ft walk you know about beats a
   1,483 ft walk into a full lot. The fifth is Bishopville's own primary stop
@@ -211,6 +211,57 @@ pair that existed and no longer does.
 across Illinois, plus Missouri at O'Fallon 217, Wentzville 208, St Charles
 229B and Blue Springs 18, and Ohio at Reynoldsburg 110, Columbus 94, Dayton
 38, Englewood 29 and Brookville 21.
+
+### The 13-2026 campaign: eight rows, and where not to look
+
+An eight-run sweep of the remaining interstate system produced eight verified
+pairs, on a new corridor (I-40) and with Arkansas returning after Russellville
+was purged. Shortest first: **Maumelle AR 322 ft** (I-40), **Brooks KY 347**
+(I-65), **Dublin VA 385** (I-81), **Columbus OH 820** (I-70), **Knoxville TN
+851** (I-40), **Lafayette LA 865** (I-10), **Ashland VA 924** (I-95),
+**Florence SC 1,647** (I-95). 61 exits become 69, 73 pairings become 81, and
+**I-10 takes the corridor lead outright at 16** against I-75's 15.
+
+**Eleven other candidates arrived with estimated distances and not one
+survived measurement.** One described as 500 ft measured 2,379. One described
+as *next door* measured 2,303. One described as 1,100 ft measured 15,536. Four
+of the eight rows above were themselves reported 25–55% off — Florence SC was
+reported at 440 ft and measures 1,647, because the research picked the wrong
+coordinate from two conflicting sources.
+
+#### Three traps that each cost real work
+
+1. **A distance estimated from an address is worthless.** Every single one
+   measured wrong. This is now the atlas's oldest and most repeatedly
+   confirmed rule.
+2. **Stale closure flags nearly killed three live businesses.** Knoxville's TA
+   was read as closed off a directory and is open with recent reviews. Do not
+   trust a closure flag without a second source.
+3. **A shared service road name is not a shared interchange.** West Memphis and
+   Fayetteville both looked adjacent by address and measure over a mile and
+   nearly three miles respectively — the same failure as Arkadelphia's two
+   Valley St addresses at opposite ends of the road.
+
+#### Waffle House deserts — do not sweep truck stops here
+
+Central Texas I-35 has **no Waffle House at all** between Corsicana and Round
+Rock, including Waco, Temple, Belton, Salado, Georgetown, San Marcos and New
+Braunfels. West Texas has none. San Antonio has none. Illinois has exactly two
+stores, both Metro East near St Louis. Waco's first store is scheduled for
+August 2027. Truck stops in these places cannot pair with anything.
+
+#### Swept and closed
+
+I-45, the Houston metro, Maryland, Illinois, the Austin corridor, and nine
+interstate concurrencies — added to the corridors already closed in earlier
+editions.
+
+#### Still unswept, and one of them is glaring
+
+North Carolina's I-85, I-40, I-77 and I-26; South Carolina's interior;
+Georgia's I-16; Florida's I-4. **North Carolina is the notable gap** — a top
+five Waffle House state with heavy freight on four interstates, holding
+exactly one atlas row.
 
 ### The 09-2026 re-audit
 
@@ -786,14 +837,14 @@ address starts with a house number and names the row's own state, and that
 leaderboard.
 
 `run.js` prints one `ok <name> N passed` line per file and then `all green`,
-or names the files that failed. It does not sum the assertions — at v4.10.0
-they come to 1,219 across twelve files, added up from those lines.
+or names the files that failed. It does not sum the assertions — at v4.11.0
+they come to 1,338 across twelve files, added up from those lines.
 
 ## Two version strings, on purpose
 
 Same reasoning as FuelPost, different perishable thing:
 
-- **`ATLAS_REV`** (`Atlas Rev 12-2026`) — which edition of the walkability
+- **`ATLAS_REV`** (`Atlas Rev 13-2026`) — which edition of the walkability
   audit the rows came from. Shown in the **panel tab**, beside the pair
   count, because stores open and close: Troutville's did not exist a year
   before this revision, and a pair that has closed is a wasted exit at 3am. A
@@ -802,7 +853,7 @@ Same reasoning as FuelPost, different perishable thing:
   stopped existing; the requirement was "always on screen", not "in the
   header", and the panel tab is on screen in both modes whether the panel is
   open or collapsed. Bump only when the rows are re-audited.
-- **`APP_VERSION`** (`4.10.0`) — the code. Shown in the **legend card**.
+- **`APP_VERSION`** (`4.11.0`) — the code. Shown in the **legend card**.
   Bumped for every shipped change, and stamped onto every `lib/` URL as a
   cache-buster.
 
@@ -822,6 +873,32 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v4.11.0
+
+**Eight rows from an eight-run discovery campaign.** Maumelle AR, Brooks KY,
+Dublin VA, Columbus OH, Knoxville TN, Lafayette LA, Ashland VA and Florence
+SC. 61 exits become 69, 73 pairings become 81, I-40 is a new corridor,
+Arkansas returns, and `ATLAS_REV` moves to **Rev 13-2026**. I-10 takes the
+corridor lead outright at 16.
+
+**Two pre-ship gates in the brief were cleared, not assumed.** Knoxville's exit
+number was unresolved between 373 and 374: Lovell Rd **is** exit 374 and exit
+373 is Campbell Station Rd 1.75 mi west, so Google's 373 is wrong. And
+Ashland's walk was flagged as a possible Oak Grove repeat — checked against
+satellite imagery, both sit **west** of I-95, with the interstate about 1,150 ft
+east of the store, farther than the 924 ft walk itself. The row ships without
+a crossing caveat because it does not need one.
+
+**The brief's corridor checksum was wrong and the code was right.** It summed
+to 66 against 69 rows, undercounting I-10 (15→16), I-95 (10→11) and I-40
+(1→2) — each of the three corridors that gained more than the list credited.
+The row, pairing, honorary and *state* checksums all matched exactly.
+
+Two name traps are recorded in row comments rather than left to be
+rediscovered: Dublin's stop is **A-Plus**, not the Liberty 7-Eleven next door
+that shares its phone number, and Brooks KY is exit **121**, not the
+Shepherdsville exit 117 purged in 09-2026 four miles away.
 
 ### v4.10.0
 
