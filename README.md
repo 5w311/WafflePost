@@ -837,8 +837,8 @@ address starts with a house number and names the row's own state, and that
 leaderboard.
 
 `run.js` prints one `ok <name> N passed` line per file and then `all green`,
-or names the files that failed. It does not sum the assertions — at v4.11.0
-they come to 1,338 across twelve files, added up from those lines.
+or names the files that failed. It does not sum the assertions — at v4.12.0
+they come to 1,352 across twelve files, added up from those lines.
 
 ## Two version strings, on purpose
 
@@ -853,7 +853,7 @@ Same reasoning as FuelPost, different perishable thing:
   stopped existing; the requirement was "always on screen", not "in the
   header", and the panel tab is on screen in both modes whether the panel is
   open or collapsed. Bump only when the rows are re-audited.
-- **`APP_VERSION`** (`4.11.0`) — the code. Shown in the **legend card**.
+- **`APP_VERSION`** (`4.12.0`) — the code. Shown in the **legend card**.
   Bumped for every shipped change, and stamped onto every `lib/` URL as a
   cache-buster.
 
@@ -873,6 +873,41 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v4.12.0
+
+**A locator button on the Atlas map**, ported from FuelPost because the
+question is the same one: where am I, against what is on this map. Bottom
+left, opposite HERE's zoom stack, with four states the button *is* the whole
+UI for — idle, locating (spinning), locked (filled), and off (struck through
+and persisted).
+
+**Tap recentres, hold switches off.** Getting location back is the common case
+and takes one tap; only turning it *off* needs the deliberate 600ms gesture,
+which is the direction where an accident costs something.
+
+Not ported: FuelPost's Near Me footer. A ranked list of nearby stops is a
+different feature, and this atlas already sorts by the only thing it claims to
+know — the walk.
+
+**Three things it deliberately does not do.** It does not reach for the GPS at
+boot: a permission prompt nobody asked for is the one that gets denied once
+and then permanently, so the persisted choice is restored and the first tap
+starts the watch. It does not stop tracking when you switch to Route — both
+tabs share one map and one dot, and only the button hides. And it does not
+draw a dot on a vague fix: the accuracy ring is a real `H.map.Circle` in
+metres, and an exact-looking dot inside a two-kilometre circle is the map
+stating something it does not know.
+
+**Two bugs found while verifying it, both real.** The button's first position
+landed squarely on HERE's logo — licence-required attribution, not decoration
+— so the attribution band is now measured into `--attrib-h` and the button
+rides above it, rather than clearing a hardcoded 59px that a wrapped copyright
+line would break. And the pending recentre was being consumed by
+`failLocate()`: `watchPosition` can deliver a transient error *before* its
+first fix, so a driver would tap, watch the dot appear, and see the map not
+move — intermittently, depending on whether the first acquisition stumbled.
+The intent now survives an error and only a deliberate switch-off clears it.
 
 ### v4.11.0
 

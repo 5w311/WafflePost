@@ -301,6 +301,50 @@ t.eq((src.match(/syncThemeColor\(\);/g) || []).length >= 2, true,
 t.eq(/getComputedStyle\(bar\)\.backgroundColor/.test(src), true,
      'the synced value is read from the bar itself');
 
+// ---- the Atlas locator (v4.12.0) ----
+// Continuous tracking behind one button. The failure modes worth pinning are
+// all about a watch that outlives its welcome or starts without being asked.
+t.eq(/id="locateBtn"/.test(src), true, 'the locator button exists');
+// It rides --chrome-h like the HERE controls, so one variable lifts it clear
+// of the panel, of an open sheet, and back down on collapse. A second set of
+// offsets is how those two drift apart.
+t.eq(/#locateBtn\{[^}]*bottom:calc\(var\(--chrome-h/.test(src), true,
+     'and rides --chrome-h rather than carrying its own offsets');
+// Boot must NOT reach for the GPS. A permission prompt nobody asked for is
+// the one that gets denied once and then permanently.
+var bootBlock = src.slice(src.indexOf('/* boot'));
+t.eq(/startWatch\(\)/.test(bootBlock), false, 'boot does not start a watch');
+t.eq(/locationOff = storedLocateOff\(\);/.test(src), true, 'but it does restore the persisted choice');
+// startWatch is the single choke point, and it refuses while switched off -
+// otherwise the visibility resume would quietly restart tracking the driver
+// turned off.
+var watchSrc = (src.match(/function startWatch\(\)\{[\s\S]*?\n\}/) || [''])[0];
+t.eq(/if \(locationOff\) return;/.test(watchSrc), true,
+     'startWatch refuses while location is switched off');
+t.eq((src.match(/navigator\.geolocation\.watchPosition\(/g) || []).length, 1,
+     'exactly one watchPosition call site');
+// Off means off: no watch, no dot, no cached fix for anything else to read.
+var offSrc = (src.match(/function setLocationOff\(off\)\{[\s\S]*?\n\}/) || [''])[0];
+['clearWatch\\(\\)', 'liveFix = null', 'locateGroup.removeAll\\(\\)'].forEach(function (bit) {
+  t.eq(new RegExp(bit).test(offSrc), true, 'switching off clears: ' + bit.replace(/\\/g, ''));
+});
+// The tab-hidden pause, so a locked screen is not draining the radio.
+t.eq(/visibilitychange/.test(src) && /watchPaused/.test(src), true,
+     'the watch pauses while the tab is hidden');
+// An exact-looking dot inside a two-kilometre accuracy circle is the map
+// stating something it does not know.
+t.eq(/gps\.isPreciseFix\(liveFix\.accuracy\)/.test(src), true,
+     'the dot is drawn only on a precise fix');
+// Two chips, not one: the watch hides the error on every fix, so a hint
+// sharing that element would be wiped exactly when it is being read.
+t.eq(/id="locateErr"/.test(src) && /id="locateHint"/.test(src), true,
+     'error and hint are separate elements');
+// Atlas only - Route has its own one-shot on the pickup field.
+var setModeSrc2 = (src.match(/function setMode\(m\)\{[\s\S]*?\n\}/) || [''])[0];
+t.eq(/locateBtn/.test(setModeSrc2), true, 'the button is Atlas-only');
+t.eq(/clearWatch\(\)/.test(setModeSrc2), false,
+     'but a mode change does NOT stop tracking: both tabs share one map');
+
 // max(), not calc(). calc(10px + inset) stacks a gap on top of an inset that
 // exists to BE that gap - 69px of top padding on a Dynamic Island phone.
 t.eq(/padding-top:calc\([\d.]+px \+ env\(safe-area-inset-top/.test(src), false,
