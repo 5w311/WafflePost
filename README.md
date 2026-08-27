@@ -837,8 +837,8 @@ address starts with a house number and names the row's own state, and that
 leaderboard.
 
 `run.js` prints one `ok <name> N passed` line per file and then `all green`,
-or names the files that failed. It does not sum the assertions — at v4.12.0
-they come to 1,352 across twelve files, added up from those lines.
+or names the files that failed. It does not sum the assertions — at v4.13.0
+they come to 1,364 across twelve files, added up from those lines.
 
 ## Two version strings, on purpose
 
@@ -853,7 +853,7 @@ Same reasoning as FuelPost, different perishable thing:
   stopped existing; the requirement was "always on screen", not "in the
   header", and the panel tab is on screen in both modes whether the panel is
   open or collapsed. Bump only when the rows are re-audited.
-- **`APP_VERSION`** (`4.12.0`) — the code. Shown in the **legend card**.
+- **`APP_VERSION`** (`4.13.0`) — the code. Shown in the **legend card**.
   Bumped for every shipped change, and stamped onto every `lib/` URL as a
   cache-buster.
 
@@ -873,6 +873,55 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v4.13.0
+
+**The locator tap re-orders the atlas by how far away you are.** Tap once and
+the whole list sorts closest-first, every row growing a `N mi away` beside its
+walk time; tap again and it returns to the leaderboard the atlas is built on,
+shortest walk first. Switching location off restores that default too — the
+proximity order is measured *from a position*, so discarding the position has
+to discard the order rather than leave the list standing in an order it can no
+longer justify.
+
+**This is the Near Me footer v4.12.0 declined to port, and that entry was
+wrong.** The argument then was that "this atlas already sorts by the only
+thing it claims to know — the walk". It knows two things: how short the walk
+is once you arrive, and where the exits are. A 170 ft walk in Alabama is not
+useful in Ohio, and the driver holding the phone is the one who knows which
+question they are asking. What was right in that entry was the shape — not a
+separate footer, not a second list, but the *same* list in a different order,
+with the figures on the rows making the order self-evident.
+
+**The order is gated on a fix, not on the flag.** The tap almost always
+precedes the position it needs, so `state.nearest` can be set with nothing to
+measure from; the sort checks for an actual fix, because sorting on `NaN`
+returns the list in input order — silently correct-looking and completely
+wrong. Distances are measured once per row and carried alongside rather than
+recomputed inside the comparator, and `fixPoint()` is the single place HERE's
+`lng` becomes the atlas's `lon`.
+
+**A moving truck does not rebuild the list on every GPS tick.** The order is
+restated when the fix moves a mile — roughly a minute of interstate, short
+enough that the list is never meaningfully wrong and long enough that the row
+under a thumb is not yanked away. When it does restate, the scroll position is
+kept: the rows shuffled, they did not change.
+
+**The button moved down and sideways.** v4.12.0 cleared HERE's logo by rising
+`--attrib-h` above it, which worked and left the button floating a band above
+every other control on the map, reading as debris. It now sits on the
+attribution baseline and is pushed *past* the logo using `--attrib-w`, the
+logo's measured right edge — measured, because HERE sizes that logo and we do
+not.
+
+**One real bug, found by a check that went red.** Recentring the map on the
+first fix stopped working the moment the list refreshed alongside it.
+`render()` ends on the capped path in `syncMapPadding()`, and HERE's
+`setPadding` recomputes the view from its *committed* look-at data — which
+discards a `setCenter` issued moments earlier in the same task and not yet
+applied. The dot appeared, the list sorted, and the map sat on the startup
+atlas fit. The camera now moves last, which is also the honest reading of what
+the tap asked for.
 
 ### v4.12.0
 

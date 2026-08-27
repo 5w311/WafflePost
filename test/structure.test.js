@@ -345,6 +345,62 @@ t.eq(/locateBtn/.test(setModeSrc2), true, 'the button is Atlas-only');
 t.eq(/clearWatch\(\)/.test(setModeSrc2), false,
      'but a mode change does NOT stop tracking: both tabs share one map');
 
+// ---- the proximity sort (v4.13.0) ----
+// Tapping the locator re-orders the Atlas by how far the driver is from each
+// exit. The list is the app's whole claim to authority, so what is pinned
+// here is that it can never be showing an order it cannot justify.
+t.eq(/\n  nearest:false,/.test(src), true,
+     'state.nearest starts false: the walk leaderboard is the default order');
+// ONE guard, and it is the fix, not the flag. state.nearest can be set before
+// any position exists - the tap that asks for the order usually precedes the
+// fix that builds it - so the sort has to be gated on having something to
+// measure from, or every row sorts on NaN into its input order and the list
+// silently lies while looking sorted.
+t.eq(/var here = state\.nearest \? fixPoint\(\) : null;/.test(src), true,
+     'the sort is gated on an actual fix, not merely on the flag');
+// HERE says lng, the atlas says lon, and wd.haversine reads whatever it is
+// handed. One adapter, so the mismatch cannot be reintroduced per call site.
+t.eq(/function fixPoint\(\)\{ return liveFix \? \{lat:liveFix\.lat, lon:liveFix\.lng\} : null; \}/.test(src), true,
+     'fixPoint is the single lng->lon adapter');
+t.eq(/haversine\(\s*\{[^}]*lng:/.test(src), false,
+     'nothing hands haversine an lng-keyed point, which would silently be NaN');
+// Distance is measured once per row and carried alongside. A comparator that
+// calls haversine does it O(n log n) times for an answer that cannot change
+// mid-sort.
+var atlasSort = (src.match(/var here = state\.nearest[\s\S]*?rows\.sort\(function\(a,b\)\{ return a\.feet-b\.feet; \}\);/) || [''])[0];
+t.eq(/dec\.sort\(function\(a,b\)\{ return a\.d-b\.d; \}\)/.test(atlasSort), true,
+     'the proximity sort compares precomputed distances');
+t.eq(/sort\(function\(a,b\)\{[^}]*haversine/.test(src), false,
+     'no comparator recomputes haversine per comparison');
+// Switching location off takes the order with it. Leaving the list standing
+// in proximity order with "N mi away" measured from a fix that was
+// deliberately discarded is the app stating something it no longer knows.
+var offSrc2 = (src.match(/function setLocationOff\(off\)\{[\s\S]*?\n\}/) || [''])[0];
+t.eq(/state\.nearest = false; nearestAnchor = null;/.test(offSrc2), true,
+     'switching location off restores the walk leaderboard');
+// THE LIST BEFORE THE CAMERA. render ends on the capped path in
+// syncMapPadding, and HERE's setPadding recomputes the view from its
+// COMMITTED look-at data - discarding a setCenter issued moments earlier in
+// the same task and not yet applied. Recentring first made the tap silently
+// fail to move the map. Pinned as an ordering, because that is what it is.
+var watchCb = (src.match(/watchPosition\(function\(pos\)\{[\s\S]*?\}, function\(err\)/) || [''])[0];
+t.eq(watchCb.indexOf('refreshNearest()') !== -1 &&
+     watchCb.indexOf('refreshNearest()') < watchCb.indexOf('map.setCenter('), true,
+     'the fix refreshes the list BEFORE it moves the camera');
+// A moving truck must not rebuild the panel on every GPS tick and yank the
+// row out from under a thumb.
+t.eq(/var NEAREST_REFRESH_MI = \d+;/.test(src), true,
+     'a distance threshold gates the re-sort');
+t.eq(/function refreshNearest\(\)\{[\s\S]*?scrollTop = top;/.test(src), true,
+     'a re-sort keeps the scroll position: the rows shuffled, they did not change');
+// The button sits past HERE's logo on measured geometry. The logo is
+// licence-required attribution and HERE sizes it, not us - a literal offset
+// here is a covered logo the first time that changes.
+t.eq(/#locateBtn\{position:absolute;left:calc\(var\(--attrib-w/.test(src), true,
+     'the locator is placed from the measured logo width');
+t.eq((src.match(/setProperty\('--attrib-w'/g) || []).length, 1,
+     '--attrib-w is written in exactly one place');
+
 // max(), not calc(). calc(10px + inset) stacks a gap on top of an inset that
 // exists to BE that gap - 69px of top padding on a Dynamic Island phone.
 t.eq(/padding-top:calc\([\d.]+px \+ env\(safe-area-inset-top/.test(src), false,
