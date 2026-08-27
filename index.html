@@ -515,18 +515,25 @@ html[data-theme=dark] .mile{color:#E8B96B}
    open stop sheet, and back down when the panel collapses - one variable, no
    second set of offsets to keep in step.
 
-   BOTTOM LEFT, opposite HERE's zoom and layers stack, and lifted by
-   --attrib-h so it clears HERE's own logo - which the first cut did not, and
-   covering that logo is a licence problem rather than a cosmetic one. z-index 600 puts it level with those controls:
-   above the map and the panel, below the sheet (900) and the popover (950),
-   which is right - a driver reading a stop should not have a floating button
-   over the text.
+   BOTTOM LEFT, sharing HERE's attribution baseline and pushed sideways past
+   the logo rather than lifted over it. Three positions, and the reasons are
+   worth keeping: the first cut sat ON the logo, which is licence-required
+   attribution and not a cosmetic problem; the second cleared it by rising
+   --attrib-h, which worked and left the button floating a band above every
+   other control on the map, reading as debris. Going sideways instead puts
+   it on a row the eye already scans. --attrib-w is the logo's measured right
+   edge, so a wider logo pushes the button along rather than under it -
+   measured, because HERE sizes that logo and we do not.
+
+   z-index 600 is level with HERE's own controls: above the map and the
+   panel, below the sheet (900) and the popover (950), which is right - a
+   driver reading a stop should not have a floating button over the text.
 
    Atlas only. Route has its own one-shot on the pickup field, and two
    different location affordances on one screen is how a driver ends up
    tapping the wrong one. */
-#locateBtn{position:absolute;left:10px;
-  bottom:calc(var(--chrome-h, var(--panel-h,0px)) + var(--attrib-h,60px) + 8px);
+#locateBtn{position:absolute;left:calc(var(--attrib-w,64px) + 10px);
+  bottom:calc(var(--chrome-h, var(--panel-h,0px)) + 16px);
   z-index:600;width:40px;height:40px;border-radius:50%;padding:0;
   background:var(--surface);border:1px solid var(--line);color:var(--sub);
   display:grid;place-items:center;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.18);
@@ -547,7 +554,7 @@ html[data-theme=dark] .mile{color:#E8B96B}
    that element would be wiped the instant a position arrived - which is
    exactly when the driver is reading it. Separate elements cannot interfere. */
 #locateErr,#locateHint{position:absolute;left:10px;z-index:601;
-  bottom:calc(var(--chrome-h, var(--panel-h,0px)) + var(--attrib-h,60px) + 56px);
+  bottom:calc(var(--chrome-h, var(--panel-h,0px)) + 64px);
   border-radius:9px;padding:8px 11px;font-size:11.5px;line-height:1.4;
   box-shadow:0 2px 6px rgba(0,0,0,.18);max-width:min(320px,calc(100% - 20px))}
 #locateErr{right:10px;background:#FDECEC;border:1px solid #F0BEBE;color:#8A1C1C}
@@ -852,27 +859,27 @@ var __mods={};
 function require(p){return __mods[p.replace(/^\.\//,'').replace(/\.js$/,'')];}
 var module={exports:{}};
 </script>
-<script src="lib/waffledist.js?v=4.12.0"></script>
+<script src="lib/waffledist.js?v=4.13.0"></script>
 <script>__mods.waffledist=module.exports;module={exports:{}};</script>
-<script src="lib/atlasfilter.js?v=4.12.0"></script>
+<script src="lib/atlasfilter.js?v=4.13.0"></script>
 <script>__mods.atlasfilter=module.exports;module={exports:{}};</script>
-<script src="lib/routewaffles.js?v=4.12.0"></script>
+<script src="lib/routewaffles.js?v=4.13.0"></script>
 <script>__mods.routewaffles=module.exports;module={exports:{}};</script>
-<script src="lib/vehicleprofile.js?v=4.12.0"></script>
+<script src="lib/vehicleprofile.js?v=4.13.0"></script>
 <script>__mods.vehicleprofile=module.exports;module={exports:{}};</script>
-<script src="lib/triptext.js?v=4.12.0"></script>
+<script src="lib/triptext.js?v=4.13.0"></script>
 <script>__mods.triptext=module.exports;module={exports:{}};</script>
-<script src="lib/escape.js?v=4.12.0"></script>
+<script src="lib/escape.js?v=4.13.0"></script>
 <script>__mods.escape=module.exports;module={exports:{}};</script>
-<script src="lib/flexible-polyline.js?v=4.12.0"></script>
+<script src="lib/flexible-polyline.js?v=4.13.0"></script>
 <script>__mods['flexible-polyline']=module.exports;module={exports:{}};</script>
-<script src="lib/autosuggest.js?v=4.12.0"></script>
+<script src="lib/autosuggest.js?v=4.13.0"></script>
 <script>__mods.autosuggest=module.exports;module={exports:{}};</script>
-<script src="lib/location.js?v=4.12.0"></script>
+<script src="lib/location.js?v=4.13.0"></script>
 <script>__mods.location=module.exports;module={exports:{}};</script>
-<script src="lib/routeoptions.js?v=4.12.0"></script>
+<script src="lib/routeoptions.js?v=4.13.0"></script>
 <script>__mods.routeoptions=module.exports;module={exports:{}};</script>
-<script src="lib/baselayer.js?v=4.12.0"></script>
+<script src="lib/baselayer.js?v=4.13.0"></script>
 <script>__mods.baselayer=module.exports;module={exports:{}};</script>
 
 <script>
@@ -924,7 +931,7 @@ var HERE_API_KEY = '7RDploUiahAnm08IZA9X7YSbb0Qh99pvqV2NCNQX_Hg';
    APP_VERSION - the code. Shown in the legend card. Bumped every change,
                 and stamped onto every lib/ URL as a cache-buster. */
 var ATLAS_REV   = 'Atlas Rev 13-2026';
-var APP_VERSION = '4.12.0';
+var APP_VERSION = '4.13.0';
 
 /* ===== DATA ==========================================================
    61 rows - 60 walkable exits plus one honorary - carrying 73 pairings,
@@ -1092,6 +1099,13 @@ var state = {
   mode:'atlas',
   q:'', corridor:'all', state:'all', brand:'all', tier:'all',
   doublesOnly:false, hideFlagged:false, freeParking:false, scale:false, diner:false,
+  /* nearest - the Atlas list is ordered by how far the driver is from each
+     exit rather than by how short the walk is once they get there. It lives
+     in state, not beside liveFix, because it is a property of the LIST: it
+     has to survive a trip through Route mode and come back, exactly as the
+     filters do. It is only honoured while there is a fix to measure from -
+     see render - so it can be set before the first position arrives. */
+  nearest:false,
   vehicle:{mode:'standard', heightIn:'', widthIn:'', lengthFt:'', grossLb:'',
            hazmat:vp.HAZMAT_CLASSES.slice()},
   /* options[] is every alternative HERE returned, each fully scored against
@@ -1244,6 +1258,14 @@ function syncChromeH(){
   var imp = document.querySelector('.H_imprint');
   document.documentElement.style.setProperty('--attrib-h',
     (imp ? Math.round(imp.getBoundingClientRect().height) : 0) + 'px');
+  /* And how far right the logo reaches, which is what the locator clears. The
+     stage is the offset parent, so this is measured relative to it rather than
+     to the viewport. */
+  var lg = document.querySelector('.H_logo'), st = document.querySelector('.stage');
+  if (lg && st) {
+    document.documentElement.style.setProperty('--attrib-w',
+      Math.round(lg.getBoundingClientRect().right - st.getBoundingClientRect().left) + 'px');
+  }
 }
 
 /* HERE's canvas only re-measures on a real window resize or an explicit
@@ -1548,13 +1570,41 @@ function render(){
     var n = rows.length;
     $('panelCount').textContent = state.plan ? n+(n===1?' pair':' pairs') : '\u2014';
   } else {
-    rows = DATA.filter(function(r){ return af.passes(r,state); })
-               .sort(function(a,b){ return a.feet-b.feet; });
+    rows = DATA.filter(function(r){ return af.passes(r,state); });
+    /* TWO ORDERS, and which one is showing has to be obvious from the rows
+       themselves. The default is the leaderboard the atlas is built on -
+       shortest walk first, the same order DATA is stored in - and it is what
+       the app means by "the best pairing". state.nearest swaps it for the
+       question a driver on the road is actually asking: which of these is
+       closest to ME. That is a different number entirely (a 205 ft walk in
+       Texas is useless in Ohio), so every row grows a "N mi away" and the
+       ascending figures say what the header does not have room to.
+
+       The distance is computed ONCE per row and carried alongside, not
+       recomputed inside the comparator: a comparator that calls haversine
+       does it O(n log n) times for an answer that cannot change mid-sort.
+       nearestAnchor records the fix this order was actually built from, so
+       the watch can tell whether the truck has moved far enough to be worth
+       restating - see startWatch. */
+    var here = state.nearest ? fixPoint() : null;
+    var mi = null;
+    if (here) {
+      nearestAnchor = here;
+      var dec = rows.map(function(r){ return {r:r, d:wd.haversine(here,r)}; });
+      dec.sort(function(a,b){ return a.d-b.d; });
+      rows = dec.map(function(d){ return d.r; });
+      mi   = dec.map(function(d){ return d.d; });
+    } else {
+      nearestAnchor = null;
+      rows.sort(function(a,b){ return a.feet-b.feet; });
+    }
     if (!rows.length) {
       html = '<div class="empty"><b>Nothing matches those filters</b>Clear one and try '+
              'again — the atlas only holds '+DATA.length+' exits, so stacking filters runs out of country fast.</div>';
     } else {
-      rows.forEach(function(r){ html += rowHtml(r, DATA.indexOf(r)); });
+      rows.forEach(function(r,i){
+        html += rowHtml(r, DATA.indexOf(r), null, mi ? wd.formatMiles(mi[i])+' away' : null);
+      });
     }
     $('panelCount').textContent = rows.length+(rows.length===1?' pair':' pairs');
   }
@@ -2356,9 +2406,12 @@ $('rFromLocate').addEventListener('click', function(){
 /* ---- the Atlas locator --------------------------------------------------
    Continuous tracking behind one button, ported from the sibling app because
    the question it answers is the same one: where am I, against what is on
-   this map. What is NOT ported is FuelPost's Near Me footer - a ranked list
-   of nearby stops is a different feature and this atlas already sorts by the
-   only thing it claims to know, the walk.
+   this map. v4.12.0 declined to port FuelPost's Near Me footer on the grounds
+   that "this atlas already sorts by the only thing it claims to know, the
+   walk", and that was wrong: it knows two things, how short the walk is once
+   you arrive and where the exits are, and only the driver knows which one
+   they are asking about. v4.13.0 ports the ranking - but into the list that
+   is already on screen rather than a second one beside it. See setNearest.
 
    FOUR STATES, and the button is the whole UI for them:
      idle     - grey outline, nothing running
@@ -2366,11 +2419,29 @@ $('rFromLocate').addEventListener('click', function(){
      locked   - filled blue, a fix is in hand and the dot is on the map
      off      - struck through, deliberately switched off and persisted
 
-   TAP recentres, HOLD switches off. Getting location back is the common case
-   and takes one tap; only turning it OFF needs the deliberate gesture, which
-   is the direction where an accident actually costs something. */
+   TAP recentres and re-orders the atlas, HOLD switches off. Getting location
+   back is the common case and takes one tap; only turning it OFF needs the
+   deliberate gesture, which is the direction where an accident actually
+   costs something - and switching off returns the list to the walk order,
+   because the proximity order is measured from a position this is discarding. */
 var liveFix = null;          /* {lat, lng, accuracy} or null */
 var watchId = null, watchPaused = false, locationOff = false, locatePending = false;
+
+/* HERE speaks lng, the atlas speaks lon, and wd.haversine reads whatever its
+   arguments call it. One adapter rather than a {lat:..., lon:...} literal at
+   every call site, because the day one of them is written .lng the distance
+   silently becomes NaN and the list sorts into its input order. */
+function fixPoint(){ return liveFix ? {lat:liveFix.lat, lon:liveFix.lng} : null; }
+
+/* The fix the visible proximity order was computed from, and how far the
+   truck has to move before that order is restated. A mile is roughly a minute
+   of interstate: short enough that the list is never meaningfully wrong,
+   long enough that a moving truck is not rebuilding the panel on every GPS
+   tick and yanking the row under the driver's thumb. Re-sorting on every fix
+   was the obvious implementation and it is the wrong one. */
+var nearestAnchor = null;
+var NEAREST_REFRESH_MI = 1;
+var NEAREST_ON_HINT = 'Nearest first \u2014 tap again for shortest walk';
 
 var LOCATE_KEY = 'wafflepost.locate.v1';
 function storedLocateOff(){
@@ -2439,6 +2510,28 @@ function startWatch(){
     renderLocationDot();
     setLocateState('locked');
     hideLocateErr();
+    /* The first fix after a tap is what actually builds the proximity order -
+       at the moment of the tap there was nothing to measure from - and every
+       fix after it only earns a rebuild by moving NEAREST_REFRESH_MI.
+
+       THE LIST BEFORE THE CAMERA, and the order is load-bearing. render ends
+       on the capped path in syncMapPadding, and HERE's setPadding recomputes
+       the view from the look-at data it has COMMITTED - which discards a
+       setCenter issued moments earlier in the same task and not yet applied.
+       Recentring first therefore silently did nothing: the dot appeared, the
+       list re-sorted, and the map sat on the startup atlas fit. Moving the
+       camera last makes it the final word, which is also the honest reading
+       of what the tap asked for. */
+    if (state.nearest && state.mode==='atlas' && (!nearestAnchor ||
+        wd.haversine(nearestAnchor, fixPoint()) > NEAREST_REFRESH_MI)) {
+      /* No anchor yet means this fix is the one BUILDING the order, so the
+         chip still reads "finding you" over a list that has just been found.
+         Restate it once, here, and not on the mile-by-mile refreshes after -
+         a chip that reappears every minute of driving is noise. */
+      var firstOrder = !nearestAnchor;
+      refreshNearest();
+      if (firstOrder) showLocateHint(NEAREST_ON_HINT);
+    }
     /* The FIRST fix gets the same recentre a second tap would give it.
        Without this the dot lands wherever the map happened to be - which
        after the startup atlas fit is the whole country - and the tap that
@@ -2482,10 +2575,21 @@ function setLocationOff(off){
     if (locateGroup) locateGroup.removeAll();
     setLocateState(null); hideLocateErr();
     showLocateHint('Location off \u2014 tap to turn on');
+    /* The proximity order is built from a position, so switching the position
+       off has to take the order with it - otherwise the list keeps standing
+       in an order it can no longer justify, with "N mi away" measured from a
+       fix that has been deliberately discarded. Back to the walk leaderboard,
+       which needs nothing but the atlas. */
+    state.nearest = false; nearestAnchor = null;
+    render();
   } else {
     hideLocateErr();
     showLocateHint('Location on \u2014 hold to turn off');
     locatePending = true;
+    /* Turning location back on is the same "find me" tap as any other, so it
+       asks for the same order. The fix has not arrived yet; render will pick
+       it up when it does. */
+    state.nearest = true;
     startWatch();
   }
 }
@@ -2508,14 +2612,39 @@ $('locateBtn').addEventListener('pointerdown', function(e){
 /* A long press on touch otherwise raises the OS callout menu over the button. */
 $('locateBtn').addEventListener('contextmenu', function(e){ e.preventDefault(); });
 
+/* A re-sort is not a new result set and must not behave like one. render
+   rebuilds panelBody wholesale, which throws the scroll position back to the
+   top - right when a filter changed and the driver is now looking at
+   different exits, wrong when the same exits have merely shuffled under a
+   thumb that is halfway down them. */
+function refreshNearest(){
+  var body = $('panelBody'), top = body.scrollTop;
+  render();
+  body.scrollTop = top;
+}
+
+/* The tap TOGGLES the order rather than only ever imposing it. One control
+   that can get you into a state and cannot get you out of it is the thing to
+   avoid here: the alternative was making the driver switch location off
+   entirely to see the walk leaderboard again, which is a heavy gesture to
+   demand for a sort. The chip names the order that is now showing and, on
+   the way in, how to undo it - the row figures carry it from there. */
+function setNearest(on){
+  state.nearest = on;
+  if (!on) nearestAnchor = null;
+  showLocateHint(on ? (liveFix ? NEAREST_ON_HINT : 'Nearest first \u2014 finding you\u2026')
+                    : 'Shortest walk first \u2014 hold to turn location off');
+  refreshNearest();
+}
+
 $('locateBtn').addEventListener('click', function(){
   if (holdFired) { holdFired = false; return; }
   if (locationOff) { setLocationOff(false); return; }
   hideLocateErr();
+  setNearest(!state.nearest);
   if (liveFix) {
     map.setCenter({lat:liveFix.lat, lng:liveFix.lng});
     map.setZoom(Math.max(map.getZoom(), 11));
-    showLocateHint('Hold to turn location off');
     return;
   }
   locatePending = true;
