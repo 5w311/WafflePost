@@ -515,26 +515,31 @@ html[data-theme=dark] .mile{color:#E8B96B}
    open stop sheet, and back down when the panel collapses - one variable, no
    second set of offsets to keep in step.
 
-   BOTTOM LEFT, sharing HERE's attribution baseline and pushed sideways past
-   the logo rather than lifted over it. Three positions, and the reasons are
-   worth keeping: the first cut sat ON the logo, which is licence-required
-   attribution and not a cosmetic problem; the second cleared it by rising
-   --attrib-h, which worked and left the button floating a band above every
-   other control on the map, reading as debris. Going sideways instead puts
-   it on a row the eye already scans. --attrib-w is the logo's measured right
-   edge, so a wider logo pushes the button along rather than under it -
-   measured, because HERE sizes that logo and we do not.
+   BOTTOM LEFT CORNER, OVER HERE'S LOGO, AND THAT IS DELIBERATE - do not
+   "fix" it. Four positions across three releases, and the history is the
+   only thing that stops this being relitigated: v4.12.0 put it on the logo
+   by accident, then lifted it clear with --attrib-h, which worked and left
+   the button floating a band above every other control on the map; v4.13.0
+   pushed it sideways past the logo with --attrib-w, which read as detached
+   from the corner it belongs in. v4.14.0 puts it back in the corner ON the
+   logo, by explicit request, with the trade-off understood: HERE's logo is
+   licence-required attribution and this covers most of it. The measurements
+   that used to keep it clear (--attrib-h, --attrib-w) are gone rather than
+   left unread - see syncChromeH, and see git if the clearance is ever wanted
+   back.
 
-   z-index 600 is level with HERE's own controls: above the map and the
-   panel, below the sheet (900) and the popover (950), which is right - a
-   driver reading a stop should not have a floating button over the text.
+   z-index 601 rather than 600, so "on top of the logo" is stated rather than
+   inherited from the fact that this element happens to follow #map in the
+   markup. Still below the chips (601, later siblings), the sheet (900) and
+   the popover (950) - a driver reading a stop should not have a floating
+   button over the text.
 
    Atlas only. Route has its own one-shot on the pickup field, and two
    different location affordances on one screen is how a driver ends up
    tapping the wrong one. */
-#locateBtn{position:absolute;left:calc(var(--attrib-w,64px) + 10px);
+#locateBtn{position:absolute;left:10px;
   bottom:calc(var(--chrome-h, var(--panel-h,0px)) + 16px);
-  z-index:600;width:40px;height:40px;border-radius:50%;padding:0;
+  z-index:601;width:40px;height:40px;border-radius:50%;padding:0;
   background:var(--surface);border:1px solid var(--line);color:var(--sub);
   display:grid;place-items:center;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.18);
   -webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
@@ -859,27 +864,27 @@ var __mods={};
 function require(p){return __mods[p.replace(/^\.\//,'').replace(/\.js$/,'')];}
 var module={exports:{}};
 </script>
-<script src="lib/waffledist.js?v=4.13.0"></script>
+<script src="lib/waffledist.js?v=4.14.0"></script>
 <script>__mods.waffledist=module.exports;module={exports:{}};</script>
-<script src="lib/atlasfilter.js?v=4.13.0"></script>
+<script src="lib/atlasfilter.js?v=4.14.0"></script>
 <script>__mods.atlasfilter=module.exports;module={exports:{}};</script>
-<script src="lib/routewaffles.js?v=4.13.0"></script>
+<script src="lib/routewaffles.js?v=4.14.0"></script>
 <script>__mods.routewaffles=module.exports;module={exports:{}};</script>
-<script src="lib/vehicleprofile.js?v=4.13.0"></script>
+<script src="lib/vehicleprofile.js?v=4.14.0"></script>
 <script>__mods.vehicleprofile=module.exports;module={exports:{}};</script>
-<script src="lib/triptext.js?v=4.13.0"></script>
+<script src="lib/triptext.js?v=4.14.0"></script>
 <script>__mods.triptext=module.exports;module={exports:{}};</script>
-<script src="lib/escape.js?v=4.13.0"></script>
+<script src="lib/escape.js?v=4.14.0"></script>
 <script>__mods.escape=module.exports;module={exports:{}};</script>
-<script src="lib/flexible-polyline.js?v=4.13.0"></script>
+<script src="lib/flexible-polyline.js?v=4.14.0"></script>
 <script>__mods['flexible-polyline']=module.exports;module={exports:{}};</script>
-<script src="lib/autosuggest.js?v=4.13.0"></script>
+<script src="lib/autosuggest.js?v=4.14.0"></script>
 <script>__mods.autosuggest=module.exports;module={exports:{}};</script>
-<script src="lib/location.js?v=4.13.0"></script>
+<script src="lib/location.js?v=4.14.0"></script>
 <script>__mods.location=module.exports;module={exports:{}};</script>
-<script src="lib/routeoptions.js?v=4.13.0"></script>
+<script src="lib/routeoptions.js?v=4.14.0"></script>
 <script>__mods.routeoptions=module.exports;module={exports:{}};</script>
-<script src="lib/baselayer.js?v=4.13.0"></script>
+<script src="lib/baselayer.js?v=4.14.0"></script>
 <script>__mods.baselayer=module.exports;module={exports:{}};</script>
 
 <script>
@@ -931,7 +936,7 @@ var HERE_API_KEY = '7RDploUiahAnm08IZA9X7YSbb0Qh99pvqV2NCNQX_Hg';
    APP_VERSION - the code. Shown in the legend card. Bumped every change,
                 and stamped onto every lib/ URL as a cache-buster. */
 var ATLAS_REV   = 'Atlas Rev 13-2026';
-var APP_VERSION = '4.13.0';
+var APP_VERSION = '4.14.0';
 
 /* ===== DATA ==========================================================
    61 rows - 60 walkable exits plus one honorary - carrying 73 pairings,
@@ -1249,23 +1254,14 @@ function syncChromeH(){
   var sh = (s && s.classList.contains('show'))
          ? Math.round(s.getBoundingClientRect().height) : 0;
   document.documentElement.style.setProperty('--chrome-h', Math.max(ph, sh)+'px');
-  /* HERE's attribution band - the logo bottom-left, the copyright bottom-right -
-     sits directly above --chrome-h and must never be covered. That is a licence
-     condition, not decoration, and the first cut of the locator button landed
-     squarely on the logo. Measured rather than hardcoded at the 59px it happens
-     to be here, because the copyright line wraps on a narrow screen and a magic
-     number would put the button back on top of it. */
-  var imp = document.querySelector('.H_imprint');
-  document.documentElement.style.setProperty('--attrib-h',
-    (imp ? Math.round(imp.getBoundingClientRect().height) : 0) + 'px');
-  /* And how far right the logo reaches, which is what the locator clears. The
-     stage is the offset parent, so this is measured relative to it rather than
-     to the viewport. */
-  var lg = document.querySelector('.H_logo'), st = document.querySelector('.stage');
-  if (lg && st) {
-    document.documentElement.style.setProperty('--attrib-w',
-      Math.round(lg.getBoundingClientRect().right - st.getBoundingClientRect().left) + 'px');
-  }
+  /* --attrib-h and --attrib-w used to be measured here: the height of HERE's
+     attribution band and the right edge of its logo, so the locator button
+     could be placed clear of both rather than over a hardcoded 59px that a
+     wrapped copyright line would break. v4.14.0 puts the button ON the logo
+     by explicit request, so nothing reads either number any more and both
+     are gone. A measurement nothing consumes is worse than no measurement -
+     it reads as a live constraint while enforcing nothing, and the next
+     person to touch this file would trust it. */
 }
 
 /* HERE's canvas only re-measures on a real window resize or an explicit
@@ -2441,7 +2437,8 @@ function fixPoint(){ return liveFix ? {lat:liveFix.lat, lon:liveFix.lng} : null;
    was the obvious implementation and it is the wrong one. */
 var nearestAnchor = null;
 var NEAREST_REFRESH_MI = 1;
-var NEAREST_ON_HINT = 'Nearest first \u2014 tap again for shortest walk';
+var NEAREST_ON_HINT = 'Nearest first';
+var FINDING_HINT    = 'Nearest first \u2014 finding you\u2026';
 
 var LOCATE_KEY = 'wafflepost.locate.v1';
 function storedLocateOff(){
@@ -2525,12 +2522,18 @@ function startWatch(){
     if (state.nearest && state.mode==='atlas' && (!nearestAnchor ||
         wd.haversine(nearestAnchor, fixPoint()) > NEAREST_REFRESH_MI)) {
       /* No anchor yet means this fix is the one BUILDING the order, so the
-         chip still reads "finding you" over a list that has just been found.
-         Restate it once, here, and not on the mile-by-mile refreshes after -
-         a chip that reappears every minute of driving is noise. */
-      var firstOrder = !nearestAnchor;
+         chip may still be reading "finding you" over a list that has just
+         been found. Answer it - but ONLY if that is what it is still saying,
+         and only while it is still on screen. Switching location on shows
+         "hold to turn off", which is the one place that gesture is taught and
+         which a fix arriving a second later would otherwise wipe; and a chip
+         that has already timed out should stay gone rather than pop back up
+         to announce something the rows are already showing. */
+      var firstOrder = !nearestAnchor, hintEl = $('locateHint');
       refreshNearest();
-      if (firstOrder) showLocateHint(NEAREST_ON_HINT);
+      if (firstOrder && !hintEl.hidden && hintEl.textContent === FINDING_HINT) {
+        showLocateHint(NEAREST_ON_HINT);
+      }
     }
     /* The FIRST fix gets the same recentre a second tap would give it.
        Without this the dot lands wherever the map happened to be - which
@@ -2574,14 +2577,18 @@ function setLocationOff(off){
     liveFix = null;
     if (locateGroup) locateGroup.removeAll();
     setLocateState(null); hideLocateErr();
-    showLocateHint('Location off \u2014 tap to turn on');
     /* The proximity order is built from a position, so switching the position
        off has to take the order with it - otherwise the list keeps standing
        in an order it can no longer justify, with "N mi away" measured from a
        fix that has been deliberately discarded. Back to the walk leaderboard,
-       which needs nothing but the atlas. */
-    state.nearest = false; nearestAnchor = null;
-    render();
+       which needs nothing but the atlas.
+
+       This is the ONLY route back to that order, so it is the only chip that
+       names it. "tap to turn on" is not lost with it: the button's own title
+       and aria-label say exactly that for as long as it is off, where a chip
+       that times out after four seconds does not. */
+    setNearest(false);
+    showLocateHint('Location off \u2014 shortest walk first');
   } else {
     hideLocateErr();
     showLocateHint('Location on \u2014 hold to turn off');
@@ -2623,17 +2630,23 @@ function refreshNearest(){
   body.scrollTop = top;
 }
 
-/* The tap TOGGLES the order rather than only ever imposing it. One control
-   that can get you into a state and cannot get you out of it is the thing to
-   avoid here: the alternative was making the driver switch location off
-   entirely to see the walk leaderboard again, which is a heavy gesture to
-   demand for a sort. The chip names the order that is now showing and, on
-   the way in, how to undo it - the row figures carry it from there. */
+/* ONE ORDER PER LOCATION STATE, and the tap does not toggle it. v4.13.0 made
+   the tap flip between nearest-first and the walk leaderboard, on the
+   reasoning that a control which can get you into a state should get you out
+   of it. That made the tap mean two different things depending on a state the
+   button does not show, so the same gesture recentred and re-sorted one time
+   and un-sorted the next. Location on means nearest first; location off means
+   the walk leaderboard. The gesture that changes the order is the gesture
+   that changes what the order is measured from, which is the only honest
+   pairing available - and it is why the hint no longer offers a second tap as
+   the way back.
+
+   No hint from here: every caller knows something this does not - whether a
+   fix exists yet, whether the driver just switched location off - and says
+   it, rather than this guessing from state. */
 function setNearest(on){
   state.nearest = on;
   if (!on) nearestAnchor = null;
-  showLocateHint(on ? (liveFix ? NEAREST_ON_HINT : 'Nearest first \u2014 finding you\u2026')
-                    : 'Shortest walk first \u2014 hold to turn location off');
   refreshNearest();
 }
 
@@ -2641,12 +2654,17 @@ $('locateBtn').addEventListener('click', function(){
   if (holdFired) { holdFired = false; return; }
   if (locationOff) { setLocationOff(false); return; }
   hideLocateErr();
-  setNearest(!state.nearest);
+  setNearest(true);
+  /* THE LIST BEFORE THE CAMERA, same as the watch callback: setNearest ends
+     in render, render ends on the capped path in syncMapPadding, and HERE's
+     setPadding discards a setCenter it has not applied yet. */
   if (liveFix) {
+    showLocateHint(NEAREST_ON_HINT);
     map.setCenter({lat:liveFix.lat, lng:liveFix.lng});
     map.setZoom(Math.max(map.getZoom(), 11));
     return;
   }
+  showLocateHint(FINDING_HINT);
   locatePending = true;
   startWatch();
 });

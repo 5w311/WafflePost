@@ -376,8 +376,38 @@ t.eq(/sort\(function\(a,b\)\{[^}]*haversine/.test(src), false,
 // in proximity order with "N mi away" measured from a fix that was
 // deliberately discarded is the app stating something it no longer knows.
 var offSrc2 = (src.match(/function setLocationOff\(off\)\{[\s\S]*?\n\}/) || [''])[0];
-t.eq(/state\.nearest = false; nearestAnchor = null;/.test(offSrc2), true,
+t.eq(/setNearest\(false\);/.test(offSrc2), true,
      'switching location off restores the walk leaderboard');
+// ---- one order per location state (v4.14.0) ----
+// The tap does not toggle the order. v4.13.0 flipped it, which made the same
+// gesture recentre-and-sort one time and un-sort the next, keyed on a state
+// the button does not show. Location on means nearest first; location off
+// means the walk leaderboard, and switching off is the only way back.
+var clickSrc = (src.match(/\$\('locateBtn'\)\.addEventListener\('click'[\s\S]*?\n\}\);/) || [''])[0];
+t.eq(/setNearest\(true\);/.test(clickSrc), true, 'the tap imposes the order');
+t.eq(/setNearest\(!state\.nearest\)/.test(src), false, 'and never flips it');
+// Whose chip says what: the walk order is named ONLY where it can be reached
+// from, which is switching location off.
+// Scoped to the WHOLE set of chip strings, not to the click handler: the
+// wording lives in a constant, so a handler-scoped check passes while the
+// constant still says "tap again for shortest walk". That gap was found by
+// mutating the constant and watching this suite stay green.
+var hintLits = (src.match(/showLocateHint\('((?:[^'\\]|\\.)*)'\)/g) || [])
+  .map(function (m) { return m.slice("showLocateHint('".length, -2); });
+['NEAREST_ON_HINT', 'FINDING_HINT'].forEach(function (name) {
+  var v = (src.match(new RegExp('var ' + name + "\\s*=\\s*'((?:[^'\\\\]|\\\\.)*)'")) || [])[1];
+  if (v != null) hintLits.push(v);
+});
+t.eq(hintLits.length >= 4, true, 'the chip strings were actually found');
+var walkHints = hintLits.filter(function (h) { return /shortest walk/i.test(h); });
+t.eq(walkHints.length, 1, 'exactly one chip names the walk order');
+t.eq(/location off/i.test(walkHints[0] || ''), true,
+     'and it is the location-off chip - the only state that order can be reached from');
+// setNearest shows no chip of its own: both callers know something it does
+// not - whether a fix exists, whether the driver just switched off.
+var setNearestSrc = (src.match(/function setNearest\(on\)\{[\s\S]*?\n\}/) || [''])[0];
+t.eq(/showLocateHint/.test(setNearestSrc), false,
+     'setNearest leaves the wording to its callers');
 // THE LIST BEFORE THE CAMERA. render ends on the capped path in
 // syncMapPadding, and HERE's setPadding recomputes the view from its
 // COMMITTED look-at data - discarding a setCenter issued moments earlier in
@@ -393,13 +423,24 @@ t.eq(/var NEAREST_REFRESH_MI = \d+;/.test(src), true,
      'a distance threshold gates the re-sort');
 t.eq(/function refreshNearest\(\)\{[\s\S]*?scrollTop = top;/.test(src), true,
      'a re-sort keeps the scroll position: the rows shuffled, they did not change');
-// The button sits past HERE's logo on measured geometry. The logo is
-// licence-required attribution and HERE sizes it, not us - a literal offset
-// here is a covered logo the first time that changes.
-t.eq(/#locateBtn\{position:absolute;left:calc\(var\(--attrib-w/.test(src), true,
-     'the locator is placed from the measured logo width');
-t.eq((src.match(/setProperty\('--attrib-w'/g) || []).length, 1,
-     '--attrib-w is written in exactly one place');
+// ---- the locator overlays HERE's logo, deliberately (v4.14.0) ----
+// This inverts what v4.12.0 and v4.13.0 pinned, and the inversion is the
+// point: covering that logo is a licence trade-off the owner asked for, so
+// it is asserted rather than merely allowed. A future change that quietly
+// restores the clearance should fail here and be argued for, not land as a
+// tidy-up.
+t.eq(/#locateBtn\{position:absolute;left:10px;/.test(src), true,
+     'the locator sits in the corner, over the logo, by explicit request');
+// z-index STATED, not inherited from the fact that #locateBtn happens to
+// follow #map in the markup. Reordering the stage would silently put the
+// logo back on top of it.
+t.eq(/#locateBtn\{[^}]*z-index:601/.test(src), true,
+     'and is on top by declared z-index rather than by DOM order');
+// The clearance measurements are GONE, not left unread. A measurement
+// nothing consumes reads as a live constraint while enforcing nothing.
+t.eq(/setProperty\('--attrib-[wh]'/.test(src), false,
+     'no attribution measurement survives with nothing reading it');
+t.eq(/var\(--attrib-[wh]/.test(src), false, 'and nothing reads one');
 
 // max(), not calc(). calc(10px + inset) stacks a gap on top of an inset that
 // exists to BE that gap - 69px of top padding on a Dynamic Island phone.
