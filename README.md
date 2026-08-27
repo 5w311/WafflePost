@@ -837,8 +837,8 @@ address starts with a house number and names the row's own state, and that
 leaderboard.
 
 `run.js` prints one `ok <name> N passed` line per file and then `all green`,
-or names the files that failed. It does not sum the assertions — at v4.13.0
-they come to 1,364 across twelve files, added up from those lines.
+or names the files that failed. It does not sum the assertions — at v4.14.0
+they come to 1,372 across twelve files, added up from those lines.
 
 ## Two version strings, on purpose
 
@@ -853,7 +853,7 @@ Same reasoning as FuelPost, different perishable thing:
   stopped existing; the requirement was "always on screen", not "in the
   header", and the panel tab is on screen in both modes whether the panel is
   open or collapsed. Bump only when the rows are re-audited.
-- **`APP_VERSION`** (`4.13.0`) — the code. Shown in the **legend card**.
+- **`APP_VERSION`** (`4.14.0`) — the code. Shown in the **legend card**.
   Bumped for every shipped change, and stamped onto every `lib/` URL as a
   cache-buster.
 
@@ -873,6 +873,54 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v4.14.0
+
+**The locator button sits in the bottom-left corner, over HERE's logo.** This
+is deliberate and it is a trade-off, recorded here because it will look like a
+regression to anyone who reads the two entries below: HERE's logo is
+licence-required attribution, and this covers most of it. The owner asked for
+the corner knowing that. Four positions across three releases — on the logo by
+accident, lifted clear with `--attrib-h`, pushed sideways with `--attrib-w`,
+and now back in the corner on purpose — and the code says so at the CSS rule
+so nobody "fixes" it. The z-index is *stated* (601) rather than inherited from
+the fact that the button happens to follow `#map` in the markup, and the
+browser harness asserts what `elementFromPoint` actually returns at the
+overlap rather than trusting the declaration.
+
+**Both clearance measurements are gone, not left unread.** `--attrib-h` and
+`--attrib-w` measured the attribution band's height and the logo's right edge
+so the button could be placed clear of them. Nothing reads either now.
+A measurement nothing consumes is worse than no measurement — it reads as a
+live constraint while enforcing nothing, and the next person to touch
+`syncChromeH` would trust it.
+
+**The tap no longer toggles the sort.** v4.13.0 made a second tap flip back to
+the walk leaderboard, on the reasoning that a control which can get you into a
+state should get you out of it. That was wrong in practice: it made the same
+gesture recentre-and-sort one time and un-sort the next, keyed on a state the
+button does not display. Now there is one order per location state — location
+on means nearest first, location off means the walk leaderboard — and the
+gesture that changes the order is the gesture that changes what the order is
+*measured from*, which is the only honest pairing available.
+
+**One chip names the walk order, and it is the one you can reach it from.**
+`Nearest first` on the tap; `Location off — shortest walk first` on the hold.
+"tap to turn on" is not lost with it — the button's own title and aria-label
+say exactly that for as long as it is off, where a chip that times out after
+four seconds does not. The "finding you…" chip is now replaced by
+`Nearest first` only if it is still on screen and still saying that, so a fix
+arriving a second after you switch location on cannot wipe the one chip that
+teaches the hold gesture.
+
+**A test that passed for the wrong reason, found by mutating it.** The check
+that the tap's chip never offers the walk order was scoped to the click
+handler — but the wording lives in a constant, so putting `tap again for
+shortest walk` back left the suite green. It now collects every chip string in
+the file, constants resolved, and asserts that exactly one mentions the walk
+order and that it is the location-off one. Four of the eight new assertions
+were mutation-tested; this is the one that failed the mutation and had to be
+rewritten.
 
 ### v4.13.0
 
