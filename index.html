@@ -874,27 +874,27 @@ var __mods={};
 function require(p){return __mods[p.replace(/^\.\//,'').replace(/\.js$/,'')];}
 var module={exports:{}};
 </script>
-<script src="lib/waffledist.js?v=4.16.0"></script>
+<script src="lib/waffledist.js?v=4.17.0"></script>
 <script>__mods.waffledist=module.exports;module={exports:{}};</script>
-<script src="lib/atlasfilter.js?v=4.16.0"></script>
+<script src="lib/atlasfilter.js?v=4.17.0"></script>
 <script>__mods.atlasfilter=module.exports;module={exports:{}};</script>
-<script src="lib/routewaffles.js?v=4.16.0"></script>
+<script src="lib/routewaffles.js?v=4.17.0"></script>
 <script>__mods.routewaffles=module.exports;module={exports:{}};</script>
-<script src="lib/vehicleprofile.js?v=4.16.0"></script>
+<script src="lib/vehicleprofile.js?v=4.17.0"></script>
 <script>__mods.vehicleprofile=module.exports;module={exports:{}};</script>
-<script src="lib/triptext.js?v=4.16.0"></script>
+<script src="lib/triptext.js?v=4.17.0"></script>
 <script>__mods.triptext=module.exports;module={exports:{}};</script>
-<script src="lib/escape.js?v=4.16.0"></script>
+<script src="lib/escape.js?v=4.17.0"></script>
 <script>__mods.escape=module.exports;module={exports:{}};</script>
-<script src="lib/flexible-polyline.js?v=4.16.0"></script>
+<script src="lib/flexible-polyline.js?v=4.17.0"></script>
 <script>__mods['flexible-polyline']=module.exports;module={exports:{}};</script>
-<script src="lib/autosuggest.js?v=4.16.0"></script>
+<script src="lib/autosuggest.js?v=4.17.0"></script>
 <script>__mods.autosuggest=module.exports;module={exports:{}};</script>
-<script src="lib/location.js?v=4.16.0"></script>
+<script src="lib/location.js?v=4.17.0"></script>
 <script>__mods.location=module.exports;module={exports:{}};</script>
-<script src="lib/routeoptions.js?v=4.16.0"></script>
+<script src="lib/routeoptions.js?v=4.17.0"></script>
 <script>__mods.routeoptions=module.exports;module={exports:{}};</script>
-<script src="lib/baselayer.js?v=4.16.0"></script>
+<script src="lib/baselayer.js?v=4.17.0"></script>
 <script>__mods.baselayer=module.exports;module={exports:{}};</script>
 
 <script>
@@ -946,7 +946,7 @@ var HERE_API_KEY = '7RDploUiahAnm08IZA9X7YSbb0Qh99pvqV2NCNQX_Hg';
    APP_VERSION - the code. Shown in the legend card. Bumped every change,
                 and stamped onto every lib/ URL as a cache-buster. */
 var ATLAS_REV   = 'Atlas Rev 13-2026';
-var APP_VERSION = '4.16.0';
+var APP_VERSION = '4.17.0';
 
 /* ===== DATA ==========================================================
    61 rows - 60 walkable exits plus one honorary - carrying 73 pairings,
@@ -1005,18 +1005,24 @@ var APP_VERSION = '4.16.0';
           Shown beside the operator name since v4.15.0: the walk starts at
           the truck stop, so the card gave the wrong half of the pairing
           while it showed only the Waffle House's address.
-          66 of 69 rows carry one. The 37 added in v4.15.0 each had to pass
+          ALL 69 rows carry one. The 37 added in v4.15.0 each had to pass
           three independent checks - a bounded HERE place search scored
           against the audited `feet`, blind web research that never saw it,
           and a geocode of the agreed line back to a distance - because the
           first method alone measured 87% right on the 29 rows that already
           had an audited address, and one wrong address in eight is the
           failure the 09-2026 re-audit purged twelve rows for.
-          THREE ROWS DELIBERATELY HAVE NONE. Orange TX, Winnie TX and
-          DeFuniak Springs FL each produced a well-sourced address that
-          CONTRADICTS its own row - see scripts/tsaddr-report.txt. That is a
-          finding about those rows, not a gap in the research, and a blank
-          is the honest rendering of it.
+          The last three - Orange TX, Winnie TX, DeFuniak Springs FL - were
+          held through v4.16.0 because each produced a well-sourced address
+          that appeared to contradict its own row. v4.17.0 established all
+          three, and in every case the ROW was right and a geocoder was
+          wrong: a correct postal address indexed 674 to 3,043 ft from where
+          the business demonstrably is. They are identified by phone and fax
+          in OSM, by a state liquor licence, by CAT Scale's own locator, and
+          by corporate listings from tenants inside the buildings.
+          scripts/tsaddr-verify.js re-checks every address against HERE both
+          ways and names those three as exempt from its distance gate, with
+          an operator POI standing in for it.
           scripts/remeasure.js geocodes it to re-derive feet; a row
           without one keeps its shipped figure, labelled stale in the
           remeasure report rather than silently trusted.
@@ -1042,12 +1048,12 @@ var DATA = [
 {feet:205,corridor:'I-12',state:'LA',exit:'40',city:'Hammond',ts:'Pilot',brand:'PIL',lat:30.47809,lon:-90.45646,addr:'2101 SW Railroad Ave, Hammond, LA 70403',tsAddr:'2111 SW Railroad Ave, Hammond, LA 70403',flags:['diner'],alt:[{ts:'Petro Stopping Center #310',feet:506,brand:'PET',tsAddr:'2100 SW Railroad Ave, Hammond, LA 70403'}],note:'Invisible to every exit guide — they all list the Thomas St store two miles off. A Pilot night clerk named Lucas is the reason this row exists.'},
 {feet:238,corridor:'I-10',state:'FL',exit:'142',city:'Marianna',ts:'Pilot',brand:'PIL',lat:30.72596,lon:-85.18602,addr:'2215 Highway 71, Marianna, FL 32448-2541',tsAddr:'2209 Highway 71, Marianna, FL 32448',flags:[],note:'Pilot is 2209 FL-71, the store is 2215. Next door.'},
 {feet:246,corridor:'I-520',state:'GA',exit:'9',city:'Augusta',ts:'C Mart',brand:'IND',lat:33.39936,lon:-82.00515,addr:'3408 Mike Padgett Hwy, Augusta, GA 30906',tsAddr:'3403 Mike Padgett Hwy, Augusta, GA 30906',flags:['scale','smalllot','caution'],note:'\u00245 to park overnight, no showers, and under twenty spaces. The store closes at midnight, and does not open until 8am at weekends. Reviews warn NOT to U-turn at the light to get back on I-520 \u2014 drivers get ticketed for it \u2014 and say to turn around behind the Circle K instead. One states the walk plainly: the lot is very limited, but you can go across the street to a Waffle House. This is the shortest walk on the atlas to a paid, showerless, midnight-closing stop.'},  // First three-digit corridor on the atlas. uniq() sorts corridors by +slice(2), so I-520 lands after I-95 rather than near I-5 - numerically correct, deliberately not special-cased.
-{feet:252,corridor:'I-10',state:'TX',exit:'877',city:'Orange',ts:'Pilot',brand:'PIL',lat:30.11405,lon:-93.82053,addr:'2310 Highway 62 S, Orange, TX 77630-8321',flags:['diner'],note:'There is a Denny\u2019s inside the Pilot. Drivers walk 900 ft past it anyway.'},  // Directories disagree between exit 872 and 877 for this stretch. Whichever number they print, Flying J #735 is at a separate interchange 3-4 mi west and is NOT walkable from this store; only the Pilot shares the interchange.
+{feet:252,corridor:'I-10',state:'TX',exit:'877',city:'Orange',ts:'Pilot',brand:'PIL',lat:30.11405,lon:-93.82053,addr:'2310 Highway 62 S, Orange, TX 77630-8321',tsAddr:'2205 Highway 62 S, Orange, TX 77630',flags:['diner'],note:'There is a Denny\u2019s inside the Pilot. Drivers walk 900 ft past it anyway.'},  // Directories disagree between exit 872 and 877 for this stretch. Whichever number they print, Flying J #735 is at a separate interchange 3-4 mi west and is NOT walkable from this store; only the Pilot shares the interchange.
 {feet:272,corridor:'I-80',state:'OH',exit:'234',city:'Hubbard',ts:'Flying J #697',brand:'FJ',lat:41.18165,lon:-80.56990,addr:'2284 Gala St, Hubbard, OH 44425-3202',tsAddr:'2226 N Main St, Hubbard, OH 44425',flags:[],note:''},
 {feet:301,corridor:'I-75',state:'OH',exit:'36',city:'Franklin',ts:'Pilot',brand:'PIL',lat:39.54266,lon:-84.29161,addr:'6840 OH-123, Franklin, OH 45005',tsAddr:'6830 Franklin Lebanon Rd, Franklin, OH 45005',flags:[],note:''},
 {feet:303,corridor:'I-44',state:'MO',exit:'80B',city:'Springfield',ts:"Rapid Robert's Travel Plaza",brand:'IND',lat:37.25389,lon:-93.26542,addr:'3135 N Glenstone Ave, Springfield, MO 65803',tsAddr:'3165 N Glenstone Ave, Springfield, MO 65803',flags:['scale','smalllot','caution'],note:'OVERNIGHT PARKING IS PROHIBITED \u2014 fine for a break, not for the night. The store runs 5am to 11:30pm. A driver review says the ban plainly and sends you to the Flying J at exit 72 for a full-service stop; another confirms the walk. The shortest walk on this atlas that you cannot sleep at.'},
 {feet:322,corridor:'I-40',state:'AR',exit:'142',city:'Maumelle',ts:'Morgan SuperStop',brand:'IND',lat:34.88456,lon:-92.38292,addr:'20514 Highway 365 N, North Little Rock, AR 72113',tsAddr:'20515 Highway 365 N, Maumelle, AR 72113',flags:['scale','smalllot','caution'],note:'PAY BEFORE YOU KNOW YOU HAVE A SPACE. The lot is split between company-leased, paid and free spaces, and drivers report paying twelve dollars and then finding nothing open; one review says flatly that the whole lot is leased to another company so it is not really a truck stop. Others park fine. Same shape as Marshall TX. CAT scale on site.'},  // Arkansas returns after Russellville was purged. City is Maumelle, mailing address North Little Rock - the same split Priceville/Decatur has.
-{feet:336,corridor:'I-10',state:'TX',exit:'829',city:'Winnie',ts:'JP Truck Stop',brand:'IND',lat:29.83065,lon:-94.38455,addr:'243 Spur 5, Winnie, TX 77665-7308',flags:['scale','free'],alt:[{ts:'Bingo Travel Plaza',feet:935,brand:'IND'}],note:'Bingo next door has boudin in the warmers and showers its reviewers rate over the majors.'},
+{feet:336,corridor:'I-10',state:'TX',exit:'829',city:'Winnie',ts:'JP Truck Stop',brand:'IND',lat:29.83065,lon:-94.38455,addr:'243 Spur 5, Winnie, TX 77665-7308',tsAddr:'45950 Interstate 10, Winnie, TX 77665',flags:['scale','free'],alt:[{ts:'Bingo Travel Plaza',feet:935,brand:'IND'}],note:'Bingo next door has boudin in the warmers and showers its reviewers rate over the majors.'},
 {feet:347,corridor:'I-65',state:'KY',exit:'121',city:'Brooks',ts:'Pilot Travel Center #356',brand:'PIL',lat:38.06160,lon:-85.70231,addr:'2021 E Blue Lick Rd, Shepherdsville, KY 40165',tsAddr:'2050 E Blue Lick Rd, Shepherdsville, KY 40165',flags:['scale'],note:'About 90 spaces, CAT scale, Subway and Taco Bell on site.'},  // EXIT 121, and NOT the Shepherdsville exit 117 the 09-2026 re-audit purged as a failed row. Four miles apart, same mailing town. Listed under Brooks so the two are not reconciled later.
 {feet:383,corridor:'I-10',state:'AL',exit:'13',city:'Theodore',ts:'Pilot',brand:'PIL',lat:30.56010,lon:-88.20673,addr:'7031 Theodore Dawes Rd, Theodore, AL 36582-4077',tsAddr:'6955 Theodore Dawes Rd, Theodore, AL 36582',flags:['scale','free'],note:''},  // Pilot store #302, not #508 - check the locator against the right number before deciding this row is wrong.
 {feet:385,corridor:'I-81',state:'VA',exit:'98',city:'Dublin',ts:'A-Plus Dublin Travel Plaza',brand:'IND',lat:37.08237,lon:-80.68993,addr:'4614 Cleburne Blvd, Dublin, VA 24084',tsAddr:'4625 Cleburne Blvd, Dublin, VA 24084',flags:['smalllot'],note:'About 25 truck spaces, two showers, laundry, and a Walmart next door that also allows truck parking. A driver review calls it a hidden gem. Showers are five dollars and the recurring complaint is that they are not clean.'},  // NAME TRAP. The adjacent business at 4622 Cleburne trades as Liberty and is a 7-Eleven fuel station, NOT the truck stop - same phone, same site, different establishment. An earlier draft named Liberty and was wrong. The parking and showers are A-Plus.
@@ -1069,7 +1075,7 @@ var DATA = [
 {feet:618,corridor:'I-75',state:'GA',exit:'11',city:'Valdosta',ts:'Pilot',brand:'PIL',lat:30.75253,lon:-83.27228,addr:'3487 Madison Hwy, Valdosta, GA 31601-8634',tsAddr:'3460 Madison Hwy, Valdosta, GA 31601',flags:['limited'],note:'Reviews report delivery-only hours at this store.'},
 {feet:636,corridor:'I-95',state:'FL',exit:'129',city:'Fort Pierce',ts:"Love's",brand:'LOV',lat:27.41228,lon:-80.39660,addr:'7147 Okeechobee Rd, Fort Pierce, FL 34945-2603',tsAddr:'7150 Okeechobee Rd, Fort Pierce, FL 34945',flags:[],alt:[{ts:'Pilot',feet:1279,brand:'PIL'}],note:'A second Waffle House sits right at the ramp.'},
 {feet:646,corridor:'I-20',state:'GA',exit:'114',city:'Madison',ts:'TA',brand:'TA',lat:33.55181,lon:-83.47304,addr:'2050 Eatonton Rd, Madison, GA 30650-5000',tsAddr:'2021 Eatonton Rd, Madison, GA 30650',flags:[],alt:[{ts:'Pilot',feet:3643,brand:'PIL'}],note:''},
-{feet:678,corridor:'I-10',state:'FL',exit:'70',city:'DeFuniak Springs',ts:"Love's",brand:'LOV',lat:30.73580,lon:-86.34972,addr:'17837 ST HWY 285 S, Defuniak Springs, FL 32435',flags:[],note:'Two Waffle Houses at this exit; the Love\u2019s pairs with the farther one.'},
+{feet:678,corridor:'I-10',state:'FL',exit:'70',city:'DeFuniak Springs',ts:"Love's",brand:'LOV',lat:30.73580,lon:-86.34972,addr:'17837 ST HWY 285 S, Defuniak Springs, FL 32435',tsAddr:'17750 State Highway 285 S, DeFuniak Springs, FL 32435',flags:[],note:'Two Waffle Houses at this exit; the Love\u2019s pairs with the farther one.'},
 {feet:687,corridor:'I-85',state:'GA',exit:'149',city:'Commerce',ts:'TA',brand:'TA',lat:34.25187,lon:-83.46108,addr:'30789 US-441 S, Commerce, GA 30529-6654',tsAddr:'30732 Highway 441 S, Commerce, GA 30529',flags:[],note:'The only walkable pair on all 666 miles of I-85.'},
 {feet:716,corridor:'I-75',state:'GA',exit:'345',city:'Ringgold',ts:'Circle K Travel Center',brand:'IND',lat:34.89051,lon:-85.07438,addr:'11292 Highway 41, Ringgold, GA 30736-8690',tsAddr:'11418 Hwy 41, Ringgold, GA 30736',flags:[],note:''},
 {feet:754,corridor:'I-35',state:'OK',exit:'137',city:'Oklahoma City',ts:"Love's Travel Stop #205",brand:'LOV',lat:35.59206,lon:-97.43605,addr:'12009 N I-35 Service Rd, Oklahoma City, OK 73131',tsAddr:'12225 N I-35 Service Rd, Oklahoma City, OK 73131',flags:['scale','smalllot'],note:'Both sit on the same I-35 northbound service road. Directories say 18 truck spaces, one says 20, and a driver review calls parking limited \u2014 treat it as a small lot that fills early. Oklahoma\u2019s first atlas row, and the westernmost on the whole map.'},

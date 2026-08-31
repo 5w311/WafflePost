@@ -98,12 +98,12 @@ t.eq(DATA[0].feet, 170, 'at 170 ft');
 // scripts/tsaddr-report.txt and cannot be re-derived from inside a test.
 var noTsAddr = DATA.filter(function (r) { return !r.tsAddr; })
                    .map(function (r) { return r.city + '|' + r.exit; }).sort();
-// Pinned as an exact set, not a count. These three are a reasoned exception:
-// each produced a well-sourced address that contradicts its own row, so the
-// row needs auditing before an address is attached to it. A fourth row losing
-// its address should fail here and be argued for, not absorbed into a number.
-t.eq(noTsAddr.join(', '), 'DeFuniak Springs|70, Orange|877, Winnie|829',
-     'exactly the three rows whose address contradicts their own data have none');
+// EVERY row, no exceptions. v4.15.0 held three whose addresses appeared to
+// contradict their own rows; v4.17.0 established all three - in each case the
+// row was right and a geocoder was wrong. There is now no such thing as a row
+// this atlas cannot name the truck stop for, and a row losing its address is
+// a regression rather than a judgment call.
+t.eq(noTsAddr.join(', '), '', 'every row names its truck stop\'s address');
 DATA.forEach(function (r) {
   if (!r.tsAddr) return;
   t.eq(typeof r.tsAddr === 'string' && r.tsAddr.length > 5, true,

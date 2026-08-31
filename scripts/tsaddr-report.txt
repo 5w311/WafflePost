@@ -1,4 +1,66 @@
-WAFFLEPOST TRUCK STOP ADDRESSES - v4.15.0, extended v4.16.0
+WAFFLEPOST TRUCK STOP ADDRESSES - v4.15.0, extended v4.16.0 and v4.17.0
+
+v4.17.0: ALL 69 ROWS NOW CARRY AN ADDRESS. The last three are resolved, and
+in every one of them the ROW was right and a GEOCODER was wrong.
+
+Each of the three had been held because a well-sourced address appeared to
+contradict its own row. The mistake was mine, in two directions at once: I had
+read "the address geocodes far from the Waffle House" as evidence against the
+address, and for two of the three I had also invented a second store that does
+not exist. A POI search around each Waffle House settled it - in all three
+cases a business of the right operator sits within a few feet of the audited
+walk distance:
+
+  Orange TX            POI at 252 ft   audited 252 ft
+  Winnie TX            POI at 360 ft   audited 336 ft
+  DeFuniak Springs FL  POI at 676 ft   audited 678 ft
+
+So the buildings were never in doubt. Only their street numbers were, and
+HERE's house-number index is simply wrong or absent at these three parcels.
+
+  Orange|877  ->  2205 Highway 62 S, Orange, TX 77630
+    HERE puts 2205 at 926 ft against an audited 252 ft. Pilot's own list gives
+    three company sites in Orange; OSM way 265727452 carries brand=Pilot,
+    ref=431, and a phone AND fax matching Pilot #431's published contact, which
+    identifies the store without reference to distance. Neighbours run 2302
+    Burger King, 2310 Waffle House, 2311 McDonald's, 2321 Comfort Inn, so 2205
+    south of them is consistent and unclaimed. The "2205 N Hwy 62" directory
+    variants are wrong: SH 62 North is north of I-10, where no Pilot exists.
+    SEPARATELY, AND NOT FIXED HERE: two independent passes now place this
+    interchange at I-10 exit 873, not the 877 this row records. Exit 877 is
+    TX-87 / 16th Street, about four miles east. The address is not in doubt;
+    the row's exit number needs its own audit and is left alone.
+
+  Winnie|829  ->  45950 Interstate 10, Winnie, TX 77665
+    HERE geocodes this to a point 3,379 ft away - a bad geocode of a correct
+    postal address, which is what "two JP sites" turned out to be: one POI
+    pinned on the building, one on the geocode of its own address. There is
+    one business. Texas TABC (data.texas.gov kguh-7q9z) licenses exactly one
+    at that number, MAIN STREET MARKET #111, Petroleum Wholesale LP. CAT
+    Scale's official locator gives scale #2720 at 45950 Interstate 10 with a
+    phone matching every JP directory listing, and the surveyed scale node
+    sits 205 ft from the Waffle House. The I-10 frontage house numbers run
+    45122, 45545, 45717, 45950 (this parcel), 46002 - monotonic, no room for a
+    second 45950. The nearest thing at the phantom 3,379 ft is Texaco Gulf
+    Coast Market, 522 Gulfway Drive, a different business with a different
+    phone; Gulfway Drive uses three-digit numbers, so 45950 cannot exist there.
+
+  DeFuniak Springs|70  ->  17750 State Highway 285 S, DeFuniak Springs, FL 32435
+    Love's own store-561 page publishes the city as "Mossy Head, FL 32435",
+    which is an invalid pairing: 32435 is DeFuniak Springs, and Mossy Head is
+    32434, PO-Box only with no street delivery. The Mossy Head centroid is
+    1.99 mi from the store, which reproduces the 2.1-2.8 mi geocode error
+    exactly - so the error EXPLAINS the address rather than refuting it.
+    McDonald's, a tenant inside the building, publishes the DeFuniak Springs
+    form verbatim; Subway corporate gives the same house number under a
+    "Love's Travel Stop #561" header.
+
+scripts/tsaddr-verify.js re-checks all 73 addresses against HERE forward and
+reverse. These three are named there as exempt from its distance gate - the
+gate stays tight for the other seventy rather than being loosened for three -
+and an operator POI at the audited distance stands in for it. If that POI ever
+stops being there, the exemption fails and the script says so.
+
 
 v4.16.0: PROMOTED TO FULL ADDRESSES - street, city, state, ZIP.
 v4.15.0 stored a street line and argued the stop card's own heading already
