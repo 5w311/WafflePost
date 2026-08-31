@@ -108,11 +108,22 @@ DATA.forEach(function (r) {
   if (!r.tsAddr) return;
   t.eq(typeof r.tsAddr === 'string' && r.tsAddr.length > 5, true,
        r.city + ' truck stop address is a real string');
-  // Street line only. The stop sheet's heading already carries city, state
-  // and exit; a full address here would repeat them on every card, and the
-  // share text labels the two lines rather than qualifying them.
-  t.eq(new RegExp(',\\s*' + r.state + '\\s+\\d{5}').test(r.tsAddr), false,
-       r.city + ' truck stop address is a street line, not a full address');
+  // FULL address since v4.16.0, matching the Waffle House field beside it.
+  // v4.15.0 stored a street line and argued the card's heading already
+  // carried city and state - true on the card, and irrelevant everywhere the
+  // address actually gets used: read aloud to a dispatcher, pasted into a nav
+  // app, or copied out of the share text. Half an address is not one.
+  t.eq(new RegExp(',\\s*' + r.state + '\\s+\\d{5}$').test(r.tsAddr), true,
+       r.city + ' truck stop address ends in city, ' + r.state + ' and a ZIP: ' + r.tsAddr);
+  // The truck stop is in the row's own state. This is the check that catches
+  // an address resolved onto the wrong side of a state line - the same
+  // reasoning the Waffle House address has carried since the 09-2026 audit.
+  t.eq(new RegExp(',\\s*' + r.state + '\\s').test(r.tsAddr), true,
+       r.city + ' truck stop is in ' + r.state);
+  // A street line still has to precede it. ", Cullman, AL 35055" alone would
+  // pass the pattern above and name no building.
+  t.eq(/^\d+\s+\S/.test(r.tsAddr), true,
+       r.city + ' truck stop address starts with a house number: ' + r.tsAddr);
   // A truck stop is not the Waffle House. If these ever match, something has
   // copied one field into the other.
   t.eq(r.tsAddr === r.addr, false,
@@ -126,6 +137,8 @@ DATA.forEach(function (r) {
          r.city + ' alt ' + a.ts + ' address is a real string');
     t.eq(a.tsAddr === r.tsAddr, false,
          r.city + ' alt ' + a.ts + ' has its own address, not the primary stop\'s');
+    t.eq(new RegExp(',\\s*' + r.state + '\\s+\\d{5}$').test(a.tsAddr), true,
+         r.city + ' alt ' + a.ts + ' carries city, state and ZIP too');
   });
 });
 

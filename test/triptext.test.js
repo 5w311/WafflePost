@@ -57,16 +57,17 @@ t.eq(routeTxt.indexOf('   1707 County Road 437, Cullman, AL 35055') !== -1, true
 var twoAddr = {feet:347, corridor:'I-65', state:'KY', exit:'121', city:'Brooks',
                ts:'Pilot Travel Center #356', brand:'PIL', lat:37.99, lon:-85.71,
                addr:'2021 E Blue Lick Rd, Shepherdsville, KY 40165',
-               tsAddr:'2050 E Blue Lick Rd', flags:[], note:'',
-               alt:[{ts:"Love's #123", feet:900, brand:'LOV', tsAddr:'2100 E Blue Lick Rd'}]};
+               tsAddr:'2050 E Blue Lick Rd, Shepherdsville, KY 40165', flags:[], note:'',
+               alt:[{ts:"Love's #123", feet:900, brand:'LOV',
+                     tsAddr:'2100 E Blue Lick Rd, Shepherdsville, KY 40165'}]};
 var twoTxt = tt.formatStopText(twoAddr, 'Atlas Rev 13-2026');
-t.eq(twoTxt.indexOf('truck stop: 2050 E Blue Lick Rd') !== -1, true,
-     'the share carries the truck stop address, labelled');
+t.eq(twoTxt.indexOf('truck stop: 2050 E Blue Lick Rd, Shepherdsville, KY 40165') !== -1, true,
+     'the share carries the truck stop address in full, labelled');
 t.eq(twoTxt.indexOf('waffle house: 2021 E Blue Lick Rd, Shepherdsville, KY 40165') !== -1, true,
      'and the Waffle House address, labelled to tell them apart');
 // An alt stop's address is indented under the stop it belongs to - an
 // unlabelled line between two "also:" lines would be anyone's guess.
-t.eq(/\nalso: Love's #123 - 900 ft\n      2100 E Blue Lick Rd\n/.test(twoTxt), true,
+t.eq(/\nalso: Love's #123 - 900 ft\n      2100 E Blue Lick Rd, Shepherdsville, KY 40165\n/.test(twoTxt), true,
      "an alt stop's address sits indented under its own line");
 // A row the audit has produced no truck stop address for must not emit a
 // label with nothing after it.
