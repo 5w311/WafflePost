@@ -48,6 +48,34 @@ var routeTxt = tt.formatRouteText({from:'A', to:'B', miles:100, profile:'Standar
   tierUsed:1, stops:[{row:addrRow, routeMile:49, detourMi:0.3}]}, 'Atlas Rev 08-2026');
 t.eq(routeTxt.indexOf('   1707 County Road 437, Cullman, AL 35055') !== -1, true,
      'each route stop carries its street address');
+// ---- BOTH addresses, labelled (v4.15.0) ----
+// The card used to name the truck stop and then give only the Waffle House's
+// address, which is the wrong half for a driver deciding where to park - the
+// walk starts at the truck stop. With two address lines in one message,
+// unlabelled is ambiguous, and "which of these do I park at" is the question
+// this text exists to answer.
+var twoAddr = {feet:347, corridor:'I-65', state:'KY', exit:'121', city:'Brooks',
+               ts:'Pilot Travel Center #356', brand:'PIL', lat:37.99, lon:-85.71,
+               addr:'2021 E Blue Lick Rd, Shepherdsville, KY 40165',
+               tsAddr:'2050 E Blue Lick Rd', flags:[], note:'',
+               alt:[{ts:"Love's #123", feet:900, brand:'LOV', tsAddr:'2100 E Blue Lick Rd'}]};
+var twoTxt = tt.formatStopText(twoAddr, 'Atlas Rev 13-2026');
+t.eq(twoTxt.indexOf('truck stop: 2050 E Blue Lick Rd') !== -1, true,
+     'the share carries the truck stop address, labelled');
+t.eq(twoTxt.indexOf('waffle house: 2021 E Blue Lick Rd, Shepherdsville, KY 40165') !== -1, true,
+     'and the Waffle House address, labelled to tell them apart');
+// An alt stop's address is indented under the stop it belongs to - an
+// unlabelled line between two "also:" lines would be anyone's guess.
+t.eq(/\nalso: Love's #123 - 900 ft\n      2100 E Blue Lick Rd\n/.test(twoTxt), true,
+     "an alt stop's address sits indented under its own line");
+// A row the audit has produced no truck stop address for must not emit a
+// label with nothing after it.
+var oneAddr = tt.formatStopText({feet:200, corridor:'I-10', state:'AL', exit:'1', city:'X',
+  ts:'TA', brand:'TA', lat:1, lon:2, addr:'1 Main St, X, AL', flags:[]}, 'Rev');
+t.eq(oneAddr.indexOf('truck stop:') === -1, true,
+     'no empty truck-stop label on a row without one');
+t.eq(oneAddr.indexOf('undefined') === -1, true, 'and nothing leaks through as undefined');
+
 // A row without an address (an old fixture, a future row before generation)
 // must not print a blank or the word "undefined".
 var bare = {feet:170, corridor:'I-65', state:'AL', exit:'304', city:'X',

@@ -423,6 +423,33 @@ t.eq(/var NEAREST_REFRESH_MI = \d+;/.test(src), true,
      'a distance threshold gates the re-sort');
 t.eq(/function refreshNearest\(\)\{[\s\S]*?scrollTop = top;/.test(src), true,
      'a re-sort keeps the scroll position: the rows shuffled, they did not change');
+// ---- every stop shows its truck stop's address (v4.15.0) ----
+// The card named the truck stop and then gave only the Waffle House's
+// address. That is the wrong half for a driver deciding where to park: the
+// walk starts at the truck stop, and `feet` is measured between two doors of
+// which only one was on screen.
+t.eq(/<span>Truck stop<\/span><span>'\+esc\(row\.ts\)\+\s*\n?\s*\(row\.tsAddr\?/.test(src), true,
+     "the truck stop's own address renders beside its name");
+t.eq(/a\.tsAddr\?'<span class="addr">'\+esc\(a\.tsAddr\)/.test(src), true,
+     'and so does an alternate stop\'s');
+// display:block is what makes it a second LINE. .kv is a flex row, so an
+// inline child runs on the end of the name instead of under it.
+t.eq(/\.kv \.addr\{display:block/.test(src), true,
+     'the address is a line of its own inside the value, not a second kv row');
+// Absent, not invented. A row the audit has produced no address for shows
+// none - an address nobody verified does not go in front of a driver.
+t.eq(/row\.tsAddr\?'<span class="addr">/.test(src), true,
+     'and it is conditional: no address means no line');
+// The `>` in the label rule is load-bearing. .addr is the first ELEMENT child
+// of the value span - text nodes do not count - so a descendant selector
+// hands it the 104px label width inside a 247px column and wraps a
+// twenty-character address onto two lines. It inherits the right colour from
+// that rule too, which is why this looked deliberate rather than broken.
+t.eq(/\.kv > span:first-child\{/.test(src), true,
+     'the kv label rule is scoped to a direct child');
+t.eq(/\.kv span:first-child\{/.test(src), false,
+     'and not the descendant form, which also captures the nested address');
+
 // ---- the locator overlays HERE's logo, deliberately (v4.14.0) ----
 // This inverts what v4.12.0 and v4.13.0 pinned, and the inversion is the
 // point: covering that logo is a licence trade-off the owner asked for, so

@@ -91,6 +91,44 @@ t.eq(sorted.slice().sort(function(a,b){return a-b;}).join() === sorted.join(), t
 t.eq(DATA[0].city, 'Good Hope', 'Good Hope AL still holds the record');
 t.eq(DATA[0].feet, 170, 'at 170 ft');
 
+// ---- the truck stop's own address (v4.15.0) ----
+// The card used to show only the Waffle House's address, which is the wrong
+// half for a driver deciding where to park. What is pinned here is the SHAPE
+// and the EXCEPTIONS, because the addresses themselves are verified in
+// scripts/tsaddr-report.txt and cannot be re-derived from inside a test.
+var noTsAddr = DATA.filter(function (r) { return !r.tsAddr; })
+                   .map(function (r) { return r.city + '|' + r.exit; }).sort();
+// Pinned as an exact set, not a count. These three are a reasoned exception:
+// each produced a well-sourced address that contradicts its own row, so the
+// row needs auditing before an address is attached to it. A fourth row losing
+// its address should fail here and be argued for, not absorbed into a number.
+t.eq(noTsAddr.join(', '), 'DeFuniak Springs|70, Orange|877, Winnie|829',
+     'exactly the three rows whose address contradicts their own data have none');
+DATA.forEach(function (r) {
+  if (!r.tsAddr) return;
+  t.eq(typeof r.tsAddr === 'string' && r.tsAddr.length > 5, true,
+       r.city + ' truck stop address is a real string');
+  // Street line only. The stop sheet's heading already carries city, state
+  // and exit; a full address here would repeat them on every card, and the
+  // share text labels the two lines rather than qualifying them.
+  t.eq(new RegExp(',\\s*' + r.state + '\\s+\\d{5}').test(r.tsAddr), false,
+       r.city + ' truck stop address is a street line, not a full address');
+  // A truck stop is not the Waffle House. If these ever match, something has
+  // copied one field into the other.
+  t.eq(r.tsAddr === r.addr, false,
+       r.city + ' truck stop address is not the Waffle House address');
+});
+// Alternate stops follow the same rule where they carry one.
+DATA.forEach(function (r) {
+  (r.alt || []).forEach(function (a) {
+    if (!a.tsAddr) return;
+    t.eq(typeof a.tsAddr === 'string' && a.tsAddr.length > 5, true,
+         r.city + ' alt ' + a.ts + ' address is a real string');
+    t.eq(a.tsAddr === r.tsAddr, false,
+         r.city + ' alt ' + a.ts + ' has its own address, not the primary stop\'s');
+  });
+});
+
 // data/atlas.csv is regenerated from DATA by scripts/remeasure.js, never
 // hand-edited. This pins the two against each other row for row, so the CSV
 // cannot drift the way a hand-maintained second copy always eventually does.
