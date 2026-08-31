@@ -5,12 +5,12 @@ feet,corridor,state,exit,city,truck_stop,lat,lon,waffle_house_address,truck_stop
 205,I-12,LA,40,Hammond,Pilot,30.47809,-90.45646,"2101 SW Railroad Ave, Hammond, LA 70403","2111 SW Railroad Ave, Hammond, LA 70403"
 238,I-10,FL,142,Marianna,Pilot,30.72596,-85.18602,"2215 Highway 71, Marianna, FL 32448-2541","2209 Highway 71, Marianna, FL 32448"
 246,I-520,GA,9,Augusta,C Mart,33.39936,-82.00515,"3408 Mike Padgett Hwy, Augusta, GA 30906","3403 Mike Padgett Hwy, Augusta, GA 30906"
-252,I-10,TX,877,Orange,Pilot,30.11405,-93.82053,"2310 Highway 62 S, Orange, TX 77630-8321",
+252,I-10,TX,877,Orange,Pilot,30.11405,-93.82053,"2310 Highway 62 S, Orange, TX 77630-8321","2205 Highway 62 S, Orange, TX 77630"
 272,I-80,OH,234,Hubbard,Flying J #697,41.18165,-80.5699,"2284 Gala St, Hubbard, OH 44425-3202","2226 N Main St, Hubbard, OH 44425"
 301,I-75,OH,36,Franklin,Pilot,39.54266,-84.29161,"6840 OH-123, Franklin, OH 45005","6830 Franklin Lebanon Rd, Franklin, OH 45005"
 303,I-44,MO,80B,Springfield,Rapid Robert's Travel Plaza,37.25389,-93.26542,"3135 N Glenstone Ave, Springfield, MO 65803","3165 N Glenstone Ave, Springfield, MO 65803"
 322,I-40,AR,142,Maumelle,Morgan SuperStop,34.88456,-92.38292,"20514 Highway 365 N, North Little Rock, AR 72113","20515 Highway 365 N, Maumelle, AR 72113"
-336,I-10,TX,829,Winnie,JP Truck Stop,29.83065,-94.38455,"243 Spur 5, Winnie, TX 77665-7308",
+336,I-10,TX,829,Winnie,JP Truck Stop,29.83065,-94.38455,"243 Spur 5, Winnie, TX 77665-7308","45950 Interstate 10, Winnie, TX 77665"
 347,I-65,KY,121,Brooks,Pilot Travel Center #356,38.0616,-85.70231,"2021 E Blue Lick Rd, Shepherdsville, KY 40165","2050 E Blue Lick Rd, Shepherdsville, KY 40165"
 383,I-10,AL,13,Theodore,Pilot,30.5601,-88.20673,"7031 Theodore Dawes Rd, Theodore, AL 36582-4077","6955 Theodore Dawes Rd, Theodore, AL 36582"
 385,I-81,VA,98,Dublin,A-Plus Dublin Travel Plaza,37.08237,-80.68993,"4614 Cleburne Blvd, Dublin, VA 24084","4625 Cleburne Blvd, Dublin, VA 24084"
@@ -31,7 +31,7 @@ feet,corridor,state,exit,city,truck_stop,lat,lon,waffle_house_address,truck_stop
 618,I-75,GA,11,Valdosta,Pilot,30.75253,-83.27228,"3487 Madison Hwy, Valdosta, GA 31601-8634","3460 Madison Hwy, Valdosta, GA 31601"
 636,I-95,FL,129,Fort Pierce,Love's,27.41228,-80.3966,"7147 Okeechobee Rd, Fort Pierce, FL 34945-2603","7150 Okeechobee Rd, Fort Pierce, FL 34945"
 646,I-20,GA,114,Madison,TA,33.55181,-83.47304,"2050 Eatonton Rd, Madison, GA 30650-5000","2021 Eatonton Rd, Madison, GA 30650"
-678,I-10,FL,70,DeFuniak Springs,Love's,30.7358,-86.34972,"17837 ST HWY 285 S, Defuniak Springs, FL 32435",
+678,I-10,FL,70,DeFuniak Springs,Love's,30.7358,-86.34972,"17837 ST HWY 285 S, Defuniak Springs, FL 32435","17750 State Highway 285 S, DeFuniak Springs, FL 32435"
 687,I-85,GA,149,Commerce,TA,34.25187,-83.46108,"30789 US-441 S, Commerce, GA 30529-6654","30732 Highway 441 S, Commerce, GA 30529"
 716,I-75,GA,345,Ringgold,Circle K Travel Center,34.89051,-85.07438,"11292 Highway 41, Ringgold, GA 30736-8690","11418 Hwy 41, Ringgold, GA 30736"
 754,I-35,OK,137,Oklahoma City,Love's Travel Stop #205,35.59206,-97.43605,"12009 N I-35 Service Rd, Oklahoma City, OK 73131","12225 N I-35 Service Rd, Oklahoma City, OK 73131"

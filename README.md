@@ -40,6 +40,7 @@ test/run.js               runs every test file and fails the run if any file fai
 scripts/icons.py          VERIFIES the shipped icon PNGs - flatten, sizes, byte-identity, maskable safe circle
 scripts/remeasure.js      geocodes each truck stop and re-derives feet; regenerates the CSV
 scripts/remeasure-report.txt  provenance of every surviving figure, every judgment call
+scripts/tsaddr-verify.js  RE-VERIFIES every truck stop address against HERE, forward and reverse
 scripts/tsaddr-report.txt provenance of every truck stop address, and why three rows have none
 data/atlas.csv            REGENERATED from DATA by scripts/remeasure.js - never hand-edit
 apple-touch-icon.png      iOS home screen, 180x180 - the bar tile, baked
@@ -838,8 +839,8 @@ address starts with a house number and names the row's own state, and that
 leaderboard.
 
 `run.js` prints one `ok <name> N passed` line per file and then `all green`,
-or names the files that failed. It does not sum the assertions — at v4.16.0
-they come to 1,726 across twelve files, added up from those lines.
+or names the files that failed. It does not sum the assertions — at v4.17.0
+they come to 1,741 across twelve files, added up from those lines.
 
 ## Two version strings, on purpose
 
@@ -854,7 +855,7 @@ Same reasoning as FuelPost, different perishable thing:
   stopped existing; the requirement was "always on screen", not "in the
   header", and the panel tab is on screen in both modes whether the panel is
   open or collapsed. Bump only when the rows are re-audited.
-- **`APP_VERSION`** (`4.16.0`) — the code. Shown in the **legend card**.
+- **`APP_VERSION`** (`4.17.0`) — the code. Shown in the **legend card**.
   Bumped for every shipped change, and stamped onto every `lib/` URL as a
   cache-buster.
 
@@ -874,6 +875,66 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v4.17.0
+
+**All 69 rows now name their truck stop's address, and there is a script that
+proves it.** The three held since v4.15.0 are resolved — and in every one of
+them the *row* was right and a *geocoder* was wrong.
+
+**The held rows were held for a bad reason, and it was mine.** I had read "this
+address geocodes far from the Waffle House" as evidence against the address,
+and for two of the three I had also invented a second store that does not
+exist. A POI search around each Waffle House settled it in seconds: a business
+of the right operator sits within a few feet of the audited walk every time.
+
+| Row | Operator POI | Audited |
+|---|---|---|
+| Orange TX | 252 ft | 252 ft |
+| Winnie TX | 360 ft | 336 ft |
+| DeFuniak Springs FL | 676 ft | 678 ft |
+
+The buildings were never in doubt. Only their street numbers were, and HERE's
+house-number index is wrong or absent at these three parcels — it puts correct,
+operator-published addresses 674 to 3,043 ft from where the business
+demonstrably is. What established them instead: **phone *and* fax matching in
+OSM** for Pilot #431; a **Texas TABC liquor licence** and **CAT Scale's own
+locator** for the Winnie stop, whose surveyed scale node sits 205 ft from the
+Waffle House; and **McDonald's corporate listing**, a tenant inside the
+building, publishing the DeFuniak Springs address verbatim.
+
+**Winnie's "two JP sites" never existed.** Both POIs are one business — one
+pinned on the building, one on a bad geocode of its own postal address. The
+frontage numbers run 45122, 45545, 45717, 45950, 46002: monotonic, with no room
+for a second 45950. The phantom location is a Texaco with a different phone on
+a street whose numbers are three digits long.
+
+**DeFuniak's error explains the address rather than refuting it.** Love's own
+page files the store as `Mossy Head, FL 32435` — an invalid pairing, since
+32435 is DeFuniak Springs and Mossy Head is 32434, PO-Box only with no street
+delivery. The Mossy Head centroid is 1.99 mi from the store, which reproduces
+the 2.1–2.8 mi geocode error exactly.
+
+**`scripts/tsaddr-verify.js` re-checks all 73 addresses against HERE, both
+ways.** Forward: the stored string must resolve at house-number precision, land
+within 500 ft of the distance the row's `feet` claims, and echo back the same
+city, state and ZIP. Reverse: the position that comes back is reverse-geocoded,
+so HERE names the locality from coordinates alone — a postal city that only
+exists because we supplied it in the query dies there, and a forward check
+alone cannot see that.
+
+**The three exemptions are named, not smuggled.** Loosening the distance gate
+for all seventy to accommodate three would blind the check everywhere it works,
+so those rows are listed in the script with their reasons, and an operator POI
+at the audited distance stands in for the gate. If that POI ever stops being
+there, the exemption fails and the script says so.
+
+**One defect surfaced and deliberately not fixed here.** Two independent
+research passes now place Orange TX's interchange at **I-10 exit 873**, not the
+**877** this row records — exit 877 is TX-87 / 16th Street, about four miles
+east. The address is not in doubt and is shipped; the exit number is audited
+data that a driver navigates by, so it gets its own audit rather than a
+side-effect edit in an address release.
 
 ### v4.16.0
 
