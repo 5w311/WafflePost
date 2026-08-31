@@ -1,70 +1,70 @@
 feet,corridor,state,exit,city,truck_stop,lat,lon,waffle_house_address,truck_stop_address
-170,I-65,AL,304,Good Hope,Jack's Truck Stop,34.11486,-86.86387,"1707 County Road 437, Cullman, AL 35055",
-189,I-75,KY,175,Walton,Pilot,38.91759,-84.63184,"11213 Frontage Rd, Walton, KY 41094-9574",
-190,I-75,GA,293,Cartersville,JP Truck Center,34.2409,-84.77486,"2310 Highway 411 NE, Cartersville, GA 30121-5129",
-205,I-12,LA,40,Hammond,Pilot,30.47809,-90.45646,"2101 SW Railroad Ave, Hammond, LA 70403",
-238,I-10,FL,142,Marianna,Pilot,30.72596,-85.18602,"2215 Highway 71, Marianna, FL 32448-2541",
+170,I-65,AL,304,Good Hope,Jack's Truck Stop,34.11486,-86.86387,"1707 County Road 437, Cullman, AL 35055",1639 County Road 437
+189,I-75,KY,175,Walton,Pilot,38.91759,-84.63184,"11213 Frontage Rd, Walton, KY 41094-9574",11229 Frontage Rd
+190,I-75,GA,293,Cartersville,JP Truck Center,34.2409,-84.77486,"2310 Highway 411 NE, Cartersville, GA 30121-5129",2320 Highway 411 NE
+205,I-12,LA,40,Hammond,Pilot,30.47809,-90.45646,"2101 SW Railroad Ave, Hammond, LA 70403",2111 SW Railroad Ave
+238,I-10,FL,142,Marianna,Pilot,30.72596,-85.18602,"2215 Highway 71, Marianna, FL 32448-2541",2209 Highway 71
 246,I-520,GA,9,Augusta,C Mart,33.39936,-82.00515,"3408 Mike Padgett Hwy, Augusta, GA 30906",3403 Mike Padgett Hwy
 252,I-10,TX,877,Orange,Pilot,30.11405,-93.82053,"2310 Highway 62 S, Orange, TX 77630-8321",
 272,I-80,OH,234,Hubbard,Flying J #697,41.18165,-80.5699,"2284 Gala St, Hubbard, OH 44425-3202",2226 N Main St
-301,I-75,OH,36,Franklin,Pilot,39.54266,-84.29161,"6840 OH-123, Franklin, OH 45005",
+301,I-75,OH,36,Franklin,Pilot,39.54266,-84.29161,"6840 OH-123, Franklin, OH 45005",6830 Franklin Lebanon Rd
 303,I-44,MO,80B,Springfield,Rapid Robert's Travel Plaza,37.25389,-93.26542,"3135 N Glenstone Ave, Springfield, MO 65803",3165 N Glenstone Ave
 322,I-40,AR,142,Maumelle,Morgan SuperStop,34.88456,-92.38292,"20514 Highway 365 N, North Little Rock, AR 72113",20515 Highway 365 N
 336,I-10,TX,829,Winnie,JP Truck Stop,29.83065,-94.38455,"243 Spur 5, Winnie, TX 77665-7308",
 347,I-65,KY,121,Brooks,Pilot Travel Center #356,38.0616,-85.70231,"2021 E Blue Lick Rd, Shepherdsville, KY 40165",2050 E Blue Lick Rd
-383,I-10,AL,13,Theodore,Pilot,30.5601,-88.20673,"7031 Theodore Dawes Rd, Theodore, AL 36582-4077",
+383,I-10,AL,13,Theodore,Pilot,30.5601,-88.20673,"7031 Theodore Dawes Rd, Theodore, AL 36582-4077",6955 Theodore Dawes Rd
 385,I-81,VA,98,Dublin,A-Plus Dublin Travel Plaza,37.08237,-80.68993,"4614 Cleburne Blvd, Dublin, VA 24084",4625 Cleburne Blvd
-386,I-20,TX,596,Longview,RaceTrac,32.44855,-94.72351,"3107 Estes Pkwy, Longview, TX 75602-4233",
+386,I-20,TX,596,Longview,RaceTrac,32.44855,-94.72351,"3107 Estes Pkwy, Longview, TX 75602-4233",3120 Estes Pkwy
 390,I-10,LA,209,LaPlace,TA Express #0479,30.08712,-90.44526,"4304 New Highway 51, Laplace, LA 70068",4301 S Main St
-394,I-10,LA,115,Henderson,Henderson Travel Plaza,30.31355,-91.83292,"2998 Grandpoint Hwy, Breaux Bridge, LA 70517-7738",
-398,I-95,NC,106,Kenly,Pilot,35.58192,-78.14814,"875 Johnston Pkwy, Kenly, NC 27542-9663",
-417,I-75,FL,224,Ellenton,ONE9 Travel Center #89,27.52768,-82.51312,"1515 51st Ave E, Ellenton, FL 34222-2634",
-419,I-95,GA,87,Richmond Hill,TA,31.92471,-81.33386,"56 Sommers Blvd, Richmond Hill, GA 31324-8885",
-429,I-75,FL,341,Ocala,Marion Oaks Pilot,29.02599,-82.15995,"2065 SW CR-484, Ocala, FL 34473-4013",
+394,I-10,LA,115,Henderson,Henderson Travel Plaza,30.31355,-91.83292,"2998 Grandpoint Hwy, Breaux Bridge, LA 70517-7738",2996 Grand Point Hwy
+398,I-95,NC,106,Kenly,Pilot,35.58192,-78.14814,"875 Johnston Pkwy, Kenly, NC 27542-9663",1000 Truckstop Rd
+417,I-75,FL,224,Ellenton,ONE9 Travel Center #89,27.52768,-82.51312,"1515 51st Ave E, Ellenton, FL 34222-2634",1526 51st Ave E
+419,I-95,GA,87,Richmond Hill,TA,31.92471,-81.33386,"56 Sommers Blvd, Richmond Hill, GA 31324-8885",4401 US Highway 17
+429,I-75,FL,341,Ocala,Marion Oaks Pilot,29.02599,-82.15995,"2065 SW CR-484, Ocala, FL 34473-4013",2020 SW Highway 484
 432,I-70,MO,28,Oak Grove,QuikTrip,39.01206,-94.12829,"451 S Broadway, Oak Grove, MO 64075",309 S Broadway
-479,I-95,GA,109,Port Wentworth,Pilot,32.18745,-81.1941,"6941 GA Highway 21, Port Wentworth, GA 31407-9799",
-501,I-10,FL,258,Madison,Fast Track Travel Center,30.39877,-83.3578,"145 SE Bandit St, Madison, FL 32340",
-506,I-95,SC,77,St. George,Flying J,33.19459,-80.6038,"127 Motel Dr, St George, SC 29477-7800",
+479,I-95,GA,109,Port Wentworth,Pilot,32.18745,-81.1941,"6941 GA Highway 21, Port Wentworth, GA 31407-9799",7001 GA Highway 21
+501,I-10,FL,258,Madison,Fast Track Travel Center,30.39877,-83.3578,"145 SE Bandit St, Madison, FL 32340",6390 South State Road 53
+506,I-95,SC,77,St. George,Flying J,33.19459,-80.6038,"127 Motel Dr, St George, SC 29477-7800",113 Motel Dr
 557,I-75,KY,181,Florence,TA Travel Center,39.00051,-84.64279,"7673 Burlington Pike, Florence, KY 41042",7777 Burlington Pike
-596,I-10,MS,31,Gulfport,Flying J,30.42038,-89.13606,"9282 Canal Rd, Gulfport, MS 39503-9086",
-608,I-75,GA,149,Byron,Byron Gas N Go,32.65804,-83.74741,"241 GA Highway 49 N, Byron, GA 31008-4008",
-618,I-75,GA,11,Valdosta,Pilot,30.75253,-83.27228,"3487 Madison Hwy, Valdosta, GA 31601-8634",
-636,I-95,FL,129,Fort Pierce,Love's,27.41228,-80.3966,"7147 Okeechobee Rd, Fort Pierce, FL 34945-2603",
-646,I-20,GA,114,Madison,TA,33.55181,-83.47304,"2050 Eatonton Rd, Madison, GA 30650-5000",
+596,I-10,MS,31,Gulfport,Flying J,30.42038,-89.13606,"9282 Canal Rd, Gulfport, MS 39503-9086",9351 Canal Rd
+608,I-75,GA,149,Byron,Byron Gas N Go,32.65804,-83.74741,"241 GA Highway 49 N, Byron, GA 31008-4008",248 GA Highway 49 N
+618,I-75,GA,11,Valdosta,Pilot,30.75253,-83.27228,"3487 Madison Hwy, Valdosta, GA 31601-8634",3460 Madison Hwy
+636,I-95,FL,129,Fort Pierce,Love's,27.41228,-80.3966,"7147 Okeechobee Rd, Fort Pierce, FL 34945-2603",7150 Okeechobee Rd
+646,I-20,GA,114,Madison,TA,33.55181,-83.47304,"2050 Eatonton Rd, Madison, GA 30650-5000",2021 Eatonton Rd
 678,I-10,FL,70,DeFuniak Springs,Love's,30.7358,-86.34972,"17837 ST HWY 285 S, Defuniak Springs, FL 32435",
-687,I-85,GA,149,Commerce,TA,34.25187,-83.46108,"30789 US-441 S, Commerce, GA 30529-6654",
+687,I-85,GA,149,Commerce,TA,34.25187,-83.46108,"30789 US-441 S, Commerce, GA 30529-6654",30732 Highway 441 S
 716,I-75,GA,345,Ringgold,Circle K Travel Center,34.89051,-85.07438,"11292 Highway 41, Ringgold, GA 30736-8690",11418 Hwy 41
 754,I-35,OK,137,Oklahoma City,Love's Travel Stop #205,35.59206,-97.43605,"12009 N I-35 Service Rd, Oklahoma City, OK 73131",12225 N I-35 Service Rd
-791,I-95,SC,119,Manning,TA #179,33.70314,-80.24317,"3021 Paxville Hwy, Manning, SC 29102-6449",
+791,I-95,SC,119,Manning,TA #179,33.70314,-80.24317,"3021 Paxville Hwy, Manning, SC 29102-6449",3014 Paxville Highway
 795,I-65,AL,334,Priceville,Pilot #441,34.53579,-86.9099,"3305 Point Mallard Pkwy SE, Decatur, AL 35603",3240 Point Mallard Pkwy
-799,I-10,FL,343,Baldwin,TA,30.28307,-81.98388,"1066 US Highway 301 S, Jacksonville, FL 32234",
+799,I-10,FL,343,Baldwin,TA,30.28307,-81.98388,"1066 US Highway 301 S, Jacksonville, FL 32234",1024 US 301 South
 820,I-70,OH,94,Columbus,Pilot Travel Center #213,39.97172,-83.09753,"900 N Wilson Rd, Columbus, OH 43204",3600 Interchange Rd
 838,I-24,TN,64,La Vergne,Pilot #52,35.99889,-86.59777,"108 Enterprise Blvd, La Vergne, TN 37086-3544",535 Waldron Rd
 851,I-40,TN,374,Knoxville,TA Travel Center,35.90759,-84.14755,"507 Lovell Rd, Knoxville, TN 37932",608 Lovell Rd
 858,I-95,VA,104,Carmel Church,Flying J #749,37.93494,-77.47452,"24148 Welcome Way Dr, Ruther Glen, VA 22546",24279 Rogers Clark Blvd
-860,I-95,SC,5,Hardeeville,Pilot,32.27079,-81.08075,"16877 Whyte Hardee Blvd, Hardeeville, SC 29927-6940",
-861,I-10,LA,64,Jennings,Jennings Travel Plaza,30.2402,-92.66398,"1635 N Lake Arthur Ave, Jennings, LA 70546-3613",
+860,I-95,SC,5,Hardeeville,Pilot,32.27079,-81.08075,"16877 Whyte Hardee Blvd, Hardeeville, SC 29927-6940",15976 Whyte Hardee Blvd
+861,I-10,LA,64,Jennings,Jennings Travel Plaza,30.2402,-92.66398,"1635 N Lake Arthur Ave, Jennings, LA 70546-3613",1823 Elton Rd
 865,I-10,LA,101,Lafayette,TA Travel Center #161,30.25432,-92.03743,"1800 N University Ave, Lafayette, LA 70507",1701 N University Ave
 883,I-75,FL,161,Punta Gorda,Pilot #94,26.89615,-82.00744,"9092 Mac Dr, Punta Gorda, FL 33950-4309",26505 Jones Loop Rd
-889,I-75,GA,16,Valdosta,Big Foot Travel Center #946,30.82016,-83.3117,"1819 W Hill Ave, Valdosta, GA 31601-5110",
-892,I-10,FL,26,Milton,Love's (Garcon Point),30.57642,-87.03186,"3921 Garcon Point Rd, Milton, FL 32583-9048",
+889,I-75,GA,16,Valdosta,Big Foot Travel Center #946,30.82016,-83.3117,"1819 W Hill Ave, Valdosta, GA 31601-5110",1808 W Hill Ave
+892,I-10,FL,26,Milton,Love's (Garcon Point),30.57642,-87.03186,"3921 Garcon Point Rd, Milton, FL 32583-9048",3840 Garcon Point Rd
 924,I-95,VA,92,Ashland,TA Travel Center,37.75868,-77.46587,"808 England St, Ashland, VA 23005",100 N Carter Rd
 927,I-70,OH,79,London,Pilot Travel Center,39.95746,-83.37227,"1245 US-42, London, OH 43140",1365 US-42
 963,I-75,KY,41,London,London Auto/Truck Center,37.1493,-84.11636,"76 Austin Ln, London, KY 40741-8335",15 Dogpatch Trading Ctr
-969,I-10,TX,848,Beaumont,Petro Stopping Center #304,30.0397,-94.15429,"3865 Interstate 10 S, Beaumont, TX 77705",
-1041,I-95,MD,109,Elkton,Flying J,39.63551,-75.80539,"261 Belle Hill Rd, Elkton, MD 21921-5132",
+969,I-10,TX,848,Beaumont,Petro Stopping Center #304,30.0397,-94.15429,"3865 Interstate 10 S, Beaumont, TX 77705",5405 Walden Rd
+1041,I-95,MD,109,Elkton,Flying J,39.63551,-75.80539,"261 Belle Hill Rd, Elkton, MD 21921-5132",221 Belle Hill Rd
 1043,I-75,GA,101,Cordele,Pilot #416,31.95881,-83.7501,"1007 Arc Way Ave, Cordele, GA 31015",2201 16th Ave E
 1052,I-65,TN,46,Columbia,Love's #346,35.64335,-86.89491,"1591 Bear Creek Pike, Columbia, TN 38401-7658",Bear Creek Pike
 1183,I-80,OH,226,Girard,Petro #320,41.1433,-80.72091,"2725 Salt Springs Rd, Girard, OH 44481-9231",1 Petro Place
-1282,I-20,GA,19,Temple,Pilot,33.7227,-85.02881,"543 Carrollton St, Temple, GA 30179",
-1483,I-75,GA,201,Jackson,Flying J,33.20347,-84.06293,"3201 W Highway 36, Jackson, GA 30233",
-1588,I-10,LA,266,Slidell,TA,30.28517,-89.74616,"1728 Gause Blvd E, Slidell, LA 70461-5530",
+1282,I-20,GA,19,Temple,Pilot,33.7227,-85.02881,"543 Carrollton St, Temple, GA 30179",625 Carrollton St
+1483,I-75,GA,201,Jackson,Flying J,33.20347,-84.06293,"3201 W Highway 36, Jackson, GA 30233",1125 Bucksnort Rd
+1588,I-10,LA,266,Slidell,TA,30.28517,-89.74616,"1728 Gause Blvd E, Slidell, LA 70461-5530",1682 Gause Blvd
 1647,I-95,SC,170,Florence,Pilot Travel Center #62,34.26226,-79.70032,"2880 N Williston Rd, Florence, SC 29506",3006 N Williston Rd
 1657,I-75,FL,329,Wildwood,TA Wildwood,28.87188,-82.09006,"7954 NE 8th Way, Wildwood, FL 34785-8458",556 State Route 44
-1792,I-10,LA,151,Port Allen,Love's,30.45,-91.24561,"112 S Lobdell Hwy, Port Allen, LA 70767-4117",
-1913,I-20,TX,501,Terrell,Valero Terrell Travel Plaza,32.7043,-96.27687,"1612 State Highway 34 S, Terrell, TX 75160-5407",
-1950,I-81,VA,150,Troutville,ONE9,37.38399,-79.90364,"2609 Lee Hwy, Troutville, VA 24175-6326",
+1792,I-10,LA,151,Port Allen,Love's,30.45,-91.24561,"112 S Lobdell Hwy, Port Allen, LA 70767-4117",751 S Lobdell Hwy
+1913,I-20,TX,501,Terrell,Valero Terrell Travel Plaza,32.7043,-96.27687,"1612 State Highway 34 S, Terrell, TX 75160-5407",1703 State Highway 34 S
+1950,I-81,VA,150,Troutville,ONE9,37.38399,-79.90364,"2609 Lee Hwy, Troutville, VA 24175-6326",2966 Lee Hwy
 1976,I-20,TX,617,Marshall,Pony Express Travel Center,32.4943,-94.35878,"5551 S East End Blvd, Marshall, TX 75672",304 I-20 E
 2031,I-12,LA,10,Denham Springs,Pilot #79,30.45746,-90.9556,"105 Rushing Rd E, Denham Springs, LA 70726-7842",2601 S Range Ave
 2062,I-65,AL,164,Hope Hull,Saveway Truck Plaza,32.26881,-86.3575,"90 Folmar Pkwy, Montgomery, AL 36105-5509",7735 Mobile Hwy
-2380,I-20,SC,116,Bishopville,Pilot,34.19673,-80.27721,"1113 Sumter Hwy, Bishopville, SC 29010-7008",
+2380,I-20,SC,116,Bishopville,Pilot,34.19673,-80.27721,"1113 Sumter Hwy, Bishopville, SC 29010-7008",1340 Sumter Hwy

@@ -1,0 +1,336 @@
+WAFFLEPOST TRUCK STOP ADDRESSES - v4.15.0
+
+40 rows had no truck stop address. 37 now do. 3 deliberately do not.
+
+WHY THREE CHECKS AND NOT ONE.
+The obvious method - ask HERE for the operator near the Waffle House and
+take the nearest hit - was scored first against the 29 rows that already
+carried a hand-audited address. Unbounded it agreed on 12 of 29 and would
+have written eight or nine wrong addresses, mostly the same brand in
+another state. Bounded to a circle around the Waffle House and arbitrated
+by the audited feet it reached 23 of 29 at house-number precision - 87% -
+and tightening the distance gate did not move that number, because the
+remaining errors are near-neighbours on the same street that no distance
+test can separate. One in eight wrong is the failure the 09-2026 re-audit
+purged twelve rows for, so one source was not enough.
+
+  A  bounded HERE place search, scored against the audited feet
+  B  web research that never saw A, cited to a source per stop
+  C  geocode of the agreed line, measured back to the Waffle House
+
+AGREED  = A and B gave the same house number independently.
+RESOLVED= they differed or A had nothing; settled against a named source.
+HELD    = an address was found and it contradicts the row it belongs to.
+
+
+RESOLVED  Good Hope|304  ->  1639 County Road 437
+  A: 1591 County Road 437   C: geocodes 131 ft vs audited 170 ft (d -39)
+  Sources disagreed (A: 1591, B: 1639). Investigated: 1639 is confirmed by truckstopsandservices.com/location_details.php?id=1441
+  ("1639 CO RD 437, CULLMAN, AL 35055, I-65 Exit 304"), and independently by Yelp, TruckMap
+  ("1639 Hwy 437"), findfuelstops, allstays, iExit and truckstopreport. A targeted search for
+  "1591 County Road 437" returns no business at that number at all. The distance check also
+  favours 1639: the Waffle House is 1707 County Road 437, an adjacent house number consistent
+  with the audited 170 ft walk, while Source A's own measurement for 1591 was 403 ft — 2.4x
+  the audited distance, the near-neighbour-on-the-same-street error its method is known for.
+
+AGREED    Walton|175  ->  11229 Frontage Rd
+  A: 11229 Frontage Rd   C: geocodes 197 ft vs audited 189 ft (d +8)
+  Both sources give house number 11229 on Frontage Rd, identical string. Consistent with the
+  Waffle House at 11213 Frontage Rd on the same street and the 189 ft audited walk; Source
+  B additionally cites Pilot's own locator page (locations.pilotflyingj.com/us/ky/walton/11229-frontage-road).
+  No investigation needed.
+
+RESOLVED  Cartersville|293  ->  2320 Highway 411 NE
+  A: (no candidate)   C: geocodes 182 ft vs audited 190 ft (d -8)
+  Source A had no candidate, so I verified Source B independently. Fetched truckstopsandservices.com/location_details.php?id=18530
+  directly: "2320 HWY 411 NE, CARTERSVILLE, GA, I-75 Exit 293". Corroborated by TruckMap ("2320
+  US-411, Cartersville, GA 30121"), Apple Maps and chamberofcommerce.com, all for JP Truck
+  Center at exit 293. The Waffle House at 2310 Highway 411 NE is the adjacent house number
+  on the same street, consistent with the 190 ft audited walk, and it is the only truck stop
+  at that exit.
+
+AGREED    Hammond|40  ->  2111 SW Railroad Ave
+  A: 2111 SW Railroad Ave   C: geocodes 150 ft vs audited 205 ft (d -55)
+  Both sources give house number 2111 on SW Railroad Ave, identical string. Backed by Pilot's
+  own locator (locations.pilotflyingj.com/us/la/hammond/2111-sw-railroad-ave, I-12/55 Exit
+  40) and consistent with Waffle House #739 at 2101 SW Railroad Ave — the immediately adjacent
+  number on the same street, matching the 205 ft audited walk. No investigation needed.
+
+AGREED    Marianna|142  ->  2209 Highway 71
+  A: 2209 Highway 71   C: geocodes 200 ft vs audited 238 ft (d -38)
+  Same house number, 2209, on the same road; the sources differ only in how they spell the
+  route ("Highway 71" vs "FL-71"), which the matching rule ignores. Recorded in the fuller,
+  more standard form. Pilot's own locator lists "2209 FL-71, Marianna, FL 32448" at I-10 exit
+  142 and Yelp renders the identical record as "2209 Highway 71"; the Waffle House at 2215
+  Highway 71 is two numbers away on the same street, consistent with the 238 ft audited walk.
+
+HELD      Orange|877
+  HELD - the researched operator coordinates are 903 ft from this Waffle House against an audited 252 ft, and Pilot places this store at I-10 exit 873, not the 877 in the row. The address is well sourced; the ROW is not. Audit exit and feet before attaching an address.
+
+AGREED    Franklin|36  ->  6830 Franklin Lebanon Rd
+  A: 6830 Franklin Lebanon Rd   C: geocodes 195 ft vs audited 301 ft (d -106)
+  Both sources give house number 6830 on Franklin Lebanon Rd, identical string. Source B additionally
+  backs it with the official Pilot Flying J location page (locations.pilotflyingj.com/us/oh/franklin/6830-franklin-lebanon-rd)
+  and I-75 Exit 36 confirmations. OH-123 is Franklin-Lebanon Rd, so the Waffle House at 6840
+  OH-123 is the adjacent parcel, consistent with the 301 ft audited walk.
+
+HELD      Winnie|829
+  HELD - five directories agree on 45950 I-10, but the coordinates the research itself cited (29.820633, -94.384317) are 3,655 ft from this Waffle House against an audited 336 ft. The sources contradict themselves; nothing here can say which half is wrong.
+
+AGREED    Theodore|13  ->  6955 Theodore Dawes Rd
+  A: 6955 Theodore Dawes Rd   C: geocodes 383 ft vs audited 383 ft (d 0)
+  Both sources give house number 6955 on Theodore Dawes Rd, identical string. Source B backs
+  it with the official Pilot Flying J location page (locations.pilotflyingj.com/us/al/theodore/6955-theodore-dawes-rd)
+  and I-10 Exit 13 confirmations. The Waffle House at 7031 Theodore Dawes Rd is on the same
+  road, consistent with the 383 ft audited walk.
+
+AGREED    Longview|596  ->  3120 Estes Pkwy
+  A: 3120 Estes Pkwy   C: geocodes 386 ft vs audited 386 ft (d 0)
+  Both sources give house number 3120 on Estes Pkwy, identical string. Source B corroborates
+  with GasBuddy, Yelp, and a Longview News-Journal report (Dec 2024) on the RaceTrac travel
+  center at 3120 Estes Parkway, NEC of I-20 and Estes Pkwy (I-20 exit 596). The Waffle House
+  at 3107 Estes Pkwy sits across the same parkway, consistent with the 386 ft audited walk.
+
+RESOLVED  Henderson|115  ->  2996 Grand Point Hwy
+  A: 3003 Grand Point Hwy   C: geocodes 209 ft vs audited 394 ft (d -185)
+  Sources disagreed on the house number (A: 3003, B: 2996) — Source A's known failure mode,
+  a near-neighbour on the same street that a distance check cannot separate. Investigation
+  showed the two candidates are DIFFERENT businesses at the same exit: truckstopsandservices.com
+  record 1309 lists 'HENDERSON TRAVEL PLAZA, 2996 GRAND POINT HWY, BREAUX BRIDGE, LA 70517,
+  Exit 115', while record 1381 lists a separate 'I-10 TRAVEL CENTER, 3003 GRAND POINT HWY'
+  at the same Exit 115. Allstays record 92088 independently gives Henderson Travel Plaza at
+  '2996 Grand Point Hwy, Breaux Bridge LA 70517', and TruckMap lists the same parcel (now also
+  Silver's Travel Plaza & Casino - Henderson) at 2996. A search of 3003 Grand Point Hwy returns
+  a Valero station and Miss Mamie's Henderson Casino, not Henderson Travel Plaza. Since the
+  atlas records the operator as Henderson Travel Plaza, 2996 is the correct parcel; the Waffle
+  House at 2998 Grandpoint Hwy is the immediately adjacent even-side number, consistent with
+  the 394 ft audited walk.
+
+AGREED    Kenly|106  ->  1000 Truckstop Rd
+  A: 1000 Truckstop Rd   C: geocodes 421 ft vs audited 398 ft (d +23)
+  Both sources give house number 1000 on Truckstop Rd, identical string. Source B backs it
+  with the official Pilot Flying J page (locations.pilotflyingj.com/us/nc/kenly/1000-truckstop-rd),
+  which states 'I-95, Exit 106' and gives coords 35.5829955/-78.1478903, and explicitly disambiguates
+  it from the other Kenly property, Flying J #683 at 1800 Princeton Kenly Rd off exit 107.
+  Source A's alternate candidate 923 Johnston Pkwy was not its proposal and is not supported.
+  The Waffle House at 875 Johnston Pkwy is in the same complex, consistent with the 398 ft
+  audited walk.
+
+AGREED    Ellenton|224  ->  1526 51st Ave E
+  A: 1526 51st Ave E   C: geocodes 317 ft vs audited 417 ft (d -100)
+  Source A (HERE, 317 ft) and Source B (Pilot/ONE9 operator page locations.pilotflyingj.com/us/fl/ellenton/1526-51st-ave-e,
+  corroborated by carrieratlas and iExit under I-75 Exit 224) give the identical string "1526
+  51st Ave E". House number 1526 sits directly opposite the Waffle House at 1515 51st Ave E
+  (odd/even sides of the same street), consistent with the 417 ft audited walk. No spelling
+  reconciliation needed.
+
+AGREED    Richmond Hill|87  ->  4401 US Highway 17
+  A: 4401 US Highway 17   C: geocodes 406 ft vs audited 419 ft (d -13)
+  Same house number 4401 from both sources; they differ only in how the route is spelled —
+  A: "4401 US Highway 17", B: "4401 Hwy. 17" from ta-petro.com/location/ga/ta-savannah/ ("I-95
+  & U.S. 17 South, Exit 87"), with Yelp rendering it "4401 US 17". Took the fuller standard
+  form "US Highway 17". A's alternate candidate "110 Sommers Blvd" is not in play: Sommers
+  Blvd is the Waffle House's own street (56 Sommers Blvd), and B's OSM cross-check of the TA's
+  in-store tenants at 4401 Ocean Highway (~446 ft from the Waffle House) matches the 419 ft
+  audited walk.
+
+AGREED    Ocala|341  ->  2020 SW Highway 484
+  A: 2020 SW CR-484   C: geocodes 527 ft vs audited 429 ft (d +98)
+  Same house number 2020 from both sources; the only difference is the route label (A: "SW
+  CR-484", B: "SW Hwy 484"). I checked this one because CR vs Hwy is more than a Rd/Road abbreviation:
+  Pilot's own store page (locations.pilotflyingj.com/us/fl/ocala/2020-sw-hwy-484, store #293,
+  I-75 Exit 341), Yelp, Cinnabon's tenant listing for the same building, and TruckMap all render
+  the street as SW Highway 484, so that is the standard form. Adjacent numbering to Waffle
+  House #508 at 2065 on the same road fits the 429 ft walk.
+
+AGREED    Port Wentworth|109  ->  7001 GA Highway 21
+  A: 7001 GA Highway 21   C: geocodes 479 ft vs audited 479 ft (d 0)
+  Same house number 7001 from both sources, differing only as "GA Highway 21" vs "GA-21"; kept
+  the fuller form. B's operator source (locations.pilotflyingj.com/us/ga/port-wentworth/7001-ga-21,
+  I-95 Exit 109, also rendered "7001 Highway 21" on pilotflyingj.com/stores/71) independently
+  confirms 7001 and rules out A's near-neighbour candidate 7002; the OSM position of the Pilot's
+  in-store Subway at 7001 Augusta Road is ~437 ft from the Waffle House at 6941, matching the
+  479 ft audited walk.
+
+AGREED    Madison|258  ->  6390 South State Road 53
+  A: 6390 S Sr 53   C: geocodes 501 ft vs audited 501 ft (d 0)
+  Same house number 6390 from both sources; A abbreviates it "6390 S Sr 53" and B gives the
+  operator's own directory form "6390 South State Road 53" (Fast Track store #410), with truckstopsandservices
+  #47008 ("6390 FL-53", I-10 Exit 258) and parkadvisor ("I-10 Ex 258 (SR53), 6390 S. State
+  Road 53") agreeing. Used the fuller spelling. Distance check holds: ~482 ft straight-line
+  from 145 SE Bandit St vs the 501 ft audited walk.
+
+AGREED    St. George|77  ->  113 Motel Dr
+  A: 113 Motel Dr   C: geocodes 466 ft vs audited 506 ft (d -40)
+  Both sources give the identical string "113 Motel Dr"; B anchors it to the operator page
+  locations.pilotflyingj.com/us/sc/saint-george/113-motel-dr (Flying J, I-95 Exit 77) and to
+  OSM's Denny's at 113 Motel Drive inside the Flying J complex, ~521 ft from the Waffle House
+  at 127 Motel Dr against a 506 ft audited walk. A's alternate "6014 W Jim Bilton Blvd" is
+  not supported by any operator source.
+
+AGREED    Gulfport|31  ->  9351 Canal Rd
+  A: 9351 Canal Rd   C: geocodes 596 ft vs audited 596 ft (d 0)
+  Both sources give house number 9351 on Canal Rd. Source B backs it with the official Pilot
+  Company location page (9351 Canal Rd, Gulfport, MS 39503, I-10 Exit 31, Flying J #676), and
+  the Waffle House at 9282 Canal Rd sits on the same road, consistent with the 596 ft audited
+  walk.
+
+AGREED    Byron|149  ->  248 GA Highway 49 N
+  A: 248 GA Highway 49 N   C: geocodes 608 ft vs audited 608 ft (d 0)
+  Both sources give house number 248 on GA Highway 49 N; the variants (GA-49 N, GA Hwy 49N)
+  are spelling only. Multiple listings (GasBuddy, Yelp, Way.com) plus I-75 Exit 149 confirmation
+  place Gas N Go at 248 GA-49 N, opposite the Waffle House at 241 GA Highway 49 N, matching
+  the 608 ft walk. Fuller spelling retained.
+
+AGREED    Valdosta|11  ->  3460 Madison Hwy
+  A: 3460 Madison Hwy   C: geocodes 618 ft vs audited 618 ft (d 0)
+  Both sources give house number 3460 on Madison Hwy, and Source A's alternates (3491, 3470,
+  3495) are near-neighbours it did not select. Source B's official Pilot page (3460 Madison
+  Hwy, Valdosta, GA 31601, I-75 Exit 11, Pilot #4561) independently confirms the chosen number,
+  so the neighbour ambiguity is settled by a real source rather than by distance.
+
+AGREED    Fort Pierce|129  ->  7150 Okeechobee Rd
+  A: 7150 Okeechobee Rd   C: geocodes 646 ft vs audited 636 ft (d +10)
+  Both sources give house number 7150 on Okeechobee Rd. Source B cites the official Love's
+  location page (7150 Okeechobee Rd., Fort Pierce, FL 34945, I-95 Exit 129, Love's #415); the
+  Waffle House at 7147 Okeechobee Rd is across the street, consistent with the 636 ft audited
+  walk.
+
+AGREED    Madison|114  ->  2021 Eatonton Rd
+  A: 2021 Eatonton Rd   C: geocodes 495 ft vs audited 646 ft (d -151)
+  Both sources give house number 2021 on Eatonton Rd (Source B's evidence spells it 'Eatonton
+  Road'). The official TravelCenters of America page lists 2021 Eatonton Road, Madison, GA
+  30650 at I-20 & US 441 Exit 114 (TA #45), matching the Waffle House at 2050 Eatonton Rd across
+  US 441.
+
+HELD      DeFuniak Springs|70
+  HELD - Love's own page gives 17750 Hwy 285 Drive S, Mossy Head FL. Every geocode of it lands 11,282-14,709 ft from this Waffle House against an audited 678 ft, one of them on a different street. Not shippable as the address of a 678 ft pairing.
+
+AGREED    Commerce|149  ->  30732 Highway 441 S
+  A: 30732 Highway 441 S   C: geocodes 687 ft vs audited 687 ft (d 0)
+  Both sources give house number 30732 on the same road; only the spelling differs (A: "Highway
+  441 S", B: "Hwy 441 South"). Kept the fuller street type "Highway" with the standard directional
+  suffix "S". B's evidence (TA's own location page for TA Commerce, I-85 at US-441 Exit 149)
+  matches the exit, and the Waffle House at 30789 US-441 S is near-adjacent numbering consistent
+  with the 687 ft walk.
+
+AGREED    Manning|119  ->  3014 Paxville Highway
+  A: 3014 Paxville Hwy   C: geocodes 512 ft vs audited 791 ft (d -279)
+  Both sources give 3014 Paxville Hwy/Highway — identical house number, only Hwy vs Highway
+  differs, so the fuller "Highway" is recorded. B cites TA's official page for TA Manning (I-95
+  & SR-261, Exit 119, TA #179) plus a Yelp listing; the Waffle House at 3021 Paxville Hwy is
+  on the same street with near-identical numbering, consistent with the short walk.
+
+AGREED    Baldwin|343  ->  1024 US 301 South
+  A: 1024 US-301   C: geocodes 799 ft vs audited 799 ft (d 0)
+  Both sources give house number 1024 on US-301; A writes it "US-301" and B "US 301 South",
+  so the fuller form with the directional is recorded. B cites TA's official Baldwin location
+  page (I-10 Exit 343) and a directory listing for TA #247 at the same exit. Waffle House at
+  1066 US Highway 301 S is 42 numbers away on the same highway, consistent with 799 ft.
+
+AGREED    Hardeeville|5  ->  15976 Whyte Hardee Blvd
+  A: 15976 Whyte Hardee Blvd   C: geocodes 432 ft vs audited 860 ft (d -428)
+  Both sources give 15976 Whyte Hardee Blvd, identical in number and spelling. A's alternate
+  candidate (15845) was not the proposal, so there is no disagreement to resolve. B's evidence
+  is Pilot's own location finder for Pilot Travel Center #4569 at I-95 Exit 5, and the Hardeeville
+  city index shows it is the only Pilot/Flying J in town, ruling out same-brand confusion.
+  The unrelated discrepancy in the Waffle House's own listed address does not bear on the truck
+  stop's number.
+
+AGREED    Jennings|64  ->  1823 Elton Rd
+  A: 1823 Elton Rd   C: geocodes 861 ft vs audited 861 ft (d 0)
+  Both sources give 1823 Elton Rd, identical. B corroborates with four independent directories
+  (truckstopsandservices, Yelp, findfuelstops, Roadnow) all placing Jennings Travel Plaza at
+  1823 Elton Rd, I-10 Exit 64. The different street name from the Waffle House (1635 N Lake
+  Arthur Ave) is explained: LA-26 is Elton Rd north of I-10 and Lake Arthur Ave south of it,
+  so the two sit on opposite sides of the same interchange at 861 ft.
+
+AGREED    Valdosta|16  ->  1808 W Hill Ave
+  A: 1808 W Hill Ave   C: geocodes 889 ft vs audited 889 ft (d 0)
+  Both sources give 1808 W Hill Ave, identical. B corroborates with Allstays, GasBuddy, TruckMap
+  and truckstopsandservices, all listing Big Foot Travel Center #946 at 1808 W Hill Ave, I-75
+  Exit 16. The Waffle House at 1819 W Hill Ave is directly opposite on the same street, consistent
+  with the 889 ft walk.
+
+AGREED    Milton|26  ->  3840 Garcon Point Rd
+  A: 3840 Garcon Point Rd   C: geocodes 900 ft vs audited 892 ft (d +8)
+  Both sources give house number 3840 on Garcon Point Rd; Source B corroborates with the loves.com
+  official page for Love's Travel Stop #802 at Exit 26.
+
+AGREED    Beaumont|848  ->  5405 Walden Rd
+  A: 5405 Walden Rd   C: geocodes 969 ft vs audited 969 ft (d 0)
+  Both sources give house number 5405 on Walden Rd; Source B corroborates with the ta-petro.com
+  official page for the Petro at I-10 Exit 848 at Walden Road.
+
+AGREED    Elkton|109  ->  221 Belle Hill Rd
+  A: 221 Belle Hill Rd   C: geocodes 1041 ft vs audited 1041 ft (d 0)
+  Both sources give house number 221 on Belle Hill Rd; Source B corroborates with the Pilot
+  Company page for Flying J #875 at I-95 Exit 109A, the only Pilot Company site in Elkton.
+
+RESOLVED  Temple|19  ->  625 Carrollton St
+  A: 650 Carrollton St   C: geocodes 1447 ft vs audited 1282 ft (d +165)
+  Sources disagreed (A: 650, B: 625). Verified independently: two Pilot Company travel centers
+  sit at I-20 Exit 19 on Carrollton St - Pilot Travel Center #417 at 625 Carrollton St (locations.pilotflyingj.com/us/ga/temple/625-carrollton-st,
+  geo 33.7188107,-85.0296388, corroborated by truckstopsandservices.com listing #16969) and
+  Flying J Travel Center #634 at 650 Carrollton St (locations.pilotflyingj.com/us/ga/temple/650-carrollton-st,
+  geo 33.7192504,-85.0264835). Using those official coordinates against Waffle House #1750
+  at 543 Carrollton St, both compute to roughly 1,440 ft straight-line, so distance cannot
+  separate them - this is precisely Source A's known near-neighbour-on-the-same-street error
+  mode. The operator recorded for this stop is Pilot, and the atlas records Flying J as a distinct
+  operator elsewhere (Elkton, Jackson), so brand settles it: the Pilot is 625 Carrollton St.
+
+AGREED    Jackson|201  ->  1125 Bucksnort Rd
+  A: 1125 Bucksnort Rd   C: geocodes 1483 ft vs audited 1483 ft (d 0)
+  Both sources give house number 1125 on Bucksnort Rd; Source B corroborates with the Pilot
+  Company page for Flying J #630 at I-75 Exit 201, matching the recorded Flying J operator
+  and ruling out the nearby Pilot #4560 on GA-36.
+
+AGREED    Slidell|266  ->  1682 Gause Blvd
+  A: 1682 Gause Blvd   C: geocodes 1525 ft vs audited 1588 ft (d -63)
+  Both sources give house number 1682 on Gause Blvd; Source B corroborates with the ta-petro.com
+  official page for the TA at I-10 Exit 266.
+
+AGREED    Port Allen|151  ->  751 S Lobdell Hwy
+  A: 751 S Lobdell Hwy   C: geocodes 1815 ft vs audited 1792 ft (d +23)
+  Both sources give house number 751 on Lobdell Hwy; the only difference is the directional
+  'S' sitting as a prefix (Source A: '751 S Lobdell Hwy') versus a suffix (Source B: '751 Lobdell
+  Hwy S'), which the rules treat as the same address. Recorded with the directional as a prefix,
+  matching USPS convention and the atlas's own Waffle House line '112 S Lobdell Hwy'. Source
+  B's corroboration is strong: Love's own location finder lists Travel Stop #240 at 'Exit 151
+  @ Hwy 415' on I-10, matching the recorded exit, with truckstopsandservices and Foursquare
+  agreeing, and it is the only Love's in Port Allen.
+
+RESOLVED  Terrell|501  ->  1703 State Highway 34 S
+  A: (no candidate)   C: geocodes 1910 ft vs audited 1913 ft (d -3)
+  Source A returned nothing, so I researched it independently. I fetched the Allstays truck-stop
+  record directly: 'Valero Corner Store', '1703 Highway 34 S.', Terrell TX 75160, keyed explicitly
+  to 'I-20 Ex 501 (Hwy 34)' with 15 truck parking spaces. Valero's own location page, findfuelstops,
+  Yelp, GasBuddy, Waze and GetUpside all independently return the same house number, and no
+  second Valero exists on SH 34 in Terrell. I also checked the rival candidate: the business
+  actually named 'Terrell Travel Plaza' is at 1100/1102 FM 148, which is the FM 148 exit (499)
+  roughly two miles off, and one Yelp listing shows it closed. That distance is irreconcilable
+  with the audited 1,913 ft walk from the Waffle House at 1612 State Highway 34 S, whereas
+  1703 SH-34 S sits directly across the highway from it. Recorded in the fuller 'State Highway
+  34 S' form used by Yelp/Google and by the atlas's Waffle House line.
+
+AGREED    Troutville|150  ->  2966 Lee Hwy
+  A: 2966 Lee Hwy   C: geocodes 1950 ft vs audited 1950 ft (d 0)
+  Both sources give the identical street line '2966 Lee Hwy'. Source B ties it to Pilot's own
+  location finder for the ONE9 Travel Center in Troutville, listed at 'I-81, Exit 150A/B' —
+  matching the recorded exit — with findtruckservice (ONE9 #258) and truckstopsandservices
+  corroborating, and the same road as the Waffle House at 2609 Lee Hwy fits the audited 1,950
+  ft walk.
+
+AGREED    Bishopville|116  ->  1340 Sumter Hwy
+  A: 1340 Sumter Hwy   C: geocodes 2380 ft vs audited 2380 ft (d 0)
+  Both sources give the identical street line '1340 Sumter Hwy'. Source B ties it to Pilot's
+  own location finder, which lists this Bishopville store at 'I-20, Exit 116' — matching the
+  recorded exit — corroborated by findfuelstops and truckstopsandservices as Pilot Travel Center
+  #4581 at I-20 Exit 116 (US 15); same road as the Waffle House at 1113 Sumter Hwy, consistent
+  with the audited 2,380 ft walk.
+
+ONE ROW NOT TOUCHED BY THIS PASS, worth a later look: Columbia TN carries
+"Bear Creek Pike" with no house number, from an earlier audit. HERE returns
+"1624 Bear Creek Pike" at exactly the audited 1,052 ft. It was outside this
+pass's scope - this pass only filled blanks - so it stands as it was.
+

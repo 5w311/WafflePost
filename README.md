@@ -40,6 +40,7 @@ test/run.js               runs every test file and fails the run if any file fai
 scripts/icons.py          VERIFIES the shipped icon PNGs - flatten, sizes, byte-identity, maskable safe circle
 scripts/remeasure.js      geocodes each truck stop and re-derives feet; regenerates the CSV
 scripts/remeasure-report.txt  provenance of every surviving figure, every judgment call
+scripts/tsaddr-report.txt provenance of every truck stop address, and why three rows have none
 data/atlas.csv            REGENERATED from DATA by scripts/remeasure.js - never hand-edit
 apple-touch-icon.png      iOS home screen, 180x180 - the bar tile, baked
 icon-192.png              Android home screen
@@ -837,8 +838,8 @@ address starts with a house number and names the row's own state, and that
 leaderboard.
 
 `run.js` prints one `ok <name> N passed` line per file and then `all green`,
-or names the files that failed. It does not sum the assertions — at v4.14.0
-they come to 1,372 across twelve files, added up from those lines.
+or names the files that failed. It does not sum the assertions — at v4.15.0
+they come to 1,590 across twelve files, added up from those lines.
 
 ## Two version strings, on purpose
 
@@ -853,7 +854,7 @@ Same reasoning as FuelPost, different perishable thing:
   stopped existing; the requirement was "always on screen", not "in the
   header", and the panel tab is on screen in both modes whether the panel is
   open or collapsed. Bump only when the rows are re-audited.
-- **`APP_VERSION`** (`4.14.0`) — the code. Shown in the **legend card**.
+- **`APP_VERSION`** (`4.15.0`) — the code. Shown in the **legend card**.
   Bumped for every shipped change, and stamped onto every `lib/` URL as a
   cache-buster.
 
@@ -873,6 +874,70 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v4.15.0
+
+**Every stop card now shows the truck stop's own address.** The card named the
+truck stop and then gave only the Waffle House's address, which is the wrong
+half for a driver deciding where to *park* — the walk starts at the truck stop,
+and `feet` is measured between two doors of which only one was on screen. Both
+are on the card now, and on most rows they turn out to share a street: `2050 E
+Blue Lick Rd` against the Waffle House's `2021 E Blue Lick Rd` says more about
+the walk than the number above it does. The share text carries both too, and
+labels them, because two unlabelled address lines in one message do not answer
+"which of these do I park at".
+
+**37 addresses added, 3 deliberately withheld.** 40 rows had none. Getting them
+was not a lookup — it was an audit, and `scripts/tsaddr-report.txt` carries the
+provenance of every one.
+
+**The obvious method was measured before it was trusted, and it failed.** Ask
+HERE for the operator near the Waffle House, take the nearest hit: scored
+against the 29 rows that already had a hand-audited address, it agreed on 12 of
+29 and would have written eight or nine wrong addresses — mostly the same brand
+in another state, because `at=` biases a search by location without bounding
+it. Bounded to a circle and arbitrated by the audited `feet`, it reached 23 of
+29 at house-number precision. **87%, and tightening the distance gate did not
+move it** — the remaining errors are near-neighbours on the same street that no
+distance test can separate. One wrong address in eight is exactly the failure
+the 09-2026 re-audit purged twelve rows for, so one source was not enough.
+
+**Three independent checks, and the third is the one that mattered.** A bounded
+HERE place search scored against `feet`; web research that never saw it; then a
+geocode of the agreed line measured back to the Waffle House. 33 of 40 agreed
+outright, 7 were resolved against a named source, and **the third check is what
+caught the three that could not ship**.
+
+**The three withheld are a finding about the rows, not a gap in the research.**
+Each produced a well-sourced address that *contradicts its own row*:
+
+- **Orange TX** — the researched Pilot's own coordinates are 903 ft from that
+  Waffle House against an audited 252 ft, and Pilot places the store at I-10
+  exit **873**, not the 877 in the row. The address is sound; the row is not.
+- **Winnie TX** — five directories agree on `45950 I-10`, but the coordinates
+  the research itself cited are 3,655 ft away against an audited 336 ft. The
+  sources contradict themselves.
+- **DeFuniak Springs FL** — Love's own page gives the address; every geocode of
+  it lands 2.1–2.8 miles from that Waffle House, one on a different street.
+
+A blank is the honest rendering of that, and `data.test.js` pins those three by
+name rather than by count — a fourth row losing its address has to be argued
+for, not absorbed into a number.
+
+**Two errors this pass found in work already shipped.** HERE's candidate for
+Henderson LA was `3003 Grand Point Hwy`, which is a *different business* at the
+same exit — I-10 Travel Center, not Henderson Travel Plaza at 2996. And Temple
+GA has two Pilot-company stores on the same street, 625 (Pilot) and 650
+(Flying J), both about 1,440 ft from the Waffle House, so distance cannot
+separate them; the atlas records the operator as Pilot, and brand settles it.
+
+**A CSS bug found by looking at a screenshot.** `.kv span:first-child` — the
+label rule — also matched the address nested inside the *value*, because
+`.addr` is that span's first *element* child and text nodes do not count. It
+handed a 104px label width to an address in a 247px column and wrapped
+`2100 SW Railroad Ave` onto two lines. It inherited the right colour from that
+rule too, so it looked deliberate. The `>` in `.kv > span:first-child` is now
+load-bearing and pinned in both directions.
 
 ### v4.14.0
 
