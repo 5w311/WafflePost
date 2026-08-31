@@ -1,4 +1,42 @@
-WAFFLEPOST TRUCK STOP ADDRESSES - v4.15.0
+WAFFLEPOST TRUCK STOP ADDRESSES - v4.15.0, extended v4.16.0
+
+v4.16.0: PROMOTED TO FULL ADDRESSES - street, city, state, ZIP.
+v4.15.0 stored a street line and argued the stop card's own heading already
+carried city and state. True on the card, and irrelevant everywhere the
+address actually gets used - read aloud to a dispatcher, pasted into a nav
+app, copied out of the share text.
+
+The locality was NOT appended from the row. This atlas's `city` is the EXIT's
+name, not a postal city, and the Waffle House field already proves they
+diverge: Brooks KY files as Shepherdsville, Baldwin FL as Jacksonville, Good
+Hope AL as Cullman, and a truck stop can differ again. Each street line was
+geocoded on its own, biased to its Waffle House but not bounded by it, and
+accepted only at house-number precision, in the row's own state, within 500 ft
+of the distance that row's `feet` claims. 69 of 70 addresses - 66 rows plus 4
+alternate stops - resolved on the first pass.
+
+ZIP is the five-digit form. HERE returns ZIP+4 for most rooftops; the trailing
+four are a delivery-route code nobody reads aloud.
+
+STREET SPELLINGS WERE KEPT AS THE ATLAS HAS THEM. Fourteen differ from HERE's
+canonical form - "1365 US-42" against "1365 US Highway 42 NE", "100 N Carter
+Rd" against "100 Carter Rd N". The street lines came from the three-source
+audit below; rewriting them to a geocoder's spelling would be unverified
+editing dressed up as normalisation, and the geocode already proved both forms
+resolve to the same building.
+
+ONE STREET LINE DID CHANGE. Columbia TN carried "Bear Creek Pike" with no
+house number, so nothing could resolve its locality - the bare street name
+geocodes to a centroid 18,472 ft away. "1624 Bear Creek Pike" geocodes to
+EXACTLY the audited 1,052 ft, delta 0, which is the same test that corroborated
+the other 36 addresses. Recorded here rather than done silently, because the
+rest of this pass deliberately changes no street lines.
+
+The three HELD rows below are still held: an address that contradicts its own
+row does not become shippable by gaining a city.
+
+-------------------------------------------------------------------------------
+v4.15.0 - HOW THE STREET LINES WERE ESTABLISHED
 
 40 rows had no truck stop address. 37 now do. 3 deliberately do not.
 

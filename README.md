@@ -838,8 +838,8 @@ address starts with a house number and names the row's own state, and that
 leaderboard.
 
 `run.js` prints one `ok <name> N passed` line per file and then `all green`,
-or names the files that failed. It does not sum the assertions — at v4.15.0
-they come to 1,590 across twelve files, added up from those lines.
+or names the files that failed. It does not sum the assertions — at v4.16.0
+they come to 1,726 across twelve files, added up from those lines.
 
 ## Two version strings, on purpose
 
@@ -854,7 +854,7 @@ Same reasoning as FuelPost, different perishable thing:
   stopped existing; the requirement was "always on screen", not "in the
   header", and the panel tab is on screen in both modes whether the panel is
   open or collapsed. Bump only when the rows are re-audited.
-- **`APP_VERSION`** (`4.15.0`) — the code. Shown in the **legend card**.
+- **`APP_VERSION`** (`4.16.0`) — the code. Shown in the **legend card**.
   Bumped for every shipped change, and stamped onto every `lib/` URL as a
   cache-buster.
 
@@ -874,6 +874,50 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v4.16.0
+
+**The truck stop address is now a full address** — street, city, state, ZIP —
+matching the Waffle House field beside it. v4.15.0 stored a street line and
+argued the card's own heading already carried city and state. True on the card,
+and irrelevant everywhere the address actually gets used: read aloud to a
+dispatcher, pasted into a nav app, copied out of the share text. Half an
+address is not one.
+
+**The locality was not appended from the row, and could not have been.** This
+atlas's `city` is the *exit's* name, not a postal city, and the Waffle House
+field already proves they diverge — Brooks KY files as Shepherdsville, Baldwin
+FL as Jacksonville, Good Hope AL as Cullman — with the truck stop free to
+differ again. Each street line was geocoded on its own, biased toward its
+Waffle House but not bounded by it, and accepted only at house-number
+precision, in the row's own state, within 500 ft of the distance that row's
+`feet` claims. 69 of the 70 addresses — 66 rows plus 4 alternate stops —
+resolved on the first pass.
+
+**Street spellings were kept as the atlas has them.** Fourteen differ from
+HERE's canonical form: `1365 US-42` against `1365 US Highway 42 NE`, `100 N
+Carter Rd` against `100 Carter Rd N`. Those street lines came from the v4.15.0
+three-source audit, and rewriting them to a geocoder's spelling would be
+unverified editing dressed up as normalisation — the geocode had already proved
+both forms resolve to the same building.
+
+**One street line did change, and it is recorded rather than done quietly.**
+Columbia TN carried `Bear Creek Pike` with no house number, so nothing could
+resolve its locality — the bare street name geocodes to a centroid 18,472 ft
+away. `1624 Bear Creek Pike` geocodes to **exactly** the audited 1,052 ft,
+delta 0, the same test that corroborated the other 36.
+
+**Two bugs in my own checking, both caught by the checks disagreeing with the
+data rather than the other way round.** `in=circle:` is a discover and browse
+parameter and returns 400 on `/geocode`, which the first pass did seventy times
+in a row while reporting "no house-number match" — proximity there goes through
+`at=`, which biases rather than bounds, so the distance test is doing real work
+instead of confirming a constraint already applied upstream. And the resolver
+judged *alternate* stops against the primary's walk distance, flagging both Oak
+Grove alts as 1,000 ft wrong when each sits exactly where its own `feet` says.
+
+The three withheld rows are still withheld. An address that contradicts its own
+row does not become shippable by gaining a city.
 
 ### v4.15.0
 
