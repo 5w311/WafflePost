@@ -46,7 +46,7 @@ data/atlas.csv            REGENERATED from DATA by scripts/remeasure.js - never 
 apple-touch-icon.png      iOS home screen, 180x180 - the bar tile, baked
 icon-192.png              Android home screen
 icon-512.png              Android, large
-icon-maskable-512.png     Android; byte-identical to icon-512 since v4.6.3 - the W needs no shrink
+icon-maskable-512.png     Android; byte-identical to icon-512 since v4.6.3 - the mark needs no shrink
 favicon-32.png            browser tab, 32x32
 favicon-16.png            browser tab, 16x16
 manifest.json             app name, icons, standalone display - no service worker
@@ -839,7 +839,7 @@ address starts with a house number and names the row's own state, and that
 leaderboard.
 
 `run.js` prints one `ok <name> N passed` line per file and then `all green`,
-or names the files that failed. It does not sum the assertions — at v4.17.0
+or names the files that failed. It does not sum the assertions — at v4.18.0
 they come to 1,741 across twelve files, added up from those lines.
 
 ## Two version strings, on purpose
@@ -855,7 +855,7 @@ Same reasoning as FuelPost, different perishable thing:
   stopped existing; the requirement was "always on screen", not "in the
   header", and the panel tab is on screen in both modes whether the panel is
   open or collapsed. Bump only when the rows are re-audited.
-- **`APP_VERSION`** (`4.17.0`) — the code. Shown in the **legend card**.
+- **`APP_VERSION`** (`4.18.0`) — the code. Shown in the **legend card**.
   Bumped for every shipped change, and stamped onto every `lib/` URL as a
   cache-buster.
 
@@ -875,6 +875,26 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v4.18.0
+
+**New app icon: a golden waffle with a pat of butter, on a dark brown
+ground.** It replaces the sign-yellow W on a waffle grid that shipped from
+v4.6.3. The 192, 180 and 512 files are the supplied artwork, byte for byte.
+
+- **One 512 ships as both.** The two supplied 512s were pixel-identical but
+  not byte-identical, so the same file is `icon-512.png` and
+  `icon-maskable-512.png`, as the tests require.
+- **The favicons are derived.** No 32 or 16 was supplied, so both are Lanczos
+  downscales of the 512.
+- **It clears the maskable safe zone easily.** `scripts/icons.py` puts the
+  furthest waffle pixel at radius 0.273 against the circle's 0.400, so a
+  circular launcher crop clips only the dark ground.
+- **The bar tile keeps its W.** It is drawn live in the device's system font
+  and was never the same image as the icon.
+
+On iOS a home screen icon is cached at install, so the new one appears after
+the app is deleted and re-added to the home screen.
 
 ### v4.17.0
 

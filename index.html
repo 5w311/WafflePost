@@ -6,12 +6,12 @@
 <title>WafflePost</title>
 <meta name="description" content="Every Waffle House in America you can walk to from a truck stop.">
 
-<!-- Home screen and browser tab: a char tile carrying a sign-yellow W over a
-     flat four-by-four waffle grid, matching the tile in the bar. Inverted at
-     v4.6.3 from the yellow-ground, black-W mark that shipped from v3.5.0.
-     Baked rather than reused, because the bar's W is drawn in whatever the
-     DEVICE calls system-ui - SF Pro on iOS, Roboto on Android - and an icon
-     has to be one fixed image. The icons are authored outside this repo;
+<!-- Home screen and browser tab: a golden waffle with a pat of butter on a
+     dark brown ground, since v4.18.0. Before that, v4.6.3 through v4.17.0,
+     a char tile carrying a sign-yellow W over a flat waffle grid, and before
+     THAT the yellow-ground, black-W mark from v3.5.0. The bar's tile keeps
+     its W: it is drawn live in whatever the DEVICE calls system-ui and was
+     never the same image as the icon. The icons are authored outside this repo;
      scripts/icons.py does not draw them, it MEASURES the shipped files - the
      flatten, the sizes, the byte-identity of the two 512s, and the one
      geometric fact prose cannot check for itself, below.
@@ -22,8 +22,8 @@
      contrast. No icon design defeats the transform - see the dark icon
      section below, where the mechanism is investigated and closed. This mark
      ships because it is a better mark and because it DEGRADES GRACEFULLY:
-     darkened, a dark tile with a yellow W still reads as a dark icon with a
-     legible W, where a bright yellow tile crushed to near-black read as a
+     darkened, a dark tile with a light mark still reads as a dark icon with a
+     legible mark (true of the v4.18.0 waffle as of the W before it), where a bright yellow tile crushed to near-black read as a
      bright icon that had gone wrong. That is the entire claim. It buys
      appearance, not contrast.
 
@@ -47,18 +47,15 @@
 
      THE MASKABLE AND PLAIN 512 ARE BYTE-IDENTICAL FILES. They used to
      differ, because the old plain W was drawn full size and the maskable one
-     shrunk to fit. The current W needs no shrink, measured pixel by pixel on
-     the shipped file by scripts/icons.py: it spans 0.582 of the icon wide by
-     0.426 tall, and its furthest yellow pixel sits at radius 0.359 against
-     the centre-80% circle's 0.400. A circular crop clips NONE of it. (The
-     bounding-box diagonal is 0.721, which OVERSTATES the risk, because the
-     box corners are empty. The radius is the number that decides; both are
-     printed so the difference stays visible to whoever changes the mark.)
+     shrunk to fit. The v4.18.0 waffle needs no shrink, measured pixel by
+     pixel on the shipped file by scripts/icons.py: it spans 0.547 of the icon
+     wide by 0.502 tall, and its furthest golden pixel sits at radius 0.273
+     against the centre-80% circle's 0.400. A circular crop clips NONE of it -
+     the whole waffle is round and sits well inside. (The supplied 512s were
+     pixel-identical but not byte-identical, so one file ships as both.)
      Both files still ship because the manifest declares purpose "maskable"
      separately and a launcher may fetch either; they simply happen to have
-     the same contents. The grid's outer wells ARE clipped by a circular crop,
-     and that is intended - the grid is background texture and only the W has
-     to survive the mask.
+     the same contents. Only the dark ground is clipped by a circular crop.
 
      display:standalone, deliberately. This app was already built like one -
      html and body are overflow:hidden, the bar pads for
@@ -874,27 +871,27 @@ var __mods={};
 function require(p){return __mods[p.replace(/^\.\//,'').replace(/\.js$/,'')];}
 var module={exports:{}};
 </script>
-<script src="lib/waffledist.js?v=4.17.0"></script>
+<script src="lib/waffledist.js?v=4.18.0"></script>
 <script>__mods.waffledist=module.exports;module={exports:{}};</script>
-<script src="lib/atlasfilter.js?v=4.17.0"></script>
+<script src="lib/atlasfilter.js?v=4.18.0"></script>
 <script>__mods.atlasfilter=module.exports;module={exports:{}};</script>
-<script src="lib/routewaffles.js?v=4.17.0"></script>
+<script src="lib/routewaffles.js?v=4.18.0"></script>
 <script>__mods.routewaffles=module.exports;module={exports:{}};</script>
-<script src="lib/vehicleprofile.js?v=4.17.0"></script>
+<script src="lib/vehicleprofile.js?v=4.18.0"></script>
 <script>__mods.vehicleprofile=module.exports;module={exports:{}};</script>
-<script src="lib/triptext.js?v=4.17.0"></script>
+<script src="lib/triptext.js?v=4.18.0"></script>
 <script>__mods.triptext=module.exports;module={exports:{}};</script>
-<script src="lib/escape.js?v=4.17.0"></script>
+<script src="lib/escape.js?v=4.18.0"></script>
 <script>__mods.escape=module.exports;module={exports:{}};</script>
-<script src="lib/flexible-polyline.js?v=4.17.0"></script>
+<script src="lib/flexible-polyline.js?v=4.18.0"></script>
 <script>__mods['flexible-polyline']=module.exports;module={exports:{}};</script>
-<script src="lib/autosuggest.js?v=4.17.0"></script>
+<script src="lib/autosuggest.js?v=4.18.0"></script>
 <script>__mods.autosuggest=module.exports;module={exports:{}};</script>
-<script src="lib/location.js?v=4.17.0"></script>
+<script src="lib/location.js?v=4.18.0"></script>
 <script>__mods.location=module.exports;module={exports:{}};</script>
-<script src="lib/routeoptions.js?v=4.17.0"></script>
+<script src="lib/routeoptions.js?v=4.18.0"></script>
 <script>__mods.routeoptions=module.exports;module={exports:{}};</script>
-<script src="lib/baselayer.js?v=4.17.0"></script>
+<script src="lib/baselayer.js?v=4.18.0"></script>
 <script>__mods.baselayer=module.exports;module={exports:{}};</script>
 
 <script>
@@ -946,7 +943,7 @@ var HERE_API_KEY = '7RDploUiahAnm08IZA9X7YSbb0Qh99pvqV2NCNQX_Hg';
    APP_VERSION - the code. Shown in the legend card. Bumped every change,
                 and stamped onto every lib/ URL as a cache-buster. */
 var ATLAS_REV   = 'Atlas Rev 13-2026';
-var APP_VERSION = '4.17.0';
+var APP_VERSION = '4.18.0';
 
 /* ===== DATA ==========================================================
    61 rows - 60 walkable exits plus one honorary - carrying 73 pairings,
