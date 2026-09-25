@@ -246,6 +246,19 @@ var renderSrc = (src.match(/function render\(\)\{[\s\S]*?\n\}/) || [''])[0];
 var toggleSrc = (src.match(/function togglePanel\(\)\{[\s\S]*?\n\}/) || [''])[0];
 t.eq(/capPanelRows\(\)/.test(renderSrc), true, 'render re-caps the list');
 t.eq(/capPanelRows\(\)/.test(toggleSrc), true, 'reopening the panel re-caps it');
+// And re-measures in BOTH modes (v4.19.2). capPanelRows returns early in Route
+// before its own syncMapPadding, so reopening the Route panel left HERE's
+// copyright band and controls where the collapsed panel had put them.
+t.eq(/if \(!c\) capPanelRows\(\);[\s\S]*syncMapPadding\(\);\s*\}$/.test(toggleSrc), true,
+     'reopening the panel re-measures the map in Route too');
+// ---- the route panel says each thing once (v4.19.2) ----
+// The summary card restated the pair count (panel tab), the ends and rig
+// (trip tab) and the miles (option card). It is gone; a single line keeps
+// the miles and road only when there is no chooser to carry them.
+t.eq(/class="summary"/.test(src), false, 'no route summary card');
+t.eq(/route-line/.test(src), true, 'a one-line mileage when there is only one route');
+t.eq(/shortPlace\(f\)\+' \\u2192 '\+shortPlace\(t\)/.test(src), true,
+     'the trip tab names places, not full geocoder labels');
 t.eq(/state\.mode !== 'atlas'[\s\S]{0,120}return;/.test(src), true,
      'Route mode keeps its own panel: the cap is Atlas only');
 
