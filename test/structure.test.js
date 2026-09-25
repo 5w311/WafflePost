@@ -259,8 +259,19 @@ t.eq(/rows\.length <= PANEL_ROWS\) return;[\s\S]*--sheet-max/.test(capSrc), true
 t.eq(/--chrome-h/.test(src), true, 'the control lift has its own variable');
 t.eq(/\.H_l_bottom\{bottom:calc\(var\(--chrome-h/.test(src), true,
      'and the bottom controls use it');
-t.eq(/setPadding\(MAP_FIT_MARGIN, MAP_FIT_MARGIN,\s*h \+ MAP_FIT_MARGIN/.test(src), true,
+// v4.19.0 gave the TOP an argument of its own: the iOS design layer floats
+// the bar over the map in Atlas, and a fit that ignored it put the northern
+// pins under the bar. The BOTTOM is what this check was always about, and it
+// still holds - the panel alone, never the sheet. The first form of this
+// assertion pinned the literal top argument too; that was incidental.
+t.eq(/setPadding\(top \+ MAP_FIT_MARGIN, MAP_FIT_MARGIN,\s*h \+ MAP_FIT_MARGIN/.test(src), true,
      'the map padding still comes from the panel alone: a sheet must not move the map');
+var padSrc = ((src.match(/function syncMapPadding\(\)\{[\s\S]*?\n\}/) || [''])[0])
+               .replace(/\/\*[\s\S]*?\*\//g, '');
+t.eq(padSrc.length > 0, true, 'syncMapPadding is found');
+t.eq(/sheet/.test(padSrc), false, 'and never measures the stop sheet');
+t.eq(/getBoundingClientRect\(\)\.bottom\s*-\s*m\.getBoundingClientRect\(\)\.top/.test(padSrc), true,
+     'the top is the bar\'s measured overlap onto the map, not a constant');
 // Flex column, not position:sticky. Sticky let content that follows the bar in
 // flow render straight through underneath it.
 t.eq(/\.sheet-actions\{[^}]*position:sticky/.test(src), false,

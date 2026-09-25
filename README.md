@@ -423,6 +423,28 @@ than with canvas metrics, which called a 9px overflow a fit and shipped
 "City, exit, sto" in the first pass. The margin it needed came out of the bar's
 gap and the tabs' side padding, never out of a tap target.
 
+### Since v4.19.0 it floats, in Atlas
+
+In Atlas the bar leaves the page flow and becomes one glass pill over a map
+that runs to the top edge, so it no longer costs the map any height at all.
+In Route it stays in the flow, because the trip drawer sits directly under it
+and floating both would mean measuring two stacked panels. The switch is keyed
+on `#drawer.hidden` rather than a mode class: `setMode` toggles exactly that
+and nothing else, and the tests pin that `setMode` never touches the bar.
+
+A floating bar covers the top of the map, so `syncMapPadding` now pads the
+top as well as the bottom — by the bar's **measured overlap** onto the map,
+not a constant. When the bar is in the flow the overlap is zero and the
+padding is exactly what it always was. The same number becomes `--bar-bleed`,
+which drops the filters popover below the bar instead of under it.
+
+Search still gets about 167px and still reads "City, exit, stop". The room the
+floating inset took came back out of whitespace — the bar's inset and gap, the
+tile, the tabs' side padding. The fit was measured with the placeholder set as
+the field's **value**: an empty field's `scrollWidth` ignores placeholder text
+and reports a fit that is not there. That trap bit the first pass of this
+change exactly as it bit v4.3.0.
+
 ## The key draws the map now
 
 Through 2.x the Atlas tab called nothing — Leaflet with CARTO's free basemap
@@ -694,6 +716,16 @@ question: when HERE returns more than one, they are compared, and the panel
 leads with a chooser. See *Alternative routes* below — but even there the list
 keeps HERE's order and only labels the difference.
 
+**Dry stretches are shown, and they are not a plan.** Where 150 miles or more
+of the run passes no walkable pair, the list says so in its own row, between
+the two stops it separates — Dallas to Orlando by I-49 shows one, the 265
+miles from Marshall TX to Henderson LA. That row is arithmetic on the list
+already on screen: the difference between two mile markers. It assumes no
+speed, no hours and no hunger, so it stays on the right side of the rule
+below. 150 is a display threshold, not advice — below it, the Gulf coast on
+I-10 would sprout a row between nearly every pair. `dryStretches` in
+`lib/routewaffles.js` computes it and is tested against that real run.
+
 **There is deliberately no range input.** No "how far do you run", no tank
 gauge, no hours-of-service arithmetic. Those belong to a fuel plan, where the
 constraint is real and the app can compute against it. Here the honest output
@@ -821,6 +853,42 @@ the detour tiers, the option scoring, the vehicle parameters — is pure, lives
 in `lib/`, and is covered by tests that run under plain `node` with no key and
 no network.
 
+## The iOS design layer
+
+Since v4.19.0 a second stylesheet, `<style id="ios-design">`, sits after the
+original one and restyles the app in Apple's current design language: system
+type, iOS system colours with sign yellow as the tint, glass over the map,
+capsule controls, and the distance set the way iOS sets a temperature. It is
+the same pattern the FuelPost-iOS repo uses, so the two apps read as siblings.
+
+**It is one deletable block.** Every original rule is still underneath and
+wins wherever the layer says nothing. Deleting the element returns the v4.18
+look, with one coupling running the other way: `syncMapPadding` measures the
+bar's overlap onto the map, and without the layer that overlap is zero, so the
+measurement goes inert rather than wrong. No script reads any rule in it.
+
+Decisions in it that were paid for, so do not undo them:
+
+- **The stop sheet and the filters popover are near-opaque, not glass.** Both
+  open over the panel, not over the map, and at glass density the panel's
+  rows read straight through a stop's name.
+- **Tiers moved to system orange and system brown, and both take dark ink.**
+  System brown is far lighter than the syrup it replaced; cream on it falls
+  under 4.5:1.
+- **Sign yellow is never text on a light background.** It is 1.6:1 on white.
+  Anything tinted that gets read — mile markers, the locate icon — uses
+  `--tint-text`, a dark amber in light mode and sign yellow in dark.
+- **A route row never breaks a number.** The exit label is the part that gives
+  way, since on a route the mile marker already says where the stop is.
+- **The caution note is still hoisted above the distance** exactly as v4.8.0
+  put it. The layer only makes it look like an alert card.
+
+The canvas mockup the layer was built from — Map, Atlas, Stop, Route and a
+stop with a warning — is at
+https://claude.ai/artifact/Cig4pdroEcQ7jpCzDpxfdJ. Not everything in it
+shipped: the mockup puts search in a bottom sheet with drag detents, and that
+is a different interaction model rather than a restyle.
+
 ## Tests
 
 ```
@@ -841,7 +909,8 @@ leaderboard.
 
 `run.js` prints one `ok <name> N passed` line per file and then `all green`,
 or names the files that failed. It does not sum the assertions — at v4.18.0
-they come to 1,741 across twelve files, added up from those lines.
+they came to 1,741 across twelve files; at v4.19.0 they come to 1,764, added up
+from those lines.
 
 ## Two version strings, on purpose
 
@@ -876,6 +945,27 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v4.19.0
+
+**The iOS design layer.** A second stylesheet restyles the app in Apple's
+current design language, built from a canvas mockup and following the pattern
+FuelPost-iOS already uses. See *The iOS design layer*.
+
+- **In Atlas the bar floats** over a full-bleed map as one glass pill, and the
+  map is padded at the top by the bar's measured overlap. Route keeps the bar
+  in the flow, over the trip drawer.
+- **The panel, stop sheet and HERE's controls float inset** from the screen
+  edge, as iOS 26 sheets do. The stop sheet and the popover are near-opaque;
+  both open over the panel, and glass let its rows show through.
+- **The walk distance is the headline**, in rounded numerals. The caution note
+  keeps its v4.8.0 place above it and now reads as an alert card.
+- **Route shows dry stretches**: a row wherever 150 miles or more passes no
+  walkable pair. `dryStretches` in `lib/routewaffles.js`, 17 new tests.
+- `test/structure.test.js`: the padding check pinned the literal top argument
+  of `setPadding`, which was incidental to what it protects. It now pins the
+  bottom — the panel alone, never the sheet — and adds that `syncMapPadding`
+  never measures the sheet and that the top is a measured overlap.
 
 ### v4.18.1
 

@@ -668,9 +668,226 @@ html[data-theme=dark] .mile{color:#E8B96B}
 .seg.opts button[aria-pressed=true] .opt-mi{color:var(--char);opacity:.75}
 .seg.opts button[aria-pressed=true] .pill{background:transparent;
   border-color:rgba(20,17,14,.4);color:var(--char)}
+/* A dry stretch between route rows. Base styling on purpose, not only in the
+   iOS layer: this is a feature, and it has to read correctly if that layer is
+   ever deleted. The dashed rail says "road continues, nothing on it". */
+.dry{display:flex;align-items:center;gap:10px;padding:10px 14px;font-size:13px;
+  color:var(--sub);border-bottom:1px solid var(--line)}
+.dry-rail{flex:none;width:0;height:22px;border-left:2px dashed var(--line);margin:0 6px 0 8px}
 .empty{padding:26px 18px;text-align:center;color:var(--sub);font-size:14px}
 .empty b{display:block;color:var(--ink);font-size:15px;margin-bottom:5px}
 .hidden{display:none!important}
+</style>
+<style id="ios-design">
+/* ===== iOS design layer (v4.19.0) ========================================
+   Loaded AFTER the original stylesheet and wins by order or specificity.
+   Every original rule is still underneath, untouched: anything not restyled
+   here keeps working, just in the new palette via the remapped variables.
+   Same pattern as the FuelPost-iOS repo, so the two apps look like siblings.
+
+   Deleting this whole element returns the v4.18 look, with ONE coupling the
+   other way: syncMapPadding measures how far the bar overlaps the map. That
+   is zero whenever the bar is in the page flow, so without this layer the
+   measurement is inert rather than wrong. No script reads any rule here.
+
+   The canvas mockup this was built from is linked in the README. */
+
+:root{
+  --bg:#F2F2F7; --surface:#FFFFFF; --ink:#1C1C1E; --sub:#6C6C70; --line:#E1E1E6;
+  --fill:rgba(118,118,128,.12); --seg-sel:#FFFFFF;
+  /* Tiers move to Apple's system orange and brown. Both take DARK ink now:
+     systemBrown is far lighter than the syrup it replaces, and cream on it
+     would fall under 4.5:1. */
+  --t-short:#FF9F0A; --t-short-ink:#1C1C1E;
+  --t-long:#A2845E;  --t-long-ink:#1C1C1E;
+  --danger-text:#D70015;
+  /* Sign yellow is the tint, but yellow TEXT on white is 1.6:1. Anything
+     tinted that is read as text uses this instead. */
+  --tint-text:#8F5E00; --warn-text:#B25000;
+  --you:#007AFF;
+  --glass:rgba(255,255,255,.78); --glass-border:rgba(0,0,0,.08);
+  --glass-shadow:0 8px 24px rgba(0,0,0,.14);
+  --sheet-shadow:0 -10px 40px rgba(0,0,0,.18);
+  --sheet-bg:rgba(255,255,255,.96);
+}
+html[data-theme=dark]{
+  --bg:#000000; --surface:#1C1C1E; --ink:#FFFFFF; --sub:#98989F; --line:#38383A;
+  --fill:rgba(118,118,128,.24); --seg-sel:#636366;
+  --t-long:#AC8E68;
+  --danger-text:#FF6961;
+  --tint-text:#FFC72C; --warn-text:#FF9F0A;
+  --you:#0A84FF;
+  --glass:rgba(30,30,32,.72); --glass-border:rgba(255,255,255,.14);
+  --glass-shadow:0 8px 28px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.10);
+  --sheet-shadow:0 -10px 40px rgba(0,0,0,.55);
+  --sheet-bg:rgba(28,28,30,.96);
+}
+html,body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased}
+button{-webkit-tap-highlight-color:transparent}
+
+/* ---- The bar ---------------------------------------------------------------
+   Its controls become capsules in both modes. In ATLAS the bar floats: taken
+   out of the flow, it becomes one glass pill over a map that runs to the top
+   edge. In ROUTE it stays in the flow, because the trip drawer sits directly
+   under it and floating both would mean measuring two stacked panels.
+
+   Keyed on #drawer.hidden rather than on a mode class, because setMode
+   toggles exactly that and adds no class of its own - and the tests pin that
+   setMode never touches the bar. Blur on the bar itself is safe HERE, unlike
+   FuelPost-iOS: nothing inside it is positioned against the viewport. */
+.bar{background:var(--surface);border-bottom:.5px solid var(--line);gap:6px;padding:8px 10px;
+  padding-top:max(8px, env(safe-area-inset-top,0px))}
+body:has(#drawer.hidden) .bar{position:absolute;z-index:700;
+  top:max(8px, env(safe-area-inset-top,0px));left:7px;right:7px;padding:5px;gap:5px;
+  border:.5px solid var(--glass-border);border-radius:26px;background:var(--glass);
+  box-shadow:var(--glass-shadow);
+  -webkit-backdrop-filter:blur(22px) saturate(170%);backdrop-filter:blur(22px) saturate(170%)}
+/* "City, exit, stop" has to fit the floating bar, and the room for it came
+   out of whitespace - the bar's inset and gap, the tile, the tabs' side
+   padding - never out of a tap target. Measured the README's way: the
+   placeholder set as the field's VALUE, then scrollWidth against clientWidth.
+   An EMPTY field's scrollWidth ignores placeholder text and reports a fit
+   that is not there. */
+.tile{width:30px;height:30px;border-radius:9px}
+.modeseg{background:var(--fill);border:0;border-radius:20px;padding:2px;gap:2px}
+.modetab{min-height:34px;padding:0 7px;border-radius:17px;font-size:13px;font-weight:600;
+  letter-spacing:0;text-transform:none}
+.searchwrap input{min-height:40px;border:0;border-radius:20px;background:var(--fill);
+  padding:8px 8px 8px 26px;font-size:16px}
+.searchwrap .mag{left:9px}
+.barbtn{width:38px;height:38px;border:0;border-radius:19px;background:var(--fill)}
+
+/* ---- Trip drawer (Route) ---- */
+.drawer{background:var(--surface);border-bottom:.5px solid var(--line)}
+.drawer-tab{font-size:13px}
+.fld>label{font-size:12px;font-weight:600}
+.fld input{border:0;border-radius:12px;background:var(--fill);min-height:44px}
+.locbtn{color:var(--tint-text)}
+html[data-theme=dark] .locbtn{color:var(--tint-text)}
+.gpsnote{color:var(--tint-text)}
+html[data-theme=dark] .gpsnote{color:var(--tint-text)}
+.suggest-list{border:.5px solid var(--glass-border);border-radius:14px;box-shadow:var(--glass-shadow)}
+/* The vehicle profile is a segmented control. .seg.opts is a stack of route
+   cards that shares the class, so the capsule is scoped away from it. */
+.seg:not(.opts){background:var(--fill);border-radius:12px;padding:3px;gap:3px}
+.seg:not(.opts) button{border:0;background:transparent;border-radius:9px;color:var(--ink);font-weight:600}
+.seg:not(.opts) button[aria-pressed=true]{background:var(--seg-sel);color:var(--ink);
+  box-shadow:0 1px 4px rgba(0,0,0,.18)}
+.vfields input{border:0;border-radius:10px;background:var(--fill)}
+.go{border:0;border-radius:14px;min-height:50px;font-size:17px;font-weight:700}
+
+/* ---- Over the map: the panel, the stop sheet, the popover ------------------
+   The panel and the sheet float inset from the screen edge like iOS 26
+   sheets. Both stay anchored to the bottom, so --panel-h and --chrome-h mean
+   what they always meant; the 8px inset is inside MAP_FIT_MARGIN. */
+.panel{left:8px;right:8px;bottom:8px;border:.5px solid var(--glass-border);border-radius:30px;
+  background:var(--glass);box-shadow:var(--sheet-shadow);
+  -webkit-backdrop-filter:blur(26px) saturate(170%);backdrop-filter:blur(26px) saturate(170%)}
+.panel-tab{position:relative;padding:18px 18px 10px;border-bottom:.5px solid var(--line)}
+.panel-tab::before{content:'';position:absolute;top:6px;left:50%;width:36px;height:5px;
+  margin-left:-18px;border-radius:3px;background:var(--sub);opacity:.35}
+.panel-tab .count{font-size:20px;font-weight:700;letter-spacing:-.01em}
+.row{position:relative;border-bottom:0;padding:12px 18px}
+.row::after{content:'';position:absolute;left:18px;right:0;bottom:0;height:.5px;background:var(--line)}
+.row:hover{background:var(--fill)}
+/* A route row carries four things on its top line - mile, city, exit, feet
+   - and at 17px it ran out of width and broke "2,031 ft" across two lines.
+   Numbers and the city never wrap. The exit label is the one that gives way,
+   because on a route row the mile marker already says where the stop is. */
+.row-city{font-size:17px;font-weight:600;white-space:nowrap}
+.row-ex{font-size:13px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row-ft{font-size:17px;font-weight:600;white-space:nowrap;flex:none}
+.mile{flex:none;white-space:nowrap}
+.row-ts{font-size:14px}
+.strip{height:6px;border-radius:3px;background:var(--fill)}
+.strip .line{background:var(--sub);opacity:.5}
+.pill{font-size:12px;font-weight:600;letter-spacing:0;text-transform:none;padding:3px 8px;
+  border:0;border-radius:8px;background:var(--fill)}
+.pill.warn{color:var(--warn-text);background:rgba(255,159,10,.14)}
+.mile{color:var(--tint-text);font-weight:700}
+html[data-theme=dark] .mile{color:var(--tint-text)}
+.pin{border-color:#FFFFFF}
+
+/* The stop sheet opens OVER the panel, so what sits behind it is not map but
+   the panel's own rows - and at the panel's glass opacity they read straight
+   through the card. It keeps the blur and the material, at an opacity where
+   text behind it is texture rather than words. */
+.sheet{left:8px;right:8px;bottom:8px;border:.5px solid var(--glass-border);border-radius:30px;
+  background:var(--sheet-bg);box-shadow:var(--sheet-shadow);
+  -webkit-backdrop-filter:blur(26px) saturate(170%);backdrop-filter:blur(26px) saturate(170%)}
+.sheet::before{content:'';position:absolute;top:6px;left:50%;width:36px;height:5px;
+  margin-left:-18px;border-radius:3px;background:var(--sub);opacity:.35;z-index:1}
+.sheet-scroll{padding:22px 20px 0}
+.sheet h2{font-size:26px;font-weight:700;letter-spacing:-.02em}
+.sheet .sub{font-size:15px}
+/* The distance is this app's headline, so it gets the treatment iOS gives a
+   temperature: large, rounded, tabular. */
+.bigft b{font-family:ui-rounded,"SF Pro Rounded",-apple-system,system-ui,sans-serif;
+  font-size:56px;font-weight:600;letter-spacing:-.03em}
+.bigft span{font-size:15px}
+.walkscale .ends{text-transform:none;letter-spacing:0;font-size:12px;font-weight:600}
+.walkscale .strip{height:8px;border-radius:4px}
+.kv{border-top:.5px solid var(--line);padding:11px 0;font-size:15px}
+.kv > span:first-child{width:110px}
+.note{background:var(--fill);border-left:0;border-radius:16px;padding:12px 14px;font-size:15px;margin:14px 0}
+/* A caution note already renders ABOVE the distance (v4.8.0 put it there on
+   purpose). The iOS layer only makes it look like what it is: an alert card,
+   system orange, with the warning glyph. The glyph is a mask so it takes the
+   text colour in both themes. */
+.note.warn{position:relative;padding-left:42px;background:rgba(255,159,10,.13);
+  border:.5px solid rgba(255,159,10,.4)}
+.note.warn::before{content:'';position:absolute;left:15px;top:13px;width:18px;height:18px;
+  background:var(--warn-text);
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3.5l9 16H3z'/%3E%3Cpath d='M12 10v4.2'/%3E%3Cpath d='M12 17.2v.1'/%3E%3C/svg%3E") center/contain no-repeat;
+          mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3.5l9 16H3z'/%3E%3Cpath d='M12 10v4.2'/%3E%3Cpath d='M12 17.2v.1'/%3E%3C/svg%3E") center/contain no-repeat}
+.sheet-actions{border-top:0;padding:12px 20px calc(16px + env(safe-area-inset-bottom,0px))}
+.act{border:0;border-radius:14px;min-height:50px;background:var(--fill);font-size:16px;font-weight:600;color:var(--ink)}
+.act.primary{background:var(--sign);color:var(--char)}
+
+/* Dropped below the floating bar by the same measurement that pads the map:
+   --bar-bleed is written by syncMapPadding and is 0 in Route. Sheet-density
+   rather than glass for the same reason as the stop sheet: it opens over the
+   panel, and at glass opacity the rows behind read through the filters. */
+.pop{top:calc(var(--bar-bleed,0px) + 8px);border:.5px solid var(--glass-border);border-radius:20px;
+  background:var(--sheet-bg);box-shadow:var(--glass-shadow);
+  -webkit-backdrop-filter:blur(26px) saturate(170%);backdrop-filter:blur(26px) saturate(170%)}
+.pop h3{text-transform:none;letter-spacing:0;font-size:13px;font-weight:600}
+.pop select{border:0;border-radius:10px;background:var(--fill)}
+.themerow button{border:0;border-radius:9px;background:var(--fill)}
+.popsep{border-top:.5px solid var(--line)}
+
+#locateBtn{width:44px;height:44px;border:.5px solid var(--glass-border);background:var(--glass);
+  box-shadow:var(--glass-shadow);color:var(--ink);
+  -webkit-backdrop-filter:blur(22px) saturate(170%);backdrop-filter:blur(22px) saturate(170%)}
+
+/* ---- HERE's own controls ----------------------------------------------------
+   Ported from FuelPost-iOS with its reasoning. overflow:hidden is on the ZOOM
+   group only: the layer button's .H_ctl also holds the Default / Satellite
+   menu (.H_overlay), which opens out to the left of the button, and clipping
+   that .H_ctl to its square clipped the menu away. The scalebar is an .H_ctl
+   too and is left alone. */
+#map .H_ui .H_ctl:not(.H_scalebar){border-radius:14px;box-shadow:var(--glass-shadow);background:transparent}
+#map .H_ui .H_ctl.H_zoom{overflow:hidden}
+#map .H_ui .H_btn{background:var(--glass);border-radius:0;
+  -webkit-backdrop-filter:blur(22px) saturate(170%);backdrop-filter:blur(22px) saturate(170%)}
+#map .H_ui .H_ctl:not(.H_zoom) > .H_btn{border-radius:14px}
+#map .H_ui .H_btn .H_icon{fill:var(--ink)}
+#map .H_ui .H_zoom .H_btn + .H_btn{border-top:.5px solid var(--line)}
+#map .H_ui .H_overlay{background:var(--surface);color:var(--ink);border-radius:16px;
+  border:.5px solid var(--glass-border);box-shadow:0 12px 32px rgba(0,0,0,.3)}
+#map .H_ui .H_overlay .H_btn{background:transparent;-webkit-backdrop-filter:none;backdrop-filter:none;color:var(--ink)}
+#map .H_ui .H_overlay.H_left:not(.H_top)::after{border-right-color:var(--surface)}
+#map .H_ui .H_overlay.H_right:not(.H_top)::after{border-left-color:var(--surface)}
+
+/* ---- Route results ---- */
+.summary{border:0;border-radius:18px;background:var(--fill);margin:12px 14px;padding:14px 16px}
+.summary .hd{text-transform:none;letter-spacing:0;font-size:13px;font-weight:600}
+.summary .big{font-size:24px;font-weight:700}
+.seg.opts button{border:0;border-radius:14px;background:var(--fill);padding:10px 14px}
+.seg.opts button[aria-pressed=true]{background:var(--sign);color:var(--char)}
+.dry{border-bottom:0;padding:9px 18px;font-size:14px}
+.dry-rail{border-left-color:var(--sub);opacity:.5}
 </style>
 </head>
 <body>
@@ -867,27 +1084,27 @@ var __mods={};
 function require(p){return __mods[p.replace(/^\.\//,'').replace(/\.js$/,'')];}
 var module={exports:{}};
 </script>
-<script src="lib/waffledist.js?v=4.18.1"></script>
+<script src="lib/waffledist.js?v=4.19.0"></script>
 <script>__mods.waffledist=module.exports;module={exports:{}};</script>
-<script src="lib/atlasfilter.js?v=4.18.1"></script>
+<script src="lib/atlasfilter.js?v=4.19.0"></script>
 <script>__mods.atlasfilter=module.exports;module={exports:{}};</script>
-<script src="lib/routewaffles.js?v=4.18.1"></script>
+<script src="lib/routewaffles.js?v=4.19.0"></script>
 <script>__mods.routewaffles=module.exports;module={exports:{}};</script>
-<script src="lib/vehicleprofile.js?v=4.18.1"></script>
+<script src="lib/vehicleprofile.js?v=4.19.0"></script>
 <script>__mods.vehicleprofile=module.exports;module={exports:{}};</script>
-<script src="lib/triptext.js?v=4.18.1"></script>
+<script src="lib/triptext.js?v=4.19.0"></script>
 <script>__mods.triptext=module.exports;module={exports:{}};</script>
-<script src="lib/escape.js?v=4.18.1"></script>
+<script src="lib/escape.js?v=4.19.0"></script>
 <script>__mods.escape=module.exports;module={exports:{}};</script>
-<script src="lib/flexible-polyline.js?v=4.18.1"></script>
+<script src="lib/flexible-polyline.js?v=4.19.0"></script>
 <script>__mods['flexible-polyline']=module.exports;module={exports:{}};</script>
-<script src="lib/autosuggest.js?v=4.18.1"></script>
+<script src="lib/autosuggest.js?v=4.19.0"></script>
 <script>__mods.autosuggest=module.exports;module={exports:{}};</script>
-<script src="lib/location.js?v=4.18.1"></script>
+<script src="lib/location.js?v=4.19.0"></script>
 <script>__mods.location=module.exports;module={exports:{}};</script>
-<script src="lib/routeoptions.js?v=4.18.1"></script>
+<script src="lib/routeoptions.js?v=4.19.0"></script>
 <script>__mods.routeoptions=module.exports;module={exports:{}};</script>
-<script src="lib/baselayer.js?v=4.18.1"></script>
+<script src="lib/baselayer.js?v=4.19.0"></script>
 <script>__mods.baselayer=module.exports;module={exports:{}};</script>
 
 <script>
@@ -939,7 +1156,7 @@ var HERE_API_KEY = '7RDploUiahAnm08IZA9X7YSbb0Qh99pvqV2NCNQX_Hg';
    APP_VERSION - the code. Shown in the legend card. Bumped every change,
                 and stamped onto every lib/ URL as a cache-buster. */
 var ATLAS_REV   = 'Atlas Rev 13-2026';
-var APP_VERSION = '4.18.1';
+var APP_VERSION = '4.19.0';
 
 /* ===== DATA ==========================================================
    61 rows - 60 walkable exits plus one honorary - carrying 73 pairings,
@@ -1264,10 +1481,24 @@ var MAP_FIT_MARGIN = 32;
 function syncMapPadding(){
   var p = document.getElementById('panel');
   var h = p ? Math.round(p.getBoundingClientRect().height) : 0;
+  /* THE TOP, measured the same way as the bottom. Since v4.19.0 the iOS
+     design layer floats the bar over the map in Atlas, so the top of the map
+     is covered too, and a fit that ignored it would put the northernmost pins
+     under the bar. Taken as the OVERLAP of the bar's bottom edge onto the
+     map, not read from a CSS rule: when the bar sits in the page flow - Route
+     mode, or with the design layer deleted - the overlap is zero and this is
+     exactly the old behaviour. Mode switches need no call of their own: the
+     bar leaving the flow resizes the map element, and mapResized re-runs
+     this. The same number becomes --bar-bleed, which drops the popover below
+     the floating bar instead of under it. */
+  var b = document.getElementById('bar'), m = document.getElementById('map');
+  var top = (b && m) ? Math.max(0, Math.round(b.getBoundingClientRect().bottom -
+                                              m.getBoundingClientRect().top)) : 0;
   document.documentElement.style.setProperty('--panel-h', h+'px');
+  document.documentElement.style.setProperty('--bar-bleed', top+'px');
   syncChromeH();
   if (!map) return;
-  map.getViewPort().setPadding(MAP_FIT_MARGIN, MAP_FIT_MARGIN,
+  map.getViewPort().setPadding(top + MAP_FIT_MARGIN, MAP_FIT_MARGIN,
                                h + MAP_FIT_MARGIN, MAP_FIT_MARGIN);
 }
 
@@ -1771,6 +2002,11 @@ function optionsHtml(){
 }
 
 /* ---- route panel ---- */
+function dryHtml(d){
+  return '<div class="dry"><span class="dry-rail" aria-hidden="true"></span><span>'+
+         Math.round(d.miles).toLocaleString('en-US')+' miles with no walkable stop</span></div>';
+}
+
 function routeHtml(){
   if (!HERE_API_KEY) {
     return '<div class="empty"><b>Route needs a HERE key</b>Paste one into '+
@@ -1810,10 +2046,20 @@ function routeHtml(){
          (many ? 'any of these routes' : 'this route')+', so the search widened to '+
          p.tierUsed+' mi off it.</div>';
   }
-  p.stops.forEach(function(s){
+  /* Dry stretches go IN the list, between the stops they separate, rather
+     than in the summary above it. "265 miles with no walkable stop" is only
+     useful at the point a driver reads down to it - after Marshall, before
+     Henderson - which is exactly where the last chance to eat is. Keyed by
+     the index each stretch sits in front of; see dryStretches in
+     lib/routewaffles.js for why that index is the caller's own. */
+  var dryAt = {};
+  rw.dryStretches(p.stops, p.miles).forEach(function(d){ dryAt[d.before] = d; });
+  p.stops.forEach(function(s, i){
+    if (dryAt[i]) h += dryHtml(dryAt[i]);
     h += rowHtml(s.row, DATA.indexOf(s.row), 'mi '+Math.round(s.routeMile),
                  s.detourMi.toFixed(1)+' mi off route');
   });
+  if (dryAt[p.stops.length]) h += dryHtml(dryAt[p.stops.length]);
   h += '<div style="padding:12px 14px"><button class="act" id="shareRoute" style="width:100%">Share this run</button></div>';
   return h;
 }
