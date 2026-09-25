@@ -9,9 +9,8 @@
 <!-- Home screen and browser tab: a golden waffle with a pat of butter on a
      dark brown ground, since v4.18.0. Before that, v4.6.3 through v4.17.0,
      a char tile carrying a sign-yellow W over a flat waffle grid, and before
-     THAT the yellow-ground, black-W mark from v3.5.0. The bar's tile keeps
-     its W: it is drawn live in whatever the DEVICE calls system-ui and was
-     never the same image as the icon. The icons are authored outside this repo;
+     THAT the yellow-ground, black-W mark from v3.5.0. Since v4.18.1 the
+     bar's tile shows this same waffle (tile.png). The icons are authored outside this repo;
      scripts/icons.py does not draw them, it MEASURES the shipped files - the
      flatten, the sizes, the byte-identity of the two 512s, and the one
      geometric fact prose cannot check for itself, below.
@@ -256,9 +255,10 @@ input,select,textarea{font-size:16px}
 .bar{background:var(--surface);color:var(--ink);display:flex;align-items:center;gap:7px;
   padding:8px 10px;padding-top:max(8px, env(safe-area-inset-top,0px));flex:none;
   border-bottom:1px solid var(--line)}
-/* Matches the home screen icon as of v4.6.3: char ground, sign yellow W. No
-   waffle grid here - the tile is 28px since the chrome collapse and the grid's
-   wells are under 2px at that size, which is noise rather than texture.
+/* The home screen icon itself since v4.18.1: tile.png is the supplied
+   1024px waffle artwork scaled to 84px, which is 28px at 3x. It replaced a
+   live-text sign-yellow W, so the bar and the home screen now show the same
+   mark. --char stays underneath as the fill while the image loads.
 
    The fill stays --char in BOTH themes while the bar around it now follows
    the theme, and that is the point rather than an oversight: char-on-white in
@@ -267,7 +267,7 @@ input,select,textarea{font-size:16px}
 
    THE HAIRLINE IS NOT DECORATION, and it earns its place in dark mode only.
    There the bar is --surface #1E1A16 against the tile's #14110E - about four
-   levels of luminance apart, which is no edge at all, and the W would float
+   levels of luminance apart, which is no edge at all, and the tile would float
    in the bar looking like stray text. #332C24 is the icon's own waffle
    colour, so the border ties the two marks together rather than introducing a
    third value. In light mode it disappears into the char fill and costs
@@ -275,13 +275,9 @@ input,select,textarea{font-size:16px}
    Reverting the fill to sign yellow is the wrong fix and is why this comment
    exists.
 
-   The W stays LIVE TEXT in system-ui while the icon is baked Liberation Sans.
-   That is not an inconsistency to tidy up: see the icon comment in the head -
-   the device decides what system-ui means, so there is no single header W to
-   export, which is the whole reason the icon is baked in the first place. */
-.tile{width:28px;height:28px;border-radius:5px;background:var(--char);color:var(--sign);
-  border:1px solid #332C24;
-  display:grid;place-items:center;font-weight:900;font-size:17px;letter-spacing:-.04em;flex:none}
+   */
+.tile{width:28px;height:28px;border-radius:5px;background:var(--char) url(tile.png) center/cover no-repeat;
+  border:1px solid #332C24;flex:none}
 
 /* Pill group. 34px minimum in the smaller dimension, like every other target
    in this bar: it is the primary navigation and it is used at the wheel.
@@ -682,7 +678,7 @@ html[data-theme=dark] .mile{color:#E8B96B}
 <!-- ONE bar, and it is never hidden. Through 4.2.x this was three stacked
      bands - header, modes, toolbar - costing about 213px above the map on a
      Dynamic Island phone for a job FuelPost does in about 110. The wordmark
-     went (the W tile carries it, and the app name is on the home screen), the
+     went (the waffle tile carries it, and the app name is on the home screen), the
      modes got their own row back as a segmented control, and the two header
      buttons became one.
 
@@ -690,7 +686,7 @@ html[data-theme=dark] .mile{color:#E8B96B}
      `hidden` to #bar: that would stand a driver in Route mode with no way
      back to Atlas. structure.test.js fails if anything tries. -->
 <div class="bar" id="bar">
-  <div class="tile" aria-hidden="true">W</div>
+  <div class="tile" aria-hidden="true"></div>
 
   <!-- Still a tablist, still aria-selected. This is a restyle, not a
        re-semantic: .modeseg looks like the vehicle profile's toggle group in
@@ -871,27 +867,27 @@ var __mods={};
 function require(p){return __mods[p.replace(/^\.\//,'').replace(/\.js$/,'')];}
 var module={exports:{}};
 </script>
-<script src="lib/waffledist.js?v=4.18.0"></script>
+<script src="lib/waffledist.js?v=4.18.1"></script>
 <script>__mods.waffledist=module.exports;module={exports:{}};</script>
-<script src="lib/atlasfilter.js?v=4.18.0"></script>
+<script src="lib/atlasfilter.js?v=4.18.1"></script>
 <script>__mods.atlasfilter=module.exports;module={exports:{}};</script>
-<script src="lib/routewaffles.js?v=4.18.0"></script>
+<script src="lib/routewaffles.js?v=4.18.1"></script>
 <script>__mods.routewaffles=module.exports;module={exports:{}};</script>
-<script src="lib/vehicleprofile.js?v=4.18.0"></script>
+<script src="lib/vehicleprofile.js?v=4.18.1"></script>
 <script>__mods.vehicleprofile=module.exports;module={exports:{}};</script>
-<script src="lib/triptext.js?v=4.18.0"></script>
+<script src="lib/triptext.js?v=4.18.1"></script>
 <script>__mods.triptext=module.exports;module={exports:{}};</script>
-<script src="lib/escape.js?v=4.18.0"></script>
+<script src="lib/escape.js?v=4.18.1"></script>
 <script>__mods.escape=module.exports;module={exports:{}};</script>
-<script src="lib/flexible-polyline.js?v=4.18.0"></script>
+<script src="lib/flexible-polyline.js?v=4.18.1"></script>
 <script>__mods['flexible-polyline']=module.exports;module={exports:{}};</script>
-<script src="lib/autosuggest.js?v=4.18.0"></script>
+<script src="lib/autosuggest.js?v=4.18.1"></script>
 <script>__mods.autosuggest=module.exports;module={exports:{}};</script>
-<script src="lib/location.js?v=4.18.0"></script>
+<script src="lib/location.js?v=4.18.1"></script>
 <script>__mods.location=module.exports;module={exports:{}};</script>
-<script src="lib/routeoptions.js?v=4.18.0"></script>
+<script src="lib/routeoptions.js?v=4.18.1"></script>
 <script>__mods.routeoptions=module.exports;module={exports:{}};</script>
-<script src="lib/baselayer.js?v=4.18.0"></script>
+<script src="lib/baselayer.js?v=4.18.1"></script>
 <script>__mods.baselayer=module.exports;module={exports:{}};</script>
 
 <script>
@@ -943,7 +939,7 @@ var HERE_API_KEY = '7RDploUiahAnm08IZA9X7YSbb0Qh99pvqV2NCNQX_Hg';
    APP_VERSION - the code. Shown in the legend card. Bumped every change,
                 and stamped onto every lib/ URL as a cache-buster. */
 var ATLAS_REV   = 'Atlas Rev 13-2026';
-var APP_VERSION = '4.18.0';
+var APP_VERSION = '4.18.1';
 
 /* ===== DATA ==========================================================
    61 rows - 60 walkable exits plus one honorary - carrying 73 pairings,

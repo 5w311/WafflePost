@@ -46,6 +46,7 @@ data/atlas.csv            REGENERATED from DATA by scripts/remeasure.js - never 
 apple-touch-icon.png      iOS home screen, 180x180 - the bar tile, baked
 icon-192.png              Android home screen
 icon-512.png              Android, large
+tile.png                  the bar tile, 84px (28px at 3x), from the 1024 waffle artwork
 icon-maskable-512.png     Android; byte-identical to icon-512 since v4.6.3 - the mark needs no shrink
 favicon-32.png            browser tab, 32x32
 favicon-16.png            browser tab, 16x16
@@ -855,7 +856,7 @@ Same reasoning as FuelPost, different perishable thing:
   stopped existing; the requirement was "always on screen", not "in the
   header", and the panel tab is on screen in both modes whether the panel is
   open or collapsed. Bump only when the rows are re-audited.
-- **`APP_VERSION`** (`4.18.0`) — the code. Shown in the **legend card**.
+- **`APP_VERSION`** (`4.18.1`) — the code. Shown in the **legend card**.
   Bumped for every shipped change, and stamped onto every `lib/` URL as a
   cache-buster.
 
@@ -875,6 +876,17 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v4.18.1
+
+**The tile in the top bar is now the waffle icon.** It used to be a
+sign-yellow W drawn as live text; it is now `tile.png`, the supplied 1024px
+artwork scaled to 84px so it stays sharp at 28px on a 3x screen. The bar and
+the home screen show the same mark. The hairline border stays, because in
+dark mode it is what separates the tile from the bar.
+
+**The favicons are now the supplied 32 and 16 files**, replacing the ones
+v4.18.0 derived from the 512.
 
 ### v4.18.0
 

@@ -38,7 +38,8 @@ SAFE_R = 0.40                      # centre-80% circle: the maskable safe zone
 # name -> expected square size
 TARGETS = [('apple-touch-icon.png', 180), ('icon-192.png', 192),
            ('icon-512.png', 512), ('icon-maskable-512.png', 512),
-           ('favicon-32.png', 32), ('favicon-16.png', 16)]
+           ('favicon-32.png', 32), ('favicon-16.png', 16),
+           ('tile.png', 84)]          # the bar tile: 28px at 3x, since v4.18.1
 
 
 def sha(path):
