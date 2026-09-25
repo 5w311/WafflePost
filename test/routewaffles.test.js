@@ -62,4 +62,36 @@ t.eq(rw.projectStops(straight, justOut, 1).length, 0,
 t.eq(rw.projectStops(straight, justOut, 3).length, 1,
      'and reappears when the tolerance genuinely covers it');
 
+// ---- dry stretches ----------------------------------------------------------
+// Stops are faked at the only field dryStretches reads. The run below is the
+// real 13-2026 shape of Dallas to Orlando by I-49: Terrell 31, Longview 126,
+// Marshall 147, then nothing until Henderson at 412.
+function at(m) { return { routeMile: m }; }
+t.eq(rw.DRY_STRETCH_MI, 150, 'a dry stretch is 150 miles or more');
+
+var run = [at(31), at(126), at(147), at(412), at(448)];
+var dry = rw.dryStretches(run, 500);
+t.eq(dry.length, 1, 'one dry stretch on the Dallas run');
+t.eq(dry[0].miles, 265, 'Marshall to Henderson is 265 miles');
+t.eq(dry[0].before, 3, 'and it sits in front of Henderson, the fourth stop');
+t.eq(dry[0].fromMile, 147, 'starting at Marshall');
+t.eq(dry[0].toMile, 412, 'ending at Henderson');
+
+t.eq(rw.dryStretches([], 300).length, 1, 'a run with no stops is one dry stretch');
+t.eq(rw.dryStretches([], 300)[0].before, 0, 'which sits in front of nothing, at index 0');
+t.eq(rw.dryStretches([], 100).length, 0, 'unless the whole run is shorter than the threshold');
+
+var late = rw.dryStretches([at(200)], 260);
+t.eq(late.length, 1, 'a first stop 200 miles out is a stretch before it');
+t.eq(late[0].before, 0, 'ahead of the first stop');
+
+var tail = rw.dryStretches([at(40)], 400);
+t.eq(tail[0].before, 1, 'a long run after the last stop sits after it, at stops.length');
+t.eq(tail[0].miles, 360, 'from the last stop to the end of the route');
+
+t.eq(rw.dryStretches([at(150)], 160).length, 1, 'exactly 150 miles counts');
+t.eq(rw.dryStretches([at(149)], 160).length, 0, 'and 149 does not');
+t.eq(rw.dryStretches([at(60)], 120, 50).length, 2, 'the threshold can be passed in');
+t.eq(rw.dryStretches(null, 90).length, 0, 'no stops and a short run is nothing, not a crash');
+
 t.done('routewaffles');
