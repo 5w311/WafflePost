@@ -909,7 +909,7 @@ leaderboard.
 
 `run.js` prints one `ok <name> N passed` line per file and then `all green`,
 or names the files that failed. It does not sum the assertions — at v4.18.0
-they came to 1,741 across twelve files; at v4.19.0 they come to 1,764, added up
+they came to 1,741 across twelve files; at v4.19.1 they come to 1,771, added up
 from those lines.
 
 ## Two version strings, on purpose
@@ -925,7 +925,7 @@ Same reasoning as FuelPost, different perishable thing:
   stopped existing; the requirement was "always on screen", not "in the
   header", and the panel tab is on screen in both modes whether the panel is
   open or collapsed. Bump only when the rows are re-audited.
-- **`APP_VERSION`** (`4.18.1`) — the code. Shown in the **legend card**.
+- **`APP_VERSION`** (`4.19.1`) — the code. Shown in the **legend card**.
   Bumped for every shipped change, and stamped onto every `lib/` URL as a
   cache-buster.
 
@@ -945,6 +945,39 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v4.19.1
+
+Four things from the first look on the phone, plus one the same look exposed.
+
+- **The smudge across the top of the screen is gone.** With the bar floating,
+  the only thing under the status bar was map, and iOS painted its own dark,
+  blurred edge over it. An opaque strip exactly the height of the status bar
+  now sits there while the bar floats, in `--surface`. `theme-color` is read
+  from `--surface` as well, rather than from the bar's background, which in
+  Atlas is see-through glass: copying `rgba(…,.72)` into it had asked iOS to
+  tint the status bar with something translucent.
+- **The filters popover scrolls all the way down.** It opens below the
+  floating bar but kept the full stage height, so its bottom ran off the screen
+  by the bar's overlap and Appearance could not be reached. Its `max-height`
+  now gives back what its `top` takes, and the home indicator besides.
+- **The legend button is Atlas-only.** In Route it opened the legend in a stray
+  spot over the map below the trip drawer. The appearance picker and version
+  line it carries are one tab away.
+- **Route shows no panel until there is something to show.** Before Go, the
+  panel only explained what the tab does, over a third of the map. It appears
+  for Planning, the route, or an error — all three are answers to the button
+  just pressed — and stays without a HERE key, where it explains why nothing
+  works. One trade-off, the owner's call: in Route, before a run is planned,
+  the atlas revision is not on screen.
+- **HERE's controls stay out of the home indicator.** With no panel in Route,
+  nothing held them up, and they dropped into the home indicator's swipe zone.
+  They are now floored at the safe area.
+- **Everything lifted over the panel clears its real top edge.** The layer
+  floats the panel and stop sheet 8px up, and a lift measured from their
+  height alone put HERE's copyright band 8px into the panel — visible in the
+  first phone screenshot. `--chrome-h` is now the distance from the map's
+  bottom to their top edge.
 
 ### v4.19.0
 

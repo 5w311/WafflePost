@@ -440,9 +440,15 @@ html[data-theme=dark] .gpsnote{color:#E8B96B}
    whichever of the two is currently taller, so the controls clear the real
    bottom edge instead of the panel's. --panel-h still exists and still feeds
    the map's padding: opening a sheet must not move the map. */
+/* The home indicator is the FLOOR (v4.19.1). Until then something - the panel
+   - was always at the bottom, so --chrome-h was never 0 and the floor never
+   mattered. Route now shows no panel before a run is planned, --chrome-h drops
+   to 0, and without the max() the zoom and layers buttons sat in the home
+   indicator's swipe zone, where a tap competes with the gesture. */
 .H_ui{z-index:600}
-.H_l_bottom{bottom:calc(var(--chrome-h, var(--panel-h,0px)) + 16px)}
-.H_imprint{z-index:600!important;bottom:var(--chrome-h, var(--panel-h,0px))!important}
+.H_l_bottom{bottom:calc(max(var(--chrome-h, var(--panel-h,0px)), env(safe-area-inset-bottom,0px)) + 16px)}
+.H_imprint{z-index:600!important;
+  bottom:max(var(--chrome-h, var(--panel-h,0px)), env(safe-area-inset-bottom,0px))!important}
 .panel{position:absolute;left:0;right:0;bottom:0;max-height:62%;background:var(--surface);
   border-top:1px solid var(--line);display:flex;flex-direction:column;border-radius:14px 14px 0 0;
   box-shadow:0 -6px 24px rgba(0,0,0,.14);padding-bottom:env(safe-area-inset-bottom,0px);z-index:500}
@@ -738,6 +744,16 @@ button{-webkit-tap-highlight-color:transparent}
    FuelPost-iOS: nothing inside it is positioned against the viewport. */
 .bar{background:var(--surface);border-bottom:.5px solid var(--line);gap:6px;padding:8px 10px;
   padding-top:max(8px, env(safe-area-inset-top,0px))}
+/* THE STATUS BAR STRIP (v4.19.1). With the bar floating, the only thing
+   under the status bar was map - and iOS painted its own dark, blurred edge
+   over it, which read as a smudge across the top of the screen. An opaque
+   strip exactly the height of the status bar, in the colour theme-color now
+   carries, gives iOS a flat surface there instead: blurring a flat colour
+   changes nothing. env() is 0 in a browser tab, so it only exists where the
+   status bar does. Below the bar (699 < 700), so the bar's shadow falls on it
+   the same way it falls on the map. */
+body:has(#drawer.hidden)::before{content:'';position:fixed;top:0;left:0;right:0;z-index:699;
+  height:env(safe-area-inset-top,0px);background:var(--surface);pointer-events:none}
 body:has(#drawer.hidden) .bar{position:absolute;z-index:700;
   top:max(8px, env(safe-area-inset-top,0px));left:7px;right:7px;padding:5px;gap:5px;
   border:.5px solid var(--glass-border);border-radius:26px;background:var(--glass);
@@ -849,7 +865,14 @@ html[data-theme=dark] .mile{color:var(--tint-text)}
    --bar-bleed is written by syncMapPadding and is 0 in Route. Sheet-density
    rather than glass for the same reason as the stop sheet: it opens over the
    panel, and at glass opacity the rows behind read through the filters. */
-.pop{top:calc(var(--bar-bleed,0px) + 8px);border:.5px solid var(--glass-border);border-radius:20px;
+/* max-height gives back what top takes (v4.19.1). The base rule caps the
+   popover at the stage height minus 12px, which was right while it opened at
+   top:0. Pushed down by the floating bar it kept that height, so its bottom
+   ran off the screen by the bar's overlap and Appearance could not be
+   scrolled to. The home indicator is subtracted too. */
+.pop{top:calc(var(--bar-bleed,0px) + 8px);
+  max-height:calc(100% - var(--bar-bleed,0px) - 16px - env(safe-area-inset-bottom,0px));
+  border:.5px solid var(--glass-border);border-radius:20px;
   background:var(--sheet-bg);box-shadow:var(--glass-shadow);
   -webkit-backdrop-filter:blur(26px) saturate(170%);backdrop-filter:blur(26px) saturate(170%)}
 .pop h3{text-transform:none;letter-spacing:0;font-size:13px;font-weight:600}
@@ -923,11 +946,12 @@ html[data-theme=dark] .mile{color:var(--tint-text)}
     <button class="clr" id="qClear" aria-label="Clear search">&times;</button>
   </div>
 
-  <!-- One button, both modes, on purpose. In Atlas it opens filters with the
-       legend appended; in Route, where a filter means nothing, it opens the
-       legend alone. Route still draws pins and walk strips, so a legend that
-       hid with the filters would be unreachable exactly where it is still
-       being used - and the bar would look empty besides. -->
+  <!-- Atlas only, since v4.19.1. It opens filters with the legend appended.
+       Through v4.19.0 it also showed in Route and opened the legend alone,
+       on the argument that Route still draws pins; on the phone that legend
+       opened in a stray spot over the map below the trip drawer, and the
+       owner's call was to drop it from Route rather than place it. The
+       appearance picker and version line it carries are one tab away. -->
   <button class="barbtn" id="chromeBtn" aria-expanded="false" aria-label="Filters and legend">
     <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true" focusable="false">
       <g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
@@ -1084,27 +1108,27 @@ var __mods={};
 function require(p){return __mods[p.replace(/^\.\//,'').replace(/\.js$/,'')];}
 var module={exports:{}};
 </script>
-<script src="lib/waffledist.js?v=4.19.0"></script>
+<script src="lib/waffledist.js?v=4.19.1"></script>
 <script>__mods.waffledist=module.exports;module={exports:{}};</script>
-<script src="lib/atlasfilter.js?v=4.19.0"></script>
+<script src="lib/atlasfilter.js?v=4.19.1"></script>
 <script>__mods.atlasfilter=module.exports;module={exports:{}};</script>
-<script src="lib/routewaffles.js?v=4.19.0"></script>
+<script src="lib/routewaffles.js?v=4.19.1"></script>
 <script>__mods.routewaffles=module.exports;module={exports:{}};</script>
-<script src="lib/vehicleprofile.js?v=4.19.0"></script>
+<script src="lib/vehicleprofile.js?v=4.19.1"></script>
 <script>__mods.vehicleprofile=module.exports;module={exports:{}};</script>
-<script src="lib/triptext.js?v=4.19.0"></script>
+<script src="lib/triptext.js?v=4.19.1"></script>
 <script>__mods.triptext=module.exports;module={exports:{}};</script>
-<script src="lib/escape.js?v=4.19.0"></script>
+<script src="lib/escape.js?v=4.19.1"></script>
 <script>__mods.escape=module.exports;module={exports:{}};</script>
-<script src="lib/flexible-polyline.js?v=4.19.0"></script>
+<script src="lib/flexible-polyline.js?v=4.19.1"></script>
 <script>__mods['flexible-polyline']=module.exports;module={exports:{}};</script>
-<script src="lib/autosuggest.js?v=4.19.0"></script>
+<script src="lib/autosuggest.js?v=4.19.1"></script>
 <script>__mods.autosuggest=module.exports;module={exports:{}};</script>
-<script src="lib/location.js?v=4.19.0"></script>
+<script src="lib/location.js?v=4.19.1"></script>
 <script>__mods.location=module.exports;module={exports:{}};</script>
-<script src="lib/routeoptions.js?v=4.19.0"></script>
+<script src="lib/routeoptions.js?v=4.19.1"></script>
 <script>__mods.routeoptions=module.exports;module={exports:{}};</script>
-<script src="lib/baselayer.js?v=4.19.0"></script>
+<script src="lib/baselayer.js?v=4.19.1"></script>
 <script>__mods.baselayer=module.exports;module={exports:{}};</script>
 
 <script>
@@ -1156,7 +1180,7 @@ var HERE_API_KEY = '7RDploUiahAnm08IZA9X7YSbb0Qh99pvqV2NCNQX_Hg';
    APP_VERSION - the code. Shown in the legend card. Bumped every change,
                 and stamped onto every lib/ URL as a cache-buster. */
 var ATLAS_REV   = 'Atlas Rev 13-2026';
-var APP_VERSION = '4.19.0';
+var APP_VERSION = '4.19.1';
 
 /* ===== DATA ==========================================================
    61 rows - 60 walkable exits plus one honorary - carrying 73 pairings,
@@ -1515,9 +1539,20 @@ function syncMapPadding(){
    under the driver's finger at the moment they tapped a pin. */
 function syncChromeH(){
   var p = document.getElementById('panel'), s = document.getElementById('sheet');
-  var ph = p ? Math.round(p.getBoundingClientRect().height) : 0;
-  var sh = (s && s.classList.contains('show'))
-         ? Math.round(s.getBoundingClientRect().height) : 0;
+  /* How far each one's TOP EDGE is from the map's bottom, not its height
+     (v4.19.1). The two were the same number while both sat flush on the
+     bottom edge. The iOS layer floats them 8px up, and a height-only lift
+     then put HERE's copyright band 8px into the panel and left the controls
+     and the locator 8px closer than they were built to be. A hidden element
+     measures 0 rather than "the whole map", which is what top-based
+     arithmetic would give a display:none box. */
+  var mb = document.getElementById('map').getBoundingClientRect().bottom;
+  function lift(el){
+    var r = el.getBoundingClientRect();
+    return r.height ? Math.max(0, Math.round(mb - r.top)) : 0;
+  }
+  var ph = p ? lift(p) : 0;
+  var sh = (s && s.classList.contains('show')) ? lift(s) : 0;
   document.documentElement.style.setProperty('--chrome-h', Math.max(ph, sh)+'px');
   /* --attrib-h and --attrib-w used to be measured here: the height of HERE's
      attribution band and the right edge of its logo, so the locator button
@@ -1910,6 +1945,23 @@ function render(){
      legend is a number about nothing the driver can see. The count itself
      keeps ticking - filters are not cleared by a mode change, and coming back
      to Atlas shows the badge again with the right number on it. */
+  /* ROUTE SHOWS NO PANEL UNTIL IT HAS SOMETHING TO SAY (v4.19.1). Before the
+     driver presses Go, the panel held only an explanation of what the tab
+     does, and it covered a third of the map to say it. It appears the moment
+     there is a result - Planning, the route, or the error - because all three
+     are answers to the button just pressed. Without a key it stays, since then
+     it carries the only explanation of why nothing works.
+     Its height is what --panel-h, the map padding and HERE's controls are
+     measured from, so a change here re-measures them. planRoute and
+     selectRouteOption render BEFORE they draw, so this runs ahead of the
+     route's own padding and fit rather than after it. */
+  var idle = state.mode==='route' && !!HERE_API_KEY &&
+             !state.plan && !state.routeBusy && !state.routeErr;
+  if ($('panel').classList.contains('hidden') !== idle) {
+    $('panel').classList.toggle('hidden', idle);
+    syncMapPadding();
+  }
+
   var n2 = af.activeFilterCount(state);
   $('fDot').textContent = n2;
   $('fDot').classList.toggle('hidden', n2===0 || state.mode!=='atlas');
@@ -3014,6 +3066,7 @@ function setMode(m){
      with in render(), where the count it displays is computed. */
   $('searchWrap').classList.toggle('hidden', m!=='atlas');
   $('filterSection').classList.toggle('hidden', m!=='atlas');
+  $('chromeBtn').classList.toggle('hidden', m!=='atlas');
   /* Atlas only. Route has its own one-shot on the pickup field, and two
      location affordances on one screen is how a driver taps the wrong one.
      The WATCH is deliberately not stopped here: the two tabs share one map
@@ -3096,10 +3149,17 @@ function applyTheme(choice){
    and the tokens live in one place, so a palette change moves both without
    anyone remembering this function exists. Reading a computed style is why it
    runs after the attribute is set, not before. */
+/* Read from --surface, the colour the bar sits on, rather than from the bar's
+   own background (v4.19.1). In Atlas the bar is translucent glass now, and
+   copying rgba(...,.72) into theme-color asked iOS to tint the status bar
+   with something see-through - part of the smudge the status bar strip
+   removes. --surface is what the bar is in Route and what the strip is in
+   Atlas, so theme-color matches both, and a palette change still moves it
+   without anyone remembering this function exists. */
 function syncThemeColor(){
-  var m = document.querySelector('meta[name="theme-color"]'), bar = $('bar');
-  if (!m || !bar) return;
-  var c = getComputedStyle(bar).backgroundColor;
+  var m = document.querySelector('meta[name="theme-color"]');
+  if (!m) return;
+  var c = getComputedStyle(document.documentElement).getPropertyValue('--surface').trim();
   if (c) m.setAttribute('content', c);
 }
 function storedChoice(){
