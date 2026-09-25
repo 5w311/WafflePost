@@ -208,11 +208,28 @@ t.eq(/\$\('searchWrap'\)\.classList\.toggle\('hidden'/.test(setModeSrc), true,
      'search is Atlas-only');
 t.eq(/\$\('filterSection'\)\.classList\.toggle\('hidden'/.test(setModeSrc), true,
      'the filter half of the popover is Atlas-only');
-// One button, both modes: the legend is reachable in Route, where pins and
-// walk strips are still on screen and still need explaining.
+// One button, and since v4.19.1 it is Atlas-only. In Route it opened the
+// legend in a stray spot over the map below the trip drawer; the owner's call
+// was to drop it from Route rather than place it.
 t.eq((src.match(/id="chromeBtn"/g) || []).length, 1, 'exactly one chrome button');
+t.eq(/\$\('chromeBtn'\)\.classList\.toggle\('hidden', m!=='atlas'\)/.test(setModeSrc), true,
+     'and it is Atlas-only');
 t.eq(/\$\('fDot'\)\.classList\.toggle\('hidden', n2===0 \|\| state\.mode!=='atlas'\)/.test(src), true,
      'the filter badge shows in Atlas only');
+// Route shows no panel until there is a result to show (v4.19.1). The idle
+// rule must NOT hide Planning or an error - both render in the panel and both
+// are answers to the button just pressed - and must re-measure the map when
+// it flips, or HERE's controls stay lifted over a panel that is gone.
+var renderSrc = (src.match(/function render\(\)\{[\s\S]*?\n\}/) || [''])[0];
+t.eq(/var idle = state\.mode==='route' && !!HERE_API_KEY &&\s*!state\.plan && !state\.routeBusy && !state\.routeErr;/.test(renderSrc), true,
+     'Route hides the panel only while idle: no plan, not planning, no error');
+t.eq(/\$\('panel'\)\.classList\.toggle\('hidden', idle\);\s*syncMapPadding\(\);/.test(renderSrc), true,
+     'and re-measures the map padding when that flips');
+t.eq(/\$\('bar'\)/.test(renderSrc), false, 'render never touches the bar either');
+// The popover is pushed down by the floating bar; its height has to give that
+// back or its bottom runs off the screen (v4.19.1).
+t.eq(/\.pop\{top:calc\(var\(--bar-bleed,0px\) \+ 8px\);\s*max-height:calc\(100% - var\(--bar-bleed,0px\)/.test(src), true,
+     'the popover\'s max-height subtracts the bar overlap its top adds');
 
 // ---- the atlas list shows three rows, then scrolls (v4.4.0) ----
 // The panel ran to max-height:62% and took half the screen from the thing the
@@ -257,8 +274,8 @@ t.eq(/rows\.length <= PANEL_ROWS\) return;[\s\S]*--sheet-max/.test(capSrc), true
 // --panel-h would have made the map jump when a sheet opened, because that
 // number is also the map's bottom padding.
 t.eq(/--chrome-h/.test(src), true, 'the control lift has its own variable');
-t.eq(/\.H_l_bottom\{bottom:calc\(var\(--chrome-h/.test(src), true,
-     'and the bottom controls use it');
+t.eq(/\.H_l_bottom\{bottom:calc\(max\(var\(--chrome-h, var\(--panel-h,0px\)\), env\(safe-area-inset-bottom,0px\)\)/.test(src), true,
+     'and the bottom controls use it, floored at the home indicator');
 // v4.19.0 gave the TOP an argument of its own: the iOS design layer floats
 // the bar over the map in Atlas, and a fit that ignored it put the northern
 // pins under the bar. The BOTTOM is what this check was always about, and it
@@ -312,10 +329,20 @@ var applySrc = (src.match(/function applyTheme\(choice\)\{[\s\S]*?\n\}/) || ['']
 t.eq(/syncThemeColor\(\)/.test(applySrc), true, 'every theme change updates it');
 t.eq((src.match(/syncThemeColor\(\);/g) || []).length >= 2, true,
      'and boot does too, since the meta ships the light value');
-// Read off the bar rather than from a table of colours, so a palette change
-// moves both without anyone remembering this function exists.
-t.eq(/getComputedStyle\(bar\)\.backgroundColor/.test(src), true,
-     'the synced value is read from the bar itself');
+// Read from --surface rather than from a table of colours, so a palette change
+// moves both without anyone remembering this function exists. NOT from the
+// bar's own background any more (v4.19.1): in Atlas the bar is translucent
+// glass, and copying rgba(...,.72) into theme-color asked iOS to tint the
+// status bar with something see-through.
+var themeColorSrc = (src.match(/function syncThemeColor\(\)\{[\s\S]*?\n\}/) || [''])[0];
+t.eq(/getPropertyValue\('--surface'\)/.test(themeColorSrc), true,
+     'the synced value is read from --surface');
+t.eq(/getComputedStyle\(bar\)\.backgroundColor/.test(themeColorSrc), false,
+     'and never from the bar, which is see-through while it floats');
+// ...and something opaque in that colour sits under the status bar while the
+// bar floats, so iOS has a flat surface to draw over instead of map.
+t.eq(/body:has\(#drawer\.hidden\)::before\{[^}]*height:env\(safe-area-inset-top[^}]*background:var\(--surface\)/.test(src), true,
+     'an opaque --surface strip fills the status bar while the bar floats');
 
 // ---- the Atlas locator (v4.12.0) ----
 // Continuous tracking behind one button. The failure modes worth pinning are
