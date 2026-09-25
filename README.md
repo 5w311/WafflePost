@@ -909,7 +909,7 @@ leaderboard.
 
 `run.js` prints one `ok <name> N passed` line per file and then `all green`,
 or names the files that failed. It does not sum the assertions — at v4.18.0
-they came to 1,741 across twelve files; at v4.19.1 they come to 1,771, added up
+they came to 1,741 across twelve files; at v4.19.2 they come to 1,775, added up
 from those lines.
 
 ## Two version strings, on purpose
@@ -925,7 +925,7 @@ Same reasoning as FuelPost, different perishable thing:
   stopped existing; the requirement was "always on screen", not "in the
   header", and the panel tab is on screen in both modes whether the panel is
   open or collapsed. Bump only when the rows are re-audited.
-- **`APP_VERSION`** (`4.19.1`) — the code. Shown in the **legend card**.
+- **`APP_VERSION`** (`4.19.2`) — the code. Shown in the **legend card**.
   Bumped for every shipped change, and stamped onto every `lib/` URL as a
   cache-buster.
 
@@ -945,6 +945,24 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v4.19.2
+
+- **The route panel says each thing once.** The summary card printed the pair
+  count the panel tab already shows, the ends and rig the trip tab already
+  shows, and the miles the selected option card shows. It is gone. When HERE
+  returns a single route, one line keeps its mileage and road. The chooser's
+  note is shortened to "N routes — tap one to see its pairs."
+- **The trip tab names places.** It printed both full geocoder labels —
+  "400 Birmingham Hwy, Chattanooga, TN 37419-2346, United States" — over three
+  lines. It now reads "Marshall, TX → Chattanooga, TN". Anything that does not
+  end in a city and state code is shown as typed.
+- **Reopening the panel in Route re-measures the map.** The re-measure lived
+  inside the three-row cap, which is Atlas-only, so HERE's copyright band and
+  controls stayed where the collapsed panel had put them, over the open list.
+- **Smaller type.** List rows, the stop sheet, option cards, buttons and the
+  panel tab are all a step smaller. Text inputs stay at 16px, the size below
+  which iOS zooms the page on focus.
 
 ### v4.19.1
 

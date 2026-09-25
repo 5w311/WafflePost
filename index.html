@@ -643,12 +643,6 @@ html[data-theme=dark] .mile{color:#E8B96B}
   background:var(--bg);border-radius:7px;cursor:pointer;font-weight:600}
 .themerow button[aria-checked=true]{background:var(--sign);border-color:var(--sign);color:var(--char)}
 
-.summary{margin:11px 14px;padding:11px 13px;border-radius:10px;background:var(--bg);
-  border:1px solid var(--line)}
-.summary .hd{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--sub);
-  font-weight:800;margin-bottom:3px}
-.summary .big{font-size:21px;font-weight:900;letter-spacing:-.02em}
-.summary .sub2{font-size:12.5px;color:var(--sub);margin-top:2px}
 .leg{font-size:11.5px;color:var(--sub);padding:3px 14px 9px}
 
 /* Route options: the same control as the vehicle picker — .seg's border,
@@ -666,8 +660,9 @@ html[data-theme=dark] .mile{color:#E8B96B}
 .seg.opts{flex-direction:column;gap:6px;margin:0 14px 10px}
 .seg.opts button{flex:none;text-align:left;padding:8px 11px;color:var(--ink)}
 .seg.opts button[aria-pressed=true]{background:var(--sign);border-color:var(--sign);color:var(--char)}
-/* 19px/900 echoes .summary .big (21px/900): the card's headline is the same
-   number in the same voice as the panel headline it is about to become. */
+/* The card's headline is the pair count, in the voice of the panel tab's
+   count it becomes when tapped. (The route summary card it used to echo was
+   removed in v4.19.2.) */
 .opt-n{display:block;font-size:19px;font-weight:900;letter-spacing:-.02em}
 .opt-via{display:block;font-size:12.5px;font-weight:700}
 .opt-mi{display:block;font-size:11.5px;color:var(--sub);margin-top:1px}
@@ -791,7 +786,7 @@ html[data-theme=dark] .gpsnote{color:var(--tint-text)}
 .seg:not(.opts) button[aria-pressed=true]{background:var(--seg-sel);color:var(--ink);
   box-shadow:0 1px 4px rgba(0,0,0,.18)}
 .vfields input{border:0;border-radius:10px;background:var(--fill)}
-.go{border:0;border-radius:14px;min-height:50px;font-size:17px;font-weight:700}
+.go{border:0;border-radius:14px;min-height:48px;font-size:16px;font-weight:700}
 
 /* ---- Over the map: the panel, the stop sheet, the popover ------------------
    The panel and the sheet float inset from the screen edge like iOS 26
@@ -803,22 +798,22 @@ html[data-theme=dark] .gpsnote{color:var(--tint-text)}
 .panel-tab{position:relative;padding:18px 18px 10px;border-bottom:.5px solid var(--line)}
 .panel-tab::before{content:'';position:absolute;top:6px;left:50%;width:36px;height:5px;
   margin-left:-18px;border-radius:3px;background:var(--sub);opacity:.35}
-.panel-tab .count{font-size:20px;font-weight:700;letter-spacing:-.01em}
-.row{position:relative;border-bottom:0;padding:12px 18px}
+.panel-tab .count{font-size:17px;font-weight:700;letter-spacing:-.01em}
+.row{position:relative;border-bottom:0;padding:10px 16px}
 .row::after{content:'';position:absolute;left:18px;right:0;bottom:0;height:.5px;background:var(--line)}
 .row:hover{background:var(--fill)}
 /* A route row carries four things on its top line - mile, city, exit, feet
    - and at 17px it ran out of width and broke "2,031 ft" across two lines.
    Numbers and the city never wrap. The exit label is the one that gives way,
    because on a route row the mile marker already says where the stop is. */
-.row-city{font-size:17px;font-weight:600;white-space:nowrap}
-.row-ex{font-size:13px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.row-ft{font-size:17px;font-weight:600;white-space:nowrap;flex:none}
+.row-city{font-size:15px;font-weight:600;white-space:nowrap}
+.row-ex{font-size:12px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row-ft{font-size:15px;font-weight:600;white-space:nowrap;flex:none}
 .mile{flex:none;white-space:nowrap}
-.row-ts{font-size:14px}
+.row-ts{font-size:13px}
 .strip{height:6px;border-radius:3px;background:var(--fill)}
 .strip .line{background:var(--sub);opacity:.5}
-.pill{font-size:12px;font-weight:600;letter-spacing:0;text-transform:none;padding:3px 8px;
+.pill{font-size:11px;font-weight:600;letter-spacing:0;text-transform:none;padding:3px 8px;
   border:0;border-radius:8px;background:var(--fill)}
 .pill.warn{color:var(--warn-text);background:rgba(255,159,10,.14)}
 .mile{color:var(--tint-text);font-weight:700}
@@ -835,18 +830,18 @@ html[data-theme=dark] .mile{color:var(--tint-text)}
 .sheet::before{content:'';position:absolute;top:6px;left:50%;width:36px;height:5px;
   margin-left:-18px;border-radius:3px;background:var(--sub);opacity:.35;z-index:1}
 .sheet-scroll{padding:22px 20px 0}
-.sheet h2{font-size:26px;font-weight:700;letter-spacing:-.02em}
-.sheet .sub{font-size:15px}
+.sheet h2{font-size:22px;font-weight:700;letter-spacing:-.02em}
+.sheet .sub{font-size:14px}
 /* The distance is this app's headline, so it gets the treatment iOS gives a
    temperature: large, rounded, tabular. */
 .bigft b{font-family:ui-rounded,"SF Pro Rounded",-apple-system,system-ui,sans-serif;
-  font-size:56px;font-weight:600;letter-spacing:-.03em}
-.bigft span{font-size:15px}
+  font-size:46px;font-weight:600;letter-spacing:-.03em}
+.bigft span{font-size:13px}
 .walkscale .ends{text-transform:none;letter-spacing:0;font-size:12px;font-weight:600}
 .walkscale .strip{height:8px;border-radius:4px}
-.kv{border-top:.5px solid var(--line);padding:11px 0;font-size:15px}
+.kv{border-top:.5px solid var(--line);padding:9px 0;font-size:14px}
 .kv > span:first-child{width:110px}
-.note{background:var(--fill);border-left:0;border-radius:16px;padding:12px 14px;font-size:15px;margin:14px 0}
+.note{background:var(--fill);border-left:0;border-radius:16px;padding:11px 13px;font-size:14px;margin:12px 0}
 /* A caution note already renders ABOVE the distance (v4.8.0 put it there on
    purpose). The iOS layer only makes it look like what it is: an alert card,
    system orange, with the warning glyph. The glyph is a mask so it takes the
@@ -858,7 +853,7 @@ html[data-theme=dark] .mile{color:var(--tint-text)}
   -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3.5l9 16H3z'/%3E%3Cpath d='M12 10v4.2'/%3E%3Cpath d='M12 17.2v.1'/%3E%3C/svg%3E") center/contain no-repeat;
           mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3.5l9 16H3z'/%3E%3Cpath d='M12 10v4.2'/%3E%3Cpath d='M12 17.2v.1'/%3E%3C/svg%3E") center/contain no-repeat}
 .sheet-actions{border-top:0;padding:12px 20px calc(16px + env(safe-area-inset-bottom,0px))}
-.act{border:0;border-radius:14px;min-height:50px;background:var(--fill);font-size:16px;font-weight:600;color:var(--ink)}
+.act{border:0;border-radius:14px;min-height:46px;background:var(--fill);font-size:15px;font-weight:600;color:var(--ink)}
 .act.primary{background:var(--sign);color:var(--char)}
 
 /* Dropped below the floating bar by the same measurement that pads the map:
@@ -904,12 +899,14 @@ html[data-theme=dark] .mile{color:var(--tint-text)}
 #map .H_ui .H_overlay.H_right:not(.H_top)::after{border-left-color:var(--surface)}
 
 /* ---- Route results ---- */
-.summary{border:0;border-radius:18px;background:var(--fill);margin:12px 14px;padding:14px 16px}
-.summary .hd{text-transform:none;letter-spacing:0;font-size:13px;font-weight:600}
-.summary .big{font-size:24px;font-weight:700}
-.seg.opts button{border:0;border-radius:14px;background:var(--fill);padding:10px 14px}
+.seg.opts button{border:0;border-radius:14px;background:var(--fill);padding:8px 12px}
+.opt-n{font-size:16px;font-weight:700}
+.opt-via{font-size:12.5px;font-weight:600}
+.opt-mi{font-size:12px}
+.leg{font-size:12px;padding:8px 16px 8px}
+.route-line{font-size:13px;padding:10px 16px 4px}
 .seg.opts button[aria-pressed=true]{background:var(--sign);color:var(--char)}
-.dry{border-bottom:0;padding:9px 18px;font-size:14px}
+.dry{border-bottom:0;padding:8px 16px;font-size:13px}
 .dry-rail{border-left-color:var(--sub);opacity:.5}
 </style>
 </head>
@@ -1108,27 +1105,27 @@ var __mods={};
 function require(p){return __mods[p.replace(/^\.\//,'').replace(/\.js$/,'')];}
 var module={exports:{}};
 </script>
-<script src="lib/waffledist.js?v=4.19.1"></script>
+<script src="lib/waffledist.js?v=4.19.2"></script>
 <script>__mods.waffledist=module.exports;module={exports:{}};</script>
-<script src="lib/atlasfilter.js?v=4.19.1"></script>
+<script src="lib/atlasfilter.js?v=4.19.2"></script>
 <script>__mods.atlasfilter=module.exports;module={exports:{}};</script>
-<script src="lib/routewaffles.js?v=4.19.1"></script>
+<script src="lib/routewaffles.js?v=4.19.2"></script>
 <script>__mods.routewaffles=module.exports;module={exports:{}};</script>
-<script src="lib/vehicleprofile.js?v=4.19.1"></script>
+<script src="lib/vehicleprofile.js?v=4.19.2"></script>
 <script>__mods.vehicleprofile=module.exports;module={exports:{}};</script>
-<script src="lib/triptext.js?v=4.19.1"></script>
+<script src="lib/triptext.js?v=4.19.2"></script>
 <script>__mods.triptext=module.exports;module={exports:{}};</script>
-<script src="lib/escape.js?v=4.19.1"></script>
+<script src="lib/escape.js?v=4.19.2"></script>
 <script>__mods.escape=module.exports;module={exports:{}};</script>
-<script src="lib/flexible-polyline.js?v=4.19.1"></script>
+<script src="lib/flexible-polyline.js?v=4.19.2"></script>
 <script>__mods['flexible-polyline']=module.exports;module={exports:{}};</script>
-<script src="lib/autosuggest.js?v=4.19.1"></script>
+<script src="lib/autosuggest.js?v=4.19.2"></script>
 <script>__mods.autosuggest=module.exports;module={exports:{}};</script>
-<script src="lib/location.js?v=4.19.1"></script>
+<script src="lib/location.js?v=4.19.2"></script>
 <script>__mods.location=module.exports;module={exports:{}};</script>
-<script src="lib/routeoptions.js?v=4.19.1"></script>
+<script src="lib/routeoptions.js?v=4.19.2"></script>
 <script>__mods.routeoptions=module.exports;module={exports:{}};</script>
-<script src="lib/baselayer.js?v=4.19.1"></script>
+<script src="lib/baselayer.js?v=4.19.2"></script>
 <script>__mods.baselayer=module.exports;module={exports:{}};</script>
 
 <script>
@@ -1180,7 +1177,7 @@ var HERE_API_KEY = '7RDploUiahAnm08IZA9X7YSbb0Qh99pvqV2NCNQX_Hg';
    APP_VERSION - the code. Shown in the legend card. Bumped every change,
                 and stamped onto every lib/ URL as a cache-buster. */
 var ATLAS_REV   = 'Atlas Rev 13-2026';
-var APP_VERSION = '4.19.1';
+var APP_VERSION = '4.19.2';
 
 /* ===== DATA ==========================================================
    61 rows - 60 walkable exits plus one honorary - carrying 73 pairings,
@@ -1912,7 +1909,7 @@ function render(){
      not survive; the argument did, so the rev moved rather than went. Set on
      both branches from one line, because "permanently visible" has to mean
      Route mode too - which is what it costs the route's mile count this slot
-     used to carry, and the drawer summary and panel body both still state it.
+     used to carry, and the drawer tab and the option cards still state it.
      ATLAS_REV already begins with the word "Atlas"; the tab beside it already
      says "pairs". Stripping the prefix here is the same lesson triptext.js
      learned after eleven releases of "Atlas Atlas". */
@@ -2036,8 +2033,7 @@ function optionsHtml(){
   var fastest = opts[0], best = 0;
   opts.forEach(function(o,i){ if (o.stops.length > opts[best].stops.length) best = i; });
 
-  var h = '<div class="leg">'+opts.length+' routes for this run — they do not pass '+
-          'the same Waffle Houses. Tap one to see its pairs.</div>'+
+  var h = '<div class="leg">'+opts.length+' routes \u2014 tap one to see its pairs.</div>'+
           '<div class="seg opts" role="group" aria-label="Route options">';
   opts.forEach(function(o,i){
     var n = o.stops.length, extra = Math.round(o.miles - fastest.miles);
@@ -2074,11 +2070,17 @@ function routeHtml(){
       'back in order, with the mile you pass it.</div>';
   }
 
+  /* NO SUMMARY CARD (v4.19.2). It restated the pair count the panel tab
+     already shows, the ends and rig the trip drawer's tab already shows, and
+     - with a chooser - the miles the selected option card shows, so one run
+     printed its pair count three times and its addresses twice. What it said
+     that nothing else did was the mileage and the road when HERE returns ONE
+     route and there is no chooser; that survives as a single line. */
   var p=state.plan, h='';
-  h += '<div class="summary"><div class="hd">On this route</div><div class="big">'+
-       p.stops.length+' walkable '+(p.stops.length===1?'pair':'pairs')+'</div>'+
-       '<div class="sub2">'+esc(p.fromLabel)+' &rarr; '+esc(p.toLabel)+' &middot; '+
-       Math.round(p.miles).toLocaleString('en-US')+' mi &middot; '+esc(p.profile)+'</div></div>';
+  if (!(state.options && state.options.length > 1)) {
+    h += '<div class="leg route-line">'+Math.round(p.miles).toLocaleString('en-US')+' mi'+
+         (p.label ? ' &middot; '+esc(p.label) : '')+'</div>';
+  }
 
   /* The chooser goes ABOVE the empty-run branch deliberately: an option with
      no pairs is exactly the one a driver needs to switch away from, and
@@ -2524,11 +2526,26 @@ $('rClear').addEventListener('click', function(){
 });
 
 /* ---- drawer ---- */
+/* "400 Birmingham Hwy, Chattanooga, TN 37419-2346, United States" is what
+   the geocoder hands back and what the fields hold, and it is what the
+   collapsed trip tab used to print for BOTH ends - three lines before the map.
+   The tab only has to say which run this is: "Chattanooga, TN". Anything that
+   does not end in a city and a state code (a raw GPS fallback, a typed place
+   name) is shown as typed rather than guessed at. */
+function shortPlace(label){
+  var parts = String(label).replace(/,\s*(United States|USA)\s*$/i, '').split(',')
+                .map(function(x){ return x.trim(); }).filter(Boolean);
+  if (parts.length >= 2) {
+    var st = parts[parts.length-1].match(/^([A-Z]{2})\b/);
+    if (st) return parts[parts.length-2] + ', ' + st[1];
+  }
+  return parts.join(', ');
+}
 function setDrawer(collapsed){
   $('drawer').classList.toggle('collapsed', !!collapsed);
   $('drawerTab').setAttribute('aria-expanded', String(!collapsed));
   var f=$('rFrom').value.trim(), t=$('rTo').value.trim();
-  $('drawerSummary').textContent = (f&&t) ? (f+' \u2192 '+t) : 'Trip';
+  $('drawerSummary').textContent = (f&&t) ? (shortPlace(f)+' \u2192 '+shortPlace(t)) : 'Trip';
   /* No resize call here: the ResizeObserver on the map element sees the
      drawer's height change and handles it, debounced, along with every
      other cause. */
@@ -3115,8 +3132,11 @@ function togglePanel(){
   /* Re-measure on the way back up: the cap could not be computed while the
      body was display:none, so a panel reopened without this would come back
      uncapped and take half the screen again. capPanelRows ends in its own
-     syncMapPadding, so only the collapse path still needs the call below. */
-  if (!c) { capPanelRows(); return; }
+     syncMapPadding - but ONLY in Atlas. In Route it returns before that, so
+     through v4.19.1 reopening the panel there left --chrome-h at the collapsed
+     height and HERE's copyright band and controls sat over the open list. The
+     re-measure below now runs on both paths; in Atlas it is a cheap repeat. */
+  if (!c) capPanelRows();
   /* The panel overlays the map rather than resizing it, so the observer
      never fires for this one — but the padding it contributes changed, and
      route fits read that padding. */
