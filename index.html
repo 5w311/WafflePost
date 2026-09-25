@@ -308,7 +308,6 @@ input,select,textarea{font-size:16px}
 .searchwrap{position:relative;flex:1;min-width:0}
 .searchwrap input{width:100%;padding:8px 8px 8px 22px;border:1px solid var(--line);
   border-radius:9px;background:var(--bg);color:var(--ink);min-height:34px}
-.searchwrap:has(.clr.on) input{padding-right:28px}
 .searchwrap input::placeholder{color:var(--sub)}
 .searchwrap .mag{position:absolute;left:9px;top:50%;transform:translateY(-50%);
   color:var(--sub);pointer-events:none;font-size:13px}
@@ -316,6 +315,22 @@ input,select,textarea{font-size:16px}
   background:transparent;color:var(--sub);cursor:pointer;font-size:17px;padding:2px 6px;
   line-height:1;display:none}
 .clr.on{display:block}
+/* The search bar's own clear button, 34px square like every other target in
+   the bar (v4.19.3) - it measured 26x21. Scoped to .searchwrap: the trip
+   drawer's clear buttons share a slot system with the locate button that a
+   bigger box would break. padding-right on the field makes room for it only
+   while it shows, so the placeholder keeps the width. */
+.searchwrap .clr{right:3px;min-width:34px;min-height:34px;padding:0;place-items:center}
+.searchwrap .clr.on{display:grid}
+.searchwrap:has(.clr.on) input{padding-right:38px}
+/* WebKit and Blink draw their own cancel X inside type=search. It doubled up
+   with the app's, and it reserves ~15px of the field even while hidden -
+   15px the placeholder was being clipped for. */
+.searchwrap input::-webkit-search-cancel-button,
+.searchwrap input::-webkit-search-decoration{-webkit-appearance:none;appearance:none;display:none}
+/* Drawer placeholders used the browser default grey, 2.8:1 on the dark
+   fields. */
+.fld input::placeholder,.vfields input::placeholder{color:var(--sub)}
 .barbtn{position:relative;width:34px;height:34px;flex:none;display:grid;place-items:center;
   border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:9px;
   cursor:pointer;padding:0}
@@ -694,7 +709,7 @@ html[data-theme=dark] .mile{color:#E8B96B}
    The canvas mockup this was built from is linked in the README. */
 
 :root{
-  --bg:#F2F2F7; --surface:#FFFFFF; --ink:#1C1C1E; --sub:#6C6C70; --line:#E1E1E6;
+  --bg:#F2F2F7; --surface:#FFFFFF; --ink:#1C1C1E; --sub:#5C5C60; --line:#E1E1E6;
   --fill:rgba(118,118,128,.12); --seg-sel:#FFFFFF;
   /* Tiers move to Apple's system orange and brown. Both take DARK ink now:
      systemBrown is far lighter than the syrup it replaces, and cream on it
@@ -704,21 +719,32 @@ html[data-theme=dark] .mile{color:#E8B96B}
   --danger-text:#D70015;
   /* Sign yellow is the tint, but yellow TEXT on white is 1.6:1. Anything
      tinted that is read as text uses this instead. */
-  --tint-text:#8F5E00; --warn-text:#B25000;
+  --tint-text:#8F5E00; --warn-text:#9A4500;
   --you:#007AFF;
-  --glass:rgba(255,255,255,.78); --glass-border:rgba(0,0,0,.08);
+  /* READABLE OVER ANY MAP (v4.19.3). v4.19.0 shipped the glass at .78 (light)
+     and .72 (dark) with --sub at #6C6C70 / #98989F. Over satellite imagery
+     that let grey text fall to 2.8:1 in light and 2.1:1 in dark, and text on
+     --fill (the search placeholder, pills, the unselected tab) lower still.
+     These values were SOLVED, not picked: each is the smallest change that
+     keeps every text pair on the panel and bar at 4.5:1 or better over every
+     backdrop grey from black to white, composited the way the browser does.
+     Density alone could not do it - even at .96 grey on --fill stays near
+     4:1 - so --sub moved as well. .92 still blurs and still reads as glass.
+     The #6C6C70 / #98989F pair is what to put back if this is ever reverted
+     for looks, and the contrast is what that costs. */
+  --glass:rgba(255,255,255,.92); --glass-border:rgba(0,0,0,.08);
   --glass-shadow:0 8px 24px rgba(0,0,0,.14);
   --sheet-shadow:0 -10px 40px rgba(0,0,0,.18);
   --sheet-bg:rgba(255,255,255,.96);
 }
 html[data-theme=dark]{
-  --bg:#000000; --surface:#1C1C1E; --ink:#FFFFFF; --sub:#98989F; --line:#38383A;
+  --bg:#000000; --surface:#1C1C1E; --ink:#FFFFFF; --sub:#AEAEB2; --line:#38383A;
   --fill:rgba(118,118,128,.24); --seg-sel:#636366;
   --t-long:#AC8E68;
   --danger-text:#FF6961;
   --tint-text:#FFC72C; --warn-text:#FF9F0A;
   --you:#0A84FF;
-  --glass:rgba(30,30,32,.72); --glass-border:rgba(255,255,255,.14);
+  --glass:rgba(30,30,32,.92); --glass-border:rgba(255,255,255,.14);
   --glass-shadow:0 8px 28px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.10);
   --sheet-shadow:0 -10px 40px rgba(0,0,0,.55);
   --sheet-bg:rgba(28,28,30,.96);
@@ -906,6 +932,10 @@ html[data-theme=dark] .mile{color:var(--tint-text)}
 .leg{font-size:12px;padding:8px 16px 8px}
 .route-line{font-size:13px;padding:10px 16px 4px}
 .seg.opts button[aria-pressed=true]{background:var(--sign);color:var(--char)}
+/* A pill on an unselected card stacked a second --fill on the card's, which
+   is what dropped "most waffles" under 4:1 on every backdrop. Outlined, it
+   reads as a tag without darkening the ground its text sits on. */
+.seg.opts button:not([aria-pressed=true]) .pill{background:transparent;border:.5px solid var(--sub)}
 .dry{border-bottom:0;padding:8px 16px;font-size:13px}
 .dry-rail{border-left-color:var(--sub);opacity:.5}
 </style>
@@ -1105,27 +1135,27 @@ var __mods={};
 function require(p){return __mods[p.replace(/^\.\//,'').replace(/\.js$/,'')];}
 var module={exports:{}};
 </script>
-<script src="lib/waffledist.js?v=4.19.2"></script>
+<script src="lib/waffledist.js?v=4.19.3"></script>
 <script>__mods.waffledist=module.exports;module={exports:{}};</script>
-<script src="lib/atlasfilter.js?v=4.19.2"></script>
+<script src="lib/atlasfilter.js?v=4.19.3"></script>
 <script>__mods.atlasfilter=module.exports;module={exports:{}};</script>
-<script src="lib/routewaffles.js?v=4.19.2"></script>
+<script src="lib/routewaffles.js?v=4.19.3"></script>
 <script>__mods.routewaffles=module.exports;module={exports:{}};</script>
-<script src="lib/vehicleprofile.js?v=4.19.2"></script>
+<script src="lib/vehicleprofile.js?v=4.19.3"></script>
 <script>__mods.vehicleprofile=module.exports;module={exports:{}};</script>
-<script src="lib/triptext.js?v=4.19.2"></script>
+<script src="lib/triptext.js?v=4.19.3"></script>
 <script>__mods.triptext=module.exports;module={exports:{}};</script>
-<script src="lib/escape.js?v=4.19.2"></script>
+<script src="lib/escape.js?v=4.19.3"></script>
 <script>__mods.escape=module.exports;module={exports:{}};</script>
-<script src="lib/flexible-polyline.js?v=4.19.2"></script>
+<script src="lib/flexible-polyline.js?v=4.19.3"></script>
 <script>__mods['flexible-polyline']=module.exports;module={exports:{}};</script>
-<script src="lib/autosuggest.js?v=4.19.2"></script>
+<script src="lib/autosuggest.js?v=4.19.3"></script>
 <script>__mods.autosuggest=module.exports;module={exports:{}};</script>
-<script src="lib/location.js?v=4.19.2"></script>
+<script src="lib/location.js?v=4.19.3"></script>
 <script>__mods.location=module.exports;module={exports:{}};</script>
-<script src="lib/routeoptions.js?v=4.19.2"></script>
+<script src="lib/routeoptions.js?v=4.19.3"></script>
 <script>__mods.routeoptions=module.exports;module={exports:{}};</script>
-<script src="lib/baselayer.js?v=4.19.2"></script>
+<script src="lib/baselayer.js?v=4.19.3"></script>
 <script>__mods.baselayer=module.exports;module={exports:{}};</script>
 
 <script>
@@ -1177,7 +1207,7 @@ var HERE_API_KEY = '7RDploUiahAnm08IZA9X7YSbb0Qh99pvqV2NCNQX_Hg';
    APP_VERSION - the code. Shown in the legend card. Bumped every change,
                 and stamped onto every lib/ URL as a cache-buster. */
 var ATLAS_REV   = 'Atlas Rev 13-2026';
-var APP_VERSION = '4.19.2';
+var APP_VERSION = '4.19.3';
 
 /* ===== DATA ==========================================================
    61 rows - 60 walkable exits plus one honorary - carrying 73 pairings,
@@ -3064,6 +3094,28 @@ $('fReset').addEventListener('click',function(){
   ['fFree','fScale','fDiner','fDouble','fHide'].forEach(function(id){ $(id).checked=false; });
   render();
 });
+/* THE PLACEHOLDER IS MEASURED, not assumed to fit (v4.19.3). "City, exit,
+   stop" fits from about 375px up; at 320 - the first-generation SE, and the
+   Display Zoom width of larger iPhones - the fixed tile and tabs leave the
+   field about 110px and it clipped to "City, e". So the longest candidate
+   that fits is used. Measured the README's way: the text as the field's
+   VALUE, scrollWidth against clientWidth. An empty field's scrollWidth
+   ignores placeholder text and reports a fit that is not there. Skipped while
+   the driver is typing or the field is focused, so nothing they see moves. */
+var Q_PLACEHOLDERS = ['City, exit, stop', 'City or exit', 'Search'];
+function fitSearchPlaceholder(){
+  var q = $('q');
+  if (!q || q.value || document.activeElement === q || !q.clientWidth) return;
+  for (var i = 0; i < Q_PLACEHOLDERS.length; i++) {
+    q.value = Q_PLACEHOLDERS[i];
+    var fits = q.scrollWidth <= q.clientWidth;
+    q.value = '';
+    if (fits || i === Q_PLACEHOLDERS.length - 1) { q.placeholder = Q_PLACEHOLDERS[i]; return; }
+  }
+}
+window.addEventListener('resize', fitSearchPlaceholder);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitSearchPlaceholder);
+fitSearchPlaceholder();
 $('q').addEventListener('input',function(){
   state.q=this.value; $('qClear').classList.toggle('on',!!this.value); render();
 });
@@ -3083,6 +3135,8 @@ function setMode(m){
      with in render(), where the count it displays is computed. */
   $('searchWrap').classList.toggle('hidden', m!=='atlas');
   $('filterSection').classList.toggle('hidden', m!=='atlas');
+  /* Hidden in Route it measures nothing, so re-fit on the way back. */
+  if (m==='atlas') fitSearchPlaceholder();
   $('chromeBtn').classList.toggle('hidden', m!=='atlas');
   /* Atlas only. Route has its own one-shot on the pickup field, and two
      location affordances on one screen is how a driver taps the wrong one.

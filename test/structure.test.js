@@ -525,6 +525,31 @@ t.eq(/setProperty\('--attrib-[wh]'/.test(src), false,
      'no attribution measurement survives with nothing reading it');
 t.eq(/var\(--attrib-[wh]/.test(src), false, 'and nothing reads one');
 
+// ---- readable over any map (v4.19.3) ----
+// The glass density and --sub were SOLVED against every backdrop grey from
+// black to white so text on the panel and bar holds 4.5:1; see the comment
+// on --glass. Pinned so a "lighter, prettier glass" is a decision someone
+// has to argue for rather than a tidy-up that brings back 2.1:1.
+var iosCss = (src.match(/<style id="ios-design">[\s\S]*?<\/style>/) || [''])[0];
+t.eq(/--glass:rgba\(255,255,255,\.92\)/.test(iosCss) && /--glass:rgba\(30,30,32,\.92\)/.test(iosCss), true,
+     'text-bearing glass is .92 dense in both themes');
+t.eq(/--sub:#5C5C60/.test(iosCss) && /--sub:#AEAEB2/.test(iosCss), true,
+     'secondary text is strong enough to clear 4.5:1 on that glass');
+t.eq(/--warn-text:#9A4500/.test(iosCss), true, 'light warn text clears 4.5:1 on its tint over glass');
+// ---- the search box (v4.19.3) ----
+t.eq(/\.searchwrap \.clr\{[^}]*min-width:34px;min-height:34px/.test(src), true,
+     'the search clear button is a 34px target like the rest of the bar');
+t.eq(/\.searchwrap input::-webkit-search-cancel-button/.test(src), true,
+     'the native cancel X is suppressed: it doubled the app\'s and ate 15px');
+t.eq(/var Q_PLACEHOLDERS = \['City, exit, stop', /.test(src), true,
+     'the full placeholder is still the first choice');
+var fitSrc = (src.match(/function fitSearchPlaceholder\(\)\{[\s\S]*?\n\}/) || [''])[0];
+t.eq(/q\.value = Q_PLACEHOLDERS\[i\];[\s\S]*q\.scrollWidth <= q\.clientWidth/.test(fitSrc), true,
+     'the fit is measured with the text as the VALUE, the README method');
+t.eq(/q\.value \|\| document\.activeElement === q/.test(fitSrc), true,
+     'and never runs over text the driver typed or a focused field');
+t.eq(/\.fld input::placeholder/.test(src), true, 'drawer placeholders use --sub, not the UA grey');
+
 // max(), not calc(). calc(10px + inset) stacks a gap on top of an inset that
 // exists to BE that gap - 69px of top padding on a Dynamic Island phone.
 t.eq(/padding-top:calc\([\d.]+px \+ env\(safe-area-inset-top/.test(src), false,
