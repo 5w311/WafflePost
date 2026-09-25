@@ -12,7 +12,7 @@ hand-made assets with an approximation - so it is gone, and what is left is
 the half that was actually earning its place: measurement.
 
 It checks what prose cannot: that every shipped file is flat RGB at the size
-it claims, that the two 512s really are the same bytes, and that the W clears
+it claims, that the two 512s really are the same bytes, and that the mark clears
 the maskable safe circle - measured pixel by pixel on the shipped file rather
 than argued from a bounding box. test/structure.test.js covers the format and
 the byte-identity in plain node with no dependency; the safe-circle geometry
@@ -29,7 +29,10 @@ import sys, os, math, hashlib
 from PIL import Image
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SIGN = (0xFF, 0xC7, 0x2C)          # --sign, the W
+# The mark's colour. Since v4.18.0 the mark is a golden waffle, and --sign
+# (the old W's yellow) is within the match tolerance of its gold; if a future
+# mark changes hue, change this, or the geometry below measures nothing.
+SIGN = (0xFF, 0xC7, 0x2C)
 SAFE_R = 0.40                      # centre-80% circle: the maskable safe zone
 
 # name -> expected square size
@@ -43,7 +46,7 @@ def sha(path):
 
 
 def glyph_geometry(path):
-    """Where the yellow actually is. Returns the W's bounding box as fractions
+    """Where the yellow actually is. Returns the mark's bounding box as fractions
     of the icon, plus the furthest yellow pixel's radius from centre - which is
     the number that decides whether a circular crop clips the mark. The
     bounding-box diagonal OVERSTATES the risk, because the box corners are
@@ -96,10 +99,10 @@ def main():
     if g:
         w, h, diag, maxr = g
         print('glyph: width %.3f  height %.3f  bbox diagonal %.3f' % (w, h, diag))
-        print('furthest W pixel: r=%.4f  against the safe circle %.2f -> %s'
+        print('furthest mark pixel: r=%.4f  against the safe circle %.2f -> %s'
               % (maxr, SAFE_R, 'clears it' if maxr <= SAFE_R else 'CLIPPED'))
         if maxr > SAFE_R:
-            bad.append('a circular maskable crop would clip the W (r=%.4f)' % maxr)
+            bad.append('a circular maskable crop would clip the mark (r=%.4f)' % maxr)
 
     if bad:
         print('\nFAIL')

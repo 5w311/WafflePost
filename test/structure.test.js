@@ -152,7 +152,7 @@ if (mf) {
   t.eq(buf.readUInt8(25), 2, name + ' is flat RGB with no alpha channel');
 });
 
-// The maskable and plain 512 are the same file since v4.6.3: the W sits inside
+// The maskable and plain 512 are the same file since v4.6.3: the mark sits inside
 // the circular safe zone unshrunk, so there is nothing for the maskable one to
 // do differently. Both still ship because the manifest names them separately
 // and a launcher may fetch either. If a future mark needs a real shrink this
