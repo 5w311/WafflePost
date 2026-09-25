@@ -288,6 +288,11 @@ t.eq(/\.bar\{background:var\(--surface\)/.test(src), true, 'the bar is --surface
 // luminance, which is no edge at all.
 t.eq(/\.tile\{[\s\S]{0,200}border:1px solid #332C24/.test(src), true,
      "the tile keeps its hairline, which is the bar block's one literal");
+// Since v4.18.1 the bar tile IS the home screen icon, as an image, not a
+// live-text W. The file has to exist or the tile renders as a blank square.
+t.eq(/\.tile\{[^}]*url\(tile\.png\)/.test(src), true, 'the bar tile draws tile.png');
+t.eq(fs.existsSync(path.join(__dirname, '..', 'tile.png')), true, 'and tile.png ships');
+t.eq(/<div class="tile"[^>]*>W<\/div>/.test(src), false, 'the old W is gone from the tile');
 // theme-color was a static #14110E while the bar was permanently char. A fixed
 // value now paints dark browser chrome above a cream bar in light mode, which
 // is the exact seam this change removed.
