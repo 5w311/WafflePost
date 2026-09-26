@@ -251,9 +251,21 @@ input,select,textarea{font-size:16px}
    them matching the icon.
 
    Anything added to this bar takes tokens, not literals. The one exception
-   is the tile's hairline, which is explained at .tile. */
+   is the tile's hairline, which is explained at .tile.
+
+   THE INSET IS NOT THE WHOLE STATUS BAR ANY MORE (v4.20.1). Since iOS 26 the
+   system blurs and dims a feathered band that runs on BELOW the status bar,
+   about 35pt deep - measured off a phone screenshot, 62pt inset: the dimming
+   ends at 97pt, and it is down to 1% by inset + 32. MilesPost met the same
+   band and pads past it; so does this bar, by 32pt wherever there is a
+   status bar and nothing in a Safari tab, where the inset is 0: that is what
+   min(32px, inset * 100) says. Not MilesPost's min(24px, inset), which gives
+   a 20pt home-button status bar only 20pt, and nothing says iOS draws a
+   shallower band there. The bar's own flat background fills the band, and
+   blurring or dimming a flat colour shows nothing; only the controls must
+   start below it. */
 .bar{background:var(--surface);color:var(--ink);display:flex;align-items:center;gap:7px;
-  padding:8px 10px;padding-top:max(8px, env(safe-area-inset-top,0px));flex:none;
+  padding:8px 10px;padding-top:max(8px, calc(env(safe-area-inset-top,0px) + min(32px, env(safe-area-inset-top,0px) * 100)));flex:none;
   border-bottom:1px solid var(--line)}
 /* The home screen icon itself since v4.18.1: tile.png is the supplied
    1024px waffle artwork scaled to 84px, which is 28px at 3x. It replaced a
@@ -800,19 +812,26 @@ button{-webkit-tap-highlight-color:transparent}
    setMode never touches the bar. Blur on the bar itself is safe HERE, unlike
    FuelPost-iOS: nothing inside it is positioned against the viewport. */
 .bar{background:var(--surface);border-bottom:.5px solid var(--line);gap:6px;padding:8px 10px;
-  padding-top:max(8px, env(safe-area-inset-top,0px))}
+  padding-top:max(8px, calc(env(safe-area-inset-top,0px) + min(32px, env(safe-area-inset-top,0px) * 100)))}
 /* THE STATUS BAR STRIP (v4.19.1). With the bar floating, the only thing
    under the status bar was map - and iOS painted its own dark, blurred edge
    over it, which read as a smudge across the top of the screen. An opaque
-   strip exactly the height of the status bar, in the colour theme-color now
-   carries, gives iOS a flat surface there instead: blurring a flat colour
-   changes nothing. env() is 0 in a browser tab, so it only exists where the
-   status bar does. Below the bar (699 < 700), so the bar's shadow falls on it
-   the same way it falls on the map. */
+   strip in the colour theme-color now carries gives iOS a flat surface there
+   instead: blurring a flat colour changes nothing. env() is 0 in a browser
+   tab, so it only exists where the status bar does. Below the bar (699 <
+   700), so the bar's shadow falls on it the same way it falls on the map.
+
+   It covers the band BELOW the status bar too (v4.20.1), and the bar floats
+   under it. Sized to the inset alone, it left iOS's feathered edge - about
+   35pt deeper - lying across the top of the floating bar: on the phone the
+   tile, the Atlas/Route pill and the search field were dimmed and softened
+   down to 97pt, the Atlas pill's yellow reaching full strength only below
+   that. The 32pt is the same clearance .bar pads by in Route (see the base
+   rule), so both modes clear the band by the same measure. */
 body:has(#drawer.hidden)::before{content:'';position:fixed;top:0;left:0;right:0;z-index:699;
-  height:env(safe-area-inset-top,0px);background:var(--surface);pointer-events:none}
+  height:calc(env(safe-area-inset-top,0px) + min(32px, env(safe-area-inset-top,0px) * 100));background:var(--surface);pointer-events:none}
 body:has(#drawer.hidden) .bar{position:absolute;z-index:700;
-  top:max(8px, env(safe-area-inset-top,0px));left:7px;right:7px;padding:5px;gap:5px;
+  top:max(8px, calc(env(safe-area-inset-top,0px) + min(32px, env(safe-area-inset-top,0px) * 100)));left:7px;right:7px;padding:5px;gap:5px;
   border:.5px solid var(--glass-border);border-radius:26px;background:var(--glass);
   box-shadow:var(--glass-shadow);
   -webkit-backdrop-filter:blur(22px) saturate(170%);backdrop-filter:blur(22px) saturate(170%)}
