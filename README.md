@@ -915,7 +915,7 @@ leaderboard.
 
 `run.js` prints one `ok <name> N passed` line per file and then `all green`,
 or names the files that failed. It does not sum the assertions — at v4.18.0
-they came to 1,741 across twelve files; at v4.19.3 they come to 1,784, added up
+they came to 1,741 across twelve files; at v4.19.4 they come to 1,799, added up
 from those lines.
 
 ## Two version strings, on purpose
@@ -931,7 +931,7 @@ Same reasoning as FuelPost, different perishable thing:
   stopped existing; the requirement was "always on screen", not "in the
   header", and the panel tab is on screen in both modes whether the panel is
   open or collapsed. Bump only when the rows are re-audited.
-- **`APP_VERSION`** (`4.19.3`) — the code. Shown in the **legend card**.
+- **`APP_VERSION`** (`4.19.4`) — the code. Shown in the **legend card**.
   Bumped for every shipped change, and stamped onto every `lib/` URL as a
   cache-buster.
 
@@ -951,6 +951,34 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v4.19.4
+
+What an independent browser check of v4.19.3 found. It confirmed the main
+claim — every text pair on the bar and panel holds 4.5:1 over every backdrop
+in both themes (v4.19.2 failed 23 light and 28 dark) — and turned up these.
+
+- **Returning to Atlas re-fits the placeholder after the drawer hides.**
+  v4.19.3 measured before, against the Route layout, and at 320 and 360 the
+  placeholder came back clipped ("City or e"). It also re-fits on blur, for a
+  resize that happened while the field was in use.
+- **HERE's layers icon stays visible while its menu is open.** HERE's own
+  stylesheet forces the active icon navy with `!important`; on the dark glass
+  that was 1.06:1.
+- **Typed values in the custom vehicle fields read as ink**, not the same grey
+  as their placeholders.
+- **The selected route card's pill keeps its outline**, matching the
+  unselected one.
+- **Row hover.** The v4.18 base rule `.row:hover{background:var(--bg)}` is
+  unconditional, iOS leaves `:hover` stuck on a tapped row, and the layer's
+  `--bg` is pure black in dark mode, so a tapped row risked a black band. The
+  layer now neutralises it, and tints only under `@media (hover:hover)`, at a
+  density solved like the glass (`--hover`, .06 light / .08 dark) so a "read
+  first" pill on a hovered row still clears 4.5:1.
+- **A contrast floor in the tests.** `structure.test.js` reads the layer's own
+  tokens and composites each text pair on the glass over every backdrop grey,
+  failing under 4.5:1. Putting back v4.19.0's grey or glass density fails it;
+  a different value that still passes does not.
 
 ### v4.19.3
 

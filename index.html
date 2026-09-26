@@ -733,6 +733,7 @@ html[data-theme=dark] .mile{color:#E8B96B}
      The #6C6C70 / #98989F pair is what to put back if this is ever reverted
      for looks, and the contrast is what that costs. */
   --glass:rgba(255,255,255,.92); --glass-border:rgba(0,0,0,.08);
+  --hover:rgba(118,118,128,.06);
   --glass-shadow:0 8px 24px rgba(0,0,0,.14);
   --sheet-shadow:0 -10px 40px rgba(0,0,0,.18);
   --sheet-bg:rgba(255,255,255,.96);
@@ -745,6 +746,7 @@ html[data-theme=dark]{
   --tint-text:#FFC72C; --warn-text:#FF9F0A;
   --you:#0A84FF;
   --glass:rgba(30,30,32,.92); --glass-border:rgba(255,255,255,.14);
+  --hover:rgba(118,118,128,.08);
   --glass-shadow:0 8px 28px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.10);
   --sheet-shadow:0 -10px 40px rgba(0,0,0,.55);
   --sheet-bg:rgba(28,28,30,.96);
@@ -811,7 +813,7 @@ html[data-theme=dark] .gpsnote{color:var(--tint-text)}
 .seg:not(.opts) button{border:0;background:transparent;border-radius:9px;color:var(--ink);font-weight:600}
 .seg:not(.opts) button[aria-pressed=true]{background:var(--seg-sel);color:var(--ink);
   box-shadow:0 1px 4px rgba(0,0,0,.18)}
-.vfields input{border:0;border-radius:10px;background:var(--fill)}
+.vfields input{border:0;border-radius:10px;background:var(--fill);color:var(--ink)}
 .go{border:0;border-radius:14px;min-height:48px;font-size:16px;font-weight:700}
 
 /* ---- Over the map: the panel, the stop sheet, the popover ------------------
@@ -827,7 +829,18 @@ html[data-theme=dark] .gpsnote{color:var(--tint-text)}
 .panel-tab .count{font-size:17px;font-weight:700;letter-spacing:-.01em}
 .row{position:relative;border-bottom:0;padding:10px 16px}
 .row::after{content:'';position:absolute;left:18px;right:0;bottom:0;height:.5px;background:var(--line)}
-.row:hover{background:var(--fill)}
+/* ROW HOVER, v4.19.4. Neutralised first, for touch: the base sheet's
+   .row:hover{background:var(--bg)} is unconditional, iOS leaves :hover stuck
+   on a tapped row, and this layer's --bg is pure black in dark mode - a
+   tapped row would have become a black band on the glass. Then a tint only
+   where a pointer can actually hover, at a density SOLVED like the glass:
+   --fill (.12/.24) under a "read first" pill dropped it to 3.9:1; .06/.08
+   keeps every pill on a hovered row at 4.5:1 over any backdrop. */
+.row:hover{background:transparent}
+@media (hover:hover){
+  .row:hover{background:var(--hover)}
+  .row:hover .pill:not(.warn){background:transparent;border:.5px solid var(--sub)}
+}
 /* A route row carries four things on its top line - mile, city, exit, feet
    - and at 17px it ran out of width and broke "2,031 ft" across two lines.
    Numbers and the city never wrap. The exit label is the one that gives way,
@@ -917,6 +930,11 @@ html[data-theme=dark] .mile{color:var(--tint-text)}
   -webkit-backdrop-filter:blur(22px) saturate(170%);backdrop-filter:blur(22px) saturate(170%)}
 #map .H_ui .H_ctl:not(.H_zoom) > .H_btn{border-radius:14px}
 #map .H_ui .H_btn .H_icon{fill:var(--ink)}
+/* HERE's own .H_active > svg.H_icon{fill:#0F1621 !important} survives the rule
+   above, so in dark mode the layers glyph turned navy on dark glass (1.06:1)
+   whenever its menu was open. Its matching light background loses to the
+   glass, so the icon keeps --ink instead. */
+#map .H_ui .H_btn.H_active > svg.H_icon{fill:var(--ink) !important}
 #map .H_ui .H_zoom .H_btn + .H_btn{border-top:.5px solid var(--line)}
 #map .H_ui .H_overlay{background:var(--surface);color:var(--ink);border-radius:16px;
   border:.5px solid var(--glass-border);box-shadow:0 12px 32px rgba(0,0,0,.3)}
@@ -936,6 +954,7 @@ html[data-theme=dark] .mile{color:var(--tint-text)}
    is what dropped "most waffles" under 4:1 on every backdrop. Outlined, it
    reads as a tag without darkening the ground its text sits on. */
 .seg.opts button:not([aria-pressed=true]) .pill{background:transparent;border:.5px solid var(--sub)}
+.seg.opts button[aria-pressed=true] .pill{border:.5px solid rgba(20,17,14,.4)}
 .dry{border-bottom:0;padding:8px 16px;font-size:13px}
 .dry-rail{border-left-color:var(--sub);opacity:.5}
 </style>
@@ -1135,27 +1154,27 @@ var __mods={};
 function require(p){return __mods[p.replace(/^\.\//,'').replace(/\.js$/,'')];}
 var module={exports:{}};
 </script>
-<script src="lib/waffledist.js?v=4.19.3"></script>
+<script src="lib/waffledist.js?v=4.19.4"></script>
 <script>__mods.waffledist=module.exports;module={exports:{}};</script>
-<script src="lib/atlasfilter.js?v=4.19.3"></script>
+<script src="lib/atlasfilter.js?v=4.19.4"></script>
 <script>__mods.atlasfilter=module.exports;module={exports:{}};</script>
-<script src="lib/routewaffles.js?v=4.19.3"></script>
+<script src="lib/routewaffles.js?v=4.19.4"></script>
 <script>__mods.routewaffles=module.exports;module={exports:{}};</script>
-<script src="lib/vehicleprofile.js?v=4.19.3"></script>
+<script src="lib/vehicleprofile.js?v=4.19.4"></script>
 <script>__mods.vehicleprofile=module.exports;module={exports:{}};</script>
-<script src="lib/triptext.js?v=4.19.3"></script>
+<script src="lib/triptext.js?v=4.19.4"></script>
 <script>__mods.triptext=module.exports;module={exports:{}};</script>
-<script src="lib/escape.js?v=4.19.3"></script>
+<script src="lib/escape.js?v=4.19.4"></script>
 <script>__mods.escape=module.exports;module={exports:{}};</script>
-<script src="lib/flexible-polyline.js?v=4.19.3"></script>
+<script src="lib/flexible-polyline.js?v=4.19.4"></script>
 <script>__mods['flexible-polyline']=module.exports;module={exports:{}};</script>
-<script src="lib/autosuggest.js?v=4.19.3"></script>
+<script src="lib/autosuggest.js?v=4.19.4"></script>
 <script>__mods.autosuggest=module.exports;module={exports:{}};</script>
-<script src="lib/location.js?v=4.19.3"></script>
+<script src="lib/location.js?v=4.19.4"></script>
 <script>__mods.location=module.exports;module={exports:{}};</script>
-<script src="lib/routeoptions.js?v=4.19.3"></script>
+<script src="lib/routeoptions.js?v=4.19.4"></script>
 <script>__mods.routeoptions=module.exports;module={exports:{}};</script>
-<script src="lib/baselayer.js?v=4.19.3"></script>
+<script src="lib/baselayer.js?v=4.19.4"></script>
 <script>__mods.baselayer=module.exports;module={exports:{}};</script>
 
 <script>
@@ -1207,7 +1226,7 @@ var HERE_API_KEY = '7RDploUiahAnm08IZA9X7YSbb0Qh99pvqV2NCNQX_Hg';
    APP_VERSION - the code. Shown in the legend card. Bumped every change,
                 and stamped onto every lib/ URL as a cache-buster. */
 var ATLAS_REV   = 'Atlas Rev 13-2026';
-var APP_VERSION = '4.19.3';
+var APP_VERSION = '4.19.4';
 
 /* ===== DATA ==========================================================
    61 rows - 60 walkable exits plus one honorary - carrying 73 pairings,
@@ -3114,6 +3133,10 @@ function fitSearchPlaceholder(){
   }
 }
 window.addEventListener('resize', fitSearchPlaceholder);
+/* A resize while the field was focused or held text was skipped; catch up
+   once it is left. Blur fires while a clear-button tap's value is still set,
+   so the guard returns and nothing moves under the finger. */
+$('q').addEventListener('blur', fitSearchPlaceholder);
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitSearchPlaceholder);
 fitSearchPlaceholder();
 $('q').addEventListener('input',function(){
@@ -3135,8 +3158,6 @@ function setMode(m){
      with in render(), where the count it displays is computed. */
   $('searchWrap').classList.toggle('hidden', m!=='atlas');
   $('filterSection').classList.toggle('hidden', m!=='atlas');
-  /* Hidden in Route it measures nothing, so re-fit on the way back. */
-  if (m==='atlas') fitSearchPlaceholder();
   $('chromeBtn').classList.toggle('hidden', m!=='atlas');
   /* Atlas only. Route has its own one-shot on the pickup field, and two
      location affordances on one screen is how a driver taps the wrong one.
@@ -3147,6 +3168,11 @@ function setMode(m){
     $(id).classList.toggle('hidden', m!=='atlas');
   });
   $('drawer').classList.toggle('hidden', m!=='route');
+  /* Re-fit the search placeholder on the way back to Atlas - here, AFTER the
+     drawer hides and the bar leaves the flow, not before. v4.19.3 ran it
+     earlier in this function and measured the Route layout, which brought
+     the placeholder back clipped at 320 and 360. */
+  if (m==='atlas') fitSearchPlaceholder();
   /* A mode change dismisses the sheet, which changes what HERE's controls
      have to clear. render()'s own path to syncChromeH runs only when the cap
      applies - not in Route, not when a filter leaves fewer than three rows -

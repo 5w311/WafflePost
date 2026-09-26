@@ -536,6 +536,56 @@ t.eq(/--glass:rgba\(255,255,255,\.92\)/.test(iosCss) && /--glass:rgba\(30,30,32,
 t.eq(/--sub:#5C5C60/.test(iosCss) && /--sub:#AEAEB2/.test(iosCss), true,
      'secondary text is strong enough to clear 4.5:1 on that glass');
 t.eq(/--warn-text:#9A4500/.test(iosCss), true, 'light warn text clears 4.5:1 on its tint over glass');
+// ---- the contrast FLOOR, computed (v4.19.4) ----
+// The pins above catch these exact values changing. This catches the thing
+// they exist for: it reads the layer's own tokens and composites each text
+// pair over every backdrop grey 0..255 in sRGB, as a browser does, and fails
+// if any drops under 4.5:1. A future palette tweak that keeps the contrast
+// passes; one that loses it fails here instead of on a driver's phone.
+(function () {
+  function block(sel) {
+    var m = iosCss.match(new RegExp(sel.replace(/[\[\]=]/g, '\\$&') + '\\{([^}]*)\\}'));
+    var out = {};
+    (m ? m[1] : '').replace(/--([\w-]+):([^;]+);/g, function (_, k, v) { out[k] = v.trim(); });
+    return out;
+  }
+  function rgba(v) {
+    var h = v.match(/^#([0-9a-f]{6})$/i);
+    if (h) return [parseInt(h[1].slice(0,2),16), parseInt(h[1].slice(2,4),16), parseInt(h[1].slice(4,6),16), 1];
+    var r = v.match(/rgba\((\d+),(\d+),(\d+),([\d.]+)\)/);
+    return r ? [+r[1], +r[2], +r[3], +r[4]] : null;
+  }
+  function lin(c) { c /= 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); }
+  function lum(c) { return 0.2126 * lin(c[0]) + 0.7152 * lin(c[1]) + 0.0722 * lin(c[2]); }
+  function ratio(a, b) { var x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); }
+  function worst(text, layers) {
+    var w = 99;
+    for (var g = 0; g < 256; g++) {
+      var c = [g, g, g];
+      layers.forEach(function (l) { c = c.map(function (v, i) { return Math.round(l[i] * l[3] + v * (1 - l[3])); }); });
+      w = Math.min(w, ratio(text, c));
+    }
+    return w;
+  }
+  var light = block(':root'), dark = Object.assign({}, light, block('html[data-theme=dark]'));
+  var WARN_TINT = [255, 159, 10, 0.14];
+  [['light', light], ['dark', dark]].forEach(function (th) {
+    var T = th[1], glass = rgba(T.glass), fill = rgba(T.fill), hover = rgba(T.hover);
+    var pairs = [
+      ['secondary text on the glass',          T.sub,         [glass]],
+      ['secondary text on a chip on the glass', T.sub,        [glass, fill]],
+      ['the route mile marker on the glass',    T['tint-text'], [glass]],
+      ['"read first" on its tint on the glass', T['warn-text'], [glass, WARN_TINT]],
+      ['"read first" on a hovered row',         T['warn-text'], [glass, hover, WARN_TINT]],
+      ['ink on a chip on the glass',            T.ink,         [glass, fill]],
+    ];
+    pairs.forEach(function (p) {
+      var r = worst(rgba(p[1]), p[2]);
+      t.eq(r >= 4.5, true, th[0] + ': ' + p[0] + ' holds 4.5:1 over any backdrop (worst ' + r.toFixed(2) + ')');
+    });
+  });
+})();
+
 // ---- the search box (v4.19.3) ----
 t.eq(/\.searchwrap \.clr\{[^}]*min-width:34px;min-height:34px/.test(src), true,
      'the search clear button is a 34px target like the rest of the bar');
@@ -548,6 +598,16 @@ t.eq(/q\.value = Q_PLACEHOLDERS\[i\];[\s\S]*q\.scrollWidth <= q\.clientWidth/.te
      'the fit is measured with the text as the VALUE, the README method');
 t.eq(/q\.value \|\| document\.activeElement === q/.test(fitSrc), true,
      'and never runs over text the driver typed or a focused field');
+// Re-fit on the way back to Atlas AFTER the drawer hides (v4.19.4): run before
+// it, it measured the Route layout and brought the placeholder back clipped.
+t.eq(/\$\('drawer'\)\.classList\.toggle\('hidden', m!=='route'\);[\s\S]*if \(m==='atlas'\) fitSearchPlaceholder\(\);/.test(setModeSrc), true,
+     'setMode re-fits the placeholder after the drawer toggle, not before');
+t.eq(/\$\('q'\)\.addEventListener\('blur', fitSearchPlaceholder\)/.test(src), true,
+     'and catches up on blur after a resize it had to skip');
+// Touch: the base .row:hover{background:var(--bg)} would paint a stuck-hover
+// row pure black on the dark glass. The layer neutralises it outside hover.
+t.eq(/\.row:hover\{background:transparent\}\s*@media \(hover:hover\)\{/.test(iosCss), true,
+     'row hover is neutralised for touch and tinted only where a pointer hovers');
 t.eq(/\.fld input::placeholder/.test(src), true, 'drawer placeholders use --sub, not the UA grey');
 
 // max(), not calc(). calc(10px + inset) stacks a gap on top of an inset that
