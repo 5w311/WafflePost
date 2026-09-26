@@ -865,7 +865,19 @@ html[data-theme=dark] .mile{color:var(--tint-text)}
    text behind it is texture rather than words. */
 .sheet{left:8px;right:8px;bottom:8px;border:.5px solid var(--glass-border);border-radius:30px;
   background:var(--sheet-bg);box-shadow:var(--sheet-shadow);
-  -webkit-backdrop-filter:blur(26px) saturate(170%);backdrop-filter:blur(26px) saturate(170%)}
+  -webkit-backdrop-filter:blur(26px) saturate(170%);backdrop-filter:blur(26px) saturate(170%);
+  max-height:calc(100% - var(--bar-bleed,0px) - 180px);
+  min-height:min(var(--panel-h,0px), calc(100% - var(--bar-bleed,0px) - 180px))}
+/* THE CARD IS AS TALL AS WHAT IT SAYS (v4.19.5). Since v4.5.0 it was held to
+   --sheet-max, the Atlas list's three-row height, measured once at boot:
+   309px, against content that needs 397 to 916 (median 497). Every one of
+   the 69 cards was cut, and in Route - where the list is taller than three
+   rows - the list showed above the card. Now it grows to its content and
+   stops 180px under the bar: room for the stop's pin and for HERE's zoom and
+   layers stack, which --chrome-h lifts above the card. It is never shorter
+   than the panel it opens over, so no list row peeks out above it. Taller
+   cards still scroll inside, with Close and Share pinned. openSheet centres
+   the stop in that strip, not behind the card. */
 .sheet::before{content:'';position:absolute;top:6px;left:50%;width:36px;height:5px;
   margin-left:-18px;border-radius:3px;background:var(--sub);opacity:.35;z-index:1}
 .sheet-scroll{padding:22px 20px 0}
@@ -1154,27 +1166,27 @@ var __mods={};
 function require(p){return __mods[p.replace(/^\.\//,'').replace(/\.js$/,'')];}
 var module={exports:{}};
 </script>
-<script src="lib/waffledist.js?v=4.19.4"></script>
+<script src="lib/waffledist.js?v=4.19.5"></script>
 <script>__mods.waffledist=module.exports;module={exports:{}};</script>
-<script src="lib/atlasfilter.js?v=4.19.4"></script>
+<script src="lib/atlasfilter.js?v=4.19.5"></script>
 <script>__mods.atlasfilter=module.exports;module={exports:{}};</script>
-<script src="lib/routewaffles.js?v=4.19.4"></script>
+<script src="lib/routewaffles.js?v=4.19.5"></script>
 <script>__mods.routewaffles=module.exports;module={exports:{}};</script>
-<script src="lib/vehicleprofile.js?v=4.19.4"></script>
+<script src="lib/vehicleprofile.js?v=4.19.5"></script>
 <script>__mods.vehicleprofile=module.exports;module={exports:{}};</script>
-<script src="lib/triptext.js?v=4.19.4"></script>
+<script src="lib/triptext.js?v=4.19.5"></script>
 <script>__mods.triptext=module.exports;module={exports:{}};</script>
-<script src="lib/escape.js?v=4.19.4"></script>
+<script src="lib/escape.js?v=4.19.5"></script>
 <script>__mods.escape=module.exports;module={exports:{}};</script>
-<script src="lib/flexible-polyline.js?v=4.19.4"></script>
+<script src="lib/flexible-polyline.js?v=4.19.5"></script>
 <script>__mods['flexible-polyline']=module.exports;module={exports:{}};</script>
-<script src="lib/autosuggest.js?v=4.19.4"></script>
+<script src="lib/autosuggest.js?v=4.19.5"></script>
 <script>__mods.autosuggest=module.exports;module={exports:{}};</script>
-<script src="lib/location.js?v=4.19.4"></script>
+<script src="lib/location.js?v=4.19.5"></script>
 <script>__mods.location=module.exports;module={exports:{}};</script>
-<script src="lib/routeoptions.js?v=4.19.4"></script>
+<script src="lib/routeoptions.js?v=4.19.5"></script>
 <script>__mods.routeoptions=module.exports;module={exports:{}};</script>
-<script src="lib/baselayer.js?v=4.19.4"></script>
+<script src="lib/baselayer.js?v=4.19.5"></script>
 <script>__mods.baselayer=module.exports;module={exports:{}};</script>
 
 <script>
@@ -1226,7 +1238,7 @@ var HERE_API_KEY = '7RDploUiahAnm08IZA9X7YSbb0Qh99pvqV2NCNQX_Hg';
    APP_VERSION - the code. Shown in the legend card. Bumped every change,
                 and stamped onto every lib/ URL as a cache-buster. */
 var ATLAS_REV   = 'Atlas Rev 13-2026';
-var APP_VERSION = '4.19.4';
+var APP_VERSION = '4.19.5';
 
 /* ===== DATA ==========================================================
    61 rows - 60 walkable exits plus one honorary - carrying 73 pairings,
@@ -2277,7 +2289,24 @@ function openSheet(row){
     sheet.classList.remove('show'); syncChromeH();
   });
   $('sheetShare').addEventListener('click',function(){ share(tt.formatStopText(row,ATLAS_REV)); });
-  if (map) map.setCenter({lat:row.lat,lng:row.lon}, true);
+  if (map) centerAboveSheet(row.lat, row.lon);
+}
+
+/* Centre a stop in the map that is still SHOWING - the strip between the
+   bar and the open card - rather than in the padded viewport, which counts
+   only the panel and would put the pin behind a card taller than it. The map
+   padding is deliberately not changed (opening a sheet must not move the
+   map's fit), so this shifts by screen pixels at the current zoom instead:
+   the stop's point goes where the strip's centre is. Exact in Web Mercator,
+   and it needs no new padding, so it cannot race a setPadding. */
+function centerAboveSheet(lat, lng){
+  var m = $('map').getBoundingClientRect(), s = $('sheet').getBoundingClientRect();
+  var top = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--bar-bleed')) || 0;
+  var bottom = (s.height ? s.top : m.bottom) - m.top;
+  if (bottom - top < 40) { map.setCenter({lat:lat, lng:lng}, true); return; }
+  var p = map.geoToScreen({lat:lat, lng:lng}), c = map.geoToScreen(map.getCenter());
+  var g = map.screenToGeo(c.x + p.x - m.width/2, c.y + p.y - (top + bottom)/2);
+  map.setCenter(g, true);
 }
 
 function share(text){

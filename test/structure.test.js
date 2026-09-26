@@ -586,6 +586,22 @@ t.eq(/--warn-text:#9A4500/.test(iosCss), true, 'light warn text clears 4.5:1 on 
   });
 })();
 
+// ---- the stop card fits what it says (v4.19.5) ----
+// Held to the Atlas list's three-row height (309px) it cut all 69 cards,
+// whose content needs 397-916px. It grows to its content, stops 180px under
+// the bar - room for the pin and HERE's zoom/layers stack - and is never
+// shorter than the panel it covers, so no list row shows above it.
+t.eq(/\.sheet\{[^}]*max-height:calc\(100% - var\(--bar-bleed,0px\) - 180px\);\s*min-height:min\(var\(--panel-h,0px\)/.test(iosCss), true,
+     'the stop card is content-sized, capped under the bar, and covers the panel');
+// A card taller than the panel would hide the pin if the map centred in the
+// padded viewport (panel only), so the stop is centred in the visible strip.
+var openSheetSrc = (src.match(/function openSheet\(row\)\{[\s\S]*?\n\}/) || [''])[0];
+t.eq(/centerAboveSheet\(row\.lat, row\.lon\)/.test(openSheetSrc), true,
+     'opening a card centres the stop above it');
+var casSrc = (src.match(/function centerAboveSheet\(lat, lng\)\{[\s\S]*?\n\}/) || [''])[0];
+t.eq(/setPadding/.test(casSrc), false,
+     'and does it without touching the map padding, which a sheet must not move');
+
 // ---- the search box (v4.19.3) ----
 t.eq(/\.searchwrap \.clr\{[^}]*min-width:34px;min-height:34px/.test(src), true,
      'the search clear button is a 34px target like the rest of the bar');
