@@ -361,11 +361,16 @@ t.eq(/body:has\(#drawer\.hidden\)::before\{[^}]*height:env\(safe-area-inset-top[
 // Continuous tracking behind one button. The failure modes worth pinning are
 // all about a watch that outlives its welcome or starts without being asked.
 t.eq(/id="locateBtn"/.test(src), true, 'the locator button exists');
-// It rides --chrome-h like the HERE controls, so one variable lifts it clear
-// of the panel, of an open sheet, and back down on collapse. A second set of
-// offsets is how those two drift apart.
-t.eq(/#locateBtn\{[^}]*bottom:calc\(var\(--chrome-h/.test(src), true,
-     'and rides --chrome-h rather than carrying its own offsets');
+// It rides the SAME base as HERE's controls - --chrome-h, floored at the home
+// indicator - so one variable lifts it clear of the panel, of an open sheet,
+// and back down on collapse. A second set of offsets is how those two drift
+// apart, and since v4.20.0 drifting apart would also split the pill it forms
+// with the layers button: +24px is .H_l_bottom's 16px plus that control's 8px
+// margin, which is exactly the slot the layers button moves up out of.
+var ctlBase = (src.match(/\.H_l_bottom\{bottom:calc\((max\(.*?\)) \+ 16px\)\}/) || [])[1];
+t.eq(!!ctlBase && /--chrome-h/.test(ctlBase), true, "HERE's controls' base was found, and it is --chrome-h");
+t.eq(src.indexOf('#locateBtn{position:absolute;right:24px;\n  bottom:calc(' + ctlBase + ' + 24px);') !== -1, true,
+     'the locator rides that same base, into the slot the layers button left');
 // Boot must NOT reach for the GPS. A permission prompt nobody asked for is
 // the one that gets denied once and then permanently.
 var bootBlock = src.slice(src.indexOf('/* boot'));
@@ -506,19 +511,63 @@ t.eq(/\.kv > span:first-child\{/.test(src), true,
 t.eq(/\.kv span:first-child\{/.test(src), false,
      'and not the descendant form, which also captures the nested address');
 
-// ---- the locator overlays HERE's logo, deliberately (v4.14.0) ----
-// This inverts what v4.12.0 and v4.13.0 pinned, and the inversion is the
-// point: covering that logo is a licence trade-off the owner asked for, so
-// it is asserted rather than merely allowed. A future change that quietly
-// restores the clearance should fail here and be argued for, not land as a
-// tidy-up.
-t.eq(/#locateBtn\{position:absolute;left:10px;/.test(src), true,
-     'the locator sits in the corner, over the logo, by explicit request');
+// ---- the locator is the lower half of a pill with HERE's layers button (v4.20.0) ----
+// FuelPost's arrangement, by request. This replaces v4.14.0's corner-over-the-
+// logo position, which was also by request; the logo is uncovered again.
+t.eq(/#locateBtn\{position:absolute;right:24px;/.test(src), true,
+     'the locator sits in the right-hand column with HERE\'s buttons');
+t.eq(/#locateBtn\{position:absolute;left:/.test(src), false, 'not in the bottom-left corner any more');
+t.eq(/#locateBtn\{[^}]*border-radius:0 0 14px 14px/.test(src) &&
+     /#locateBtn\{[^}]*border-top:\.5px solid var\(--line\)/.test(src), true,
+     'its top corners are square and a hairline divides it from the layers button');
+t.eq(/fill="currentColor" stroke="none" aria-hidden="true" focusable="false"><path d="M20\.6 3\.4/.test(src), true,
+     "and it draws FuelPost's filled location arrow");
+// The slot, on ONE condition everywhere it is used: the locator shown (Atlas)
+// and no stop card open. Anything keyed differently would lift the layers
+// button over an empty slot, or leave the locator under a rounded one.
+var PILL = '.stage:has(#locateBtn:not(.hidden)):not(:has(#sheet.show)) ';
+t.eq(src.indexOf(PILL + '.H_l_bottom.H_l_right .H_l_horizontal{\n  display:flex;align-items:flex-end}') !== -1, true,
+     "HERE's bottom row becomes bottom-aligned, so the scale bar stays down beside the locator");
+t.eq(src.indexOf(PILL + '.H_l_bottom.H_l_right .H_l_horizontal .H_ctl:not(.H_scalebar){\n  margin-bottom:calc(.8em + 40px)}') !== -1, true,
+     'the layers button moves up by exactly the locator\'s height');
+t.eq(src.indexOf(PILL + '#map .H_ui .H_l_right .H_l_horizontal .H_ctl:not(.H_scalebar) > .H_btn{\n  border-radius:14px 14px 0 0}') !== -1, true,
+     'and its lower corners go square, on the same condition');
+t.eq((src.match(/\.stage:has\(#locateBtn:not\(\.hidden\)\)(?!:not\(:has\(#sheet\.show\)\))/g) || []).length, 0,
+     'no pill rule is keyed on the mode alone');
+// An open card hides it. The strip a tall card leaves above itself held the
+// old stack with 8px to spare; the locator's 40px put zoom-in under the bar.
+t.eq(/\.stage:has\(#sheet\.show\) #locateBtn,\.stage:has\(#sheet\.show\) #locateErr,\s*\.stage:has\(#sheet\.show\) #locateHint\{display:none\}/.test(src), true,
+     'a stop card hides the locator and its chips, and the stack returns to its old height');
+// The chips point at the button: beside it, to its left, on the same base.
+t.eq(src.indexOf('#locateErr,#locateHint{position:absolute;right:72px;z-index:601;\n  bottom:calc(' + ctlBase + ' + 24px);') !== -1, true,
+     'the chips sit beside the button, bottoms level with it');
 // z-index STATED, not inherited from the fact that #locateBtn happens to
-// follow #map in the markup. Reordering the stage would silently put the
-// logo back on top of it.
+// follow #map in the markup. Reordering the stage would silently put HERE's
+// layer on top of it.
 t.eq(/#locateBtn\{[^}]*z-index:601/.test(src), true,
      'and is on top by declared z-index rather than by DOM order');
+// The release after a hold is swallowed wherever it lands. Switching location
+// off re-sorts the list, the panel is as tall as its first three rows, and
+// the whole stack can move under a finger that is still down - which then
+// lifts over the layers button, and HERE acts on the raw release.
+var holdSrc = (src.match(/\$\('locateBtn'\)\.addEventListener\('pointerdown'[\s\S]*?\n\}\);/) || [''])[0];
+t.eq(holdSrc.indexOf('swallowReleaseAfterHold();') !== -1 &&
+     holdSrc.indexOf('swallowReleaseAfterHold();') < holdSrc.indexOf('setLocationOff(!locationOff);'), true,
+     'a completed hold arms the swallow before it changes anything that can move the stack');
+var swSrc = (src.match(/function swallowReleaseAfterHold\(\)\{[\s\S]*?\n\}/) || [''])[0];
+t.eq(/window\.addEventListener\(t, swallow, true\)/.test(swSrc), true,
+     'on WINDOW in the capture phase, ahead of HERE\'s own pointer layer');
+t.eq(/'pointerup','touchend','mouseup','click'/.test(src), true,
+     'every release event HERE could act on, and the click');
+t.eq(/if \(released\) holdFired = false;/.test(swSrc), true,
+     'holdFired is cleared only once the release was actually swallowed');
+// The zoom buttons step aside where the taller stack does not fit (320x568),
+// by visibility so the stack keeps its height and the decision cannot flip.
+var chromeSrc = (src.match(/function syncChromeH\(\)\{[\s\S]*?\n\}/) || [''])[0];
+t.eq(/classList\.toggle\('zoom-aside',\s*z\.getBoundingClientRect\(\)\.top < limit\)/.test(chromeSrc), true,
+     'syncChromeH decides whether the zoom buttons fit');
+t.eq(/\.stage\.zoom-aside #map \.H_ui \.H_zoom\{visibility:hidden\}/.test(src), true,
+     'and they step aside by visibility, never display');
 // The clearance measurements are GONE, not left unread. A measurement
 // nothing consumes reads as a live constraint while enforcing nothing.
 t.eq(/setProperty\('--attrib-[wh]'/.test(src), false,
