@@ -383,6 +383,9 @@ padding-top: calc(10px + env(safe-area-inset-top,0px))   /* 69px on a 15 Pro */
 padding-top: max(8px, env(safe-area-inset-top,0px))      /* the inset is the gap */
 ```
 
+(Since v4.20.2 the bar also clears iOS's frost band, by margin rather than
+padding; see *Since v4.19.0 it floats*, below.)
+
 The wordmark went with it — the tile carries the W and the app name is on the
 home screen — and the tile came down from 34px to 28.
 
@@ -432,11 +435,12 @@ and floating both would mean measuring two stacked panels. The switch is keyed
 on `#drawer.hidden` rather than a mode class: `setMode` toggles exactly that
 and nothing else, and the tests pin that `setMode` never touches the bar.
 
-It does not start at the status bar, though (v4.20.1). iOS 26 and later
-blur and dim a feathered band that runs about 35pt *below* the status bar
-too, so the opaque strip under the status bar reaches 32pt further down and
-the bar floats just under it. Route's in-flow bar pads to the same line. See
-the v4.20.1 entry.
+It does not start at the top of the page, though (v4.20.2). iOS 26 and
+later tint and blur a feathered band at the top of the page, 35-38pt deep. In
+the iPhone home-screen app a 40px strip in the body's own background colour
+fills that band, and the bar floats just under it; Route's in-flow bar is
+pushed below it by margin. A Safari tab is unchanged. See the v4.20.2 entry,
+and v4.20.1 for the version that measured from the wrong place.
 
 A floating bar covers the top of the map, so `syncMapPadding` now pads the
 top as well as the bottom — by the bar's **measured overlap** onto the map,
@@ -921,7 +925,7 @@ leaderboard.
 
 `run.js` prints one `ok <name> N passed` line per file and then `all green`,
 or names the files that failed. It does not sum the assertions — at v4.18.0
-they came to 1,741 across twelve files; at v4.20.1 they come to 1,828, added up
+they came to 1,741 across twelve files; at v4.20.2 they come to 1,830, added up
 from those lines.
 
 ## Two version strings, on purpose
@@ -937,7 +941,7 @@ Same reasoning as FuelPost, different perishable thing:
   stopped existing; the requirement was "always on screen", not "in the
   header", and the panel tab is on screen in both modes whether the panel is
   open or collapsed. Bump only when the rows are re-audited.
-- **`APP_VERSION`** (`4.20.1`) — the code. Shown in the **legend card**.
+- **`APP_VERSION`** (`4.20.2`) — the code. Shown in the **legend card**.
   Bumped for every shipped change, and stamped onto every `lib/` URL as a
   cache-buster.
 
@@ -957,6 +961,44 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v4.20.2
+
+**The frost fix now reaches the phone. v4.20.1 moved nothing there.** It
+measured its clearance from `env(safe-area-inset-top)`, on the assumption
+that the page is drawn under the status bar. In the home-screen app it is
+not. The app ships no `black-translucent` status bar style (v4.6.1 took it
+out), so iOS starts the page *below* the status bar and the inset is 0. The
+clearance came to nothing, and a second screenshot showed the bar exactly
+where it was: the Atlas pill at 78.7–112pt on screen in both. The "8pt
+offset" the first screenshot seemed to show was only the bar's `max(8px, 0)`.
+The strip from v4.19.1 had never existed on the phone either.
+
+- **The band is the top 35–38pt of the page itself.** That is 35 measured
+  on the owner's phone on iOS 27, and 38 in other iOS 26 device reports.
+  Nothing turns it off: `theme-color` is ignored for it, and there is no
+  switch. WebKit tints it toward the page's own background colour.
+- **In the iPhone home-screen app, in portrait, the top 40px of the page is
+  a flat strip in that colour** (the body's `--bg`, not `--surface`). Tinted
+  toward itself and blurred into itself, it shows nothing. The Atlas bar
+  floats below it, with its controls starting 46px down.
+- **Route is pushed below the band by margin, not padding.** The band shows
+  the page background rather than the bar's surface shaded toward it. Its
+  controls start 48px down.
+- **Detected before first paint** by `navigator.standalone` or the
+  `display-mode: standalone` media query, on an iPhone only. iPad draws a
+  hard edge with no feathered band, and an installed Android app has
+  neither. Landscape is left alone, because iOS hides the status bar there.
+  Safari tabs and desktop browsers are unchanged.
+- **Why not copy MilesPost's `black-translucent`?** It forces white
+  status-bar text, which would vanish over this app's light theme.
+- **The cost** is 32px of map at the top on the phone, compared with
+  v4.20.0. On iOS 18 and earlier, which have no band, the strip is pure
+  cost.
+- **Checked in Chromium** with the phone modelled as it really is: iPhone
+  user agent, `navigator.standalone`, a 440×894 page below a 62pt status
+  bar, inset 0. A Safari tab, desktop and landscape measure exactly as
+  before.
 
 ### v4.20.1
 

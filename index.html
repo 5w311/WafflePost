@@ -187,6 +187,14 @@ if(t!=='light'&&t!=='dark')t=null;
 document.documentElement.setAttribute('data-theme',
   t||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'));
 }catch(e){document.documentElement.setAttribute('data-theme','light');}})();
+/* The iPhone home-screen app, flagged before first paint so the bar never
+   draws inside iOS's frost band and then jumps (see --frost-gap). iPhone
+   only: iPad draws a hard edge with no feathered band, and an installed
+   Android app has neither. navigator.standalone is iOS's own flag; the
+   media query is the standard one, for a WebKit that ever drops it. */
+(function(){try{if(/iPhone|iPod/.test(navigator.userAgent)&&(navigator.standalone===true||
+matchMedia('(display-mode: standalone)').matches))
+document.documentElement.classList.add('standalone');}catch(e){}})();
 </script>
 <link rel="stylesheet" href="https://js.api.here.com/v3/3.2/mapsjs-ui.css">
 <style>
@@ -233,11 +241,11 @@ input,select,textarea{font-size:16px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 
 /* ---- the one bar --------------------------------------------------------
-   MAX, not calc. The old header wrote calc(10px + env(safe-area-inset-top)),
-   which stacks a ten pixel gap on top of an inset that already exists to be
-   that gap - 69px of top padding on a Dynamic Island phone. max() means ten
-   pixels where there is no inset and the inset alone where there is, which is
-   what the inset is for. Worth about ten pixels for one keyword.
+   The old header wrote calc(10px + env(safe-area-inset-top)), which stacks
+   a ten pixel gap on top of an inset that already exists to be that gap -
+   69px of top padding on a Dynamic Island phone. The only thing added to the
+   inset now is the frost clearance below, which answers a different band
+   with a measured depth.
 
    THE BAR FOLLOWS THE THEME as of v4.7.0. It was --char in both, from v1.x
    through the chrome collapse, and everything inside it was written against
@@ -253,20 +261,31 @@ input,select,textarea{font-size:16px}
    Anything added to this bar takes tokens, not literals. The one exception
    is the tile's hairline, which is explained at .tile.
 
-   THE INSET IS NOT THE WHOLE STATUS BAR ANY MORE (v4.20.1). Since iOS 26 the
-   system blurs and dims a feathered band that runs on BELOW the status bar,
-   about 35pt deep - measured off a phone screenshot, 62pt inset: the dimming
-   ends at 97pt, and it is down to 1% by inset + 32. MilesPost met the same
-   band and pads past it; so does this bar, by 32pt wherever there is a
-   status bar and nothing in a Safari tab, where the inset is 0: that is what
-   min(32px, inset * 100) says. Not MilesPost's min(24px, inset), which gives
-   a 20pt home-button status bar only 20pt, and nothing says iOS draws a
-   shallower band there. The bar's own flat background fills the band, and
-   blurring or dimming a flat colour shows nothing; only the controls must
-   start below it. */
+   THE FROST BAND (v4.20.2). Since iOS 26 the system blurs and tints a
+   feathered band at the top of the page, 35-38pt deep (35 measured off the
+   owner's phone on iOS 27; 38 in other device reports). Nothing turns it
+   off: theme-color is ignored for it, and WebKit tints it toward the page's
+   own background colour - body's --bg - which is the whole trick. A flat
+   --bg area inside the band is tinted toward itself and blurred into
+   itself, so nothing shows. Controls must start below the band.
+
+   THE INSET IS 0 IN THE HOME-SCREEN APP, and v4.20.1 got that wrong. This
+   app ships no black-translucent status bar style (v4.6.1 took it out with
+   the icon experiment), so iOS starts the page BELOW the status bar and
+   env(safe-area-inset-top) is 0 there. v4.20.1 measured its clearance from
+   the inset, computed nothing on the phone, and moved nothing: the band is
+   the top ~35pt of the page itself, and the "8pt offset" that looked
+   unexplained in the screenshot was just max(8px, 0). So the line is:
+     inset + 40px   in the iPhone home-screen app in portrait (html.standalone
+                    sets --frost-gap; landscape hides the status bar and
+                    draws no band), and wherever an inset exists at all
+     0              in a Safari tab with no inset, where nothing moves.
+   MARGIN, not padding: the band shows the body's --bg, the tint colour,
+   rather than the bar's --surface graded toward it. */
 .bar{background:var(--surface);color:var(--ink);display:flex;align-items:center;gap:7px;
-  padding:8px 10px;padding-top:max(8px, calc(env(safe-area-inset-top,0px) + min(32px, env(safe-area-inset-top,0px) * 100)));flex:none;
+  padding:8px 10px;margin-top:calc(env(safe-area-inset-top,0px) + max(var(--frost-gap,0px), min(40px, env(safe-area-inset-top,0px) * 100)));flex:none;
   border-bottom:1px solid var(--line)}
+@media (orientation:portrait){html.standalone{--frost-gap:40px}}
 /* The home screen icon itself since v4.18.1: tile.png is the supplied
    1024px waffle artwork scaled to 84px, which is 28px at 3x. It replaced a
    live-text sign-yellow W, so the bar and the home screen now show the same
@@ -811,27 +830,23 @@ button{-webkit-tap-highlight-color:transparent}
    toggles exactly that and adds no class of its own - and the tests pin that
    setMode never touches the bar. Blur on the bar itself is safe HERE, unlike
    FuelPost-iOS: nothing inside it is positioned against the viewport. */
-.bar{background:var(--surface);border-bottom:.5px solid var(--line);gap:6px;padding:8px 10px;
-  padding-top:max(8px, calc(env(safe-area-inset-top,0px) + min(32px, env(safe-area-inset-top,0px) * 100)))}
-/* THE STATUS BAR STRIP (v4.19.1). With the bar floating, the only thing
-   under the status bar was map - and iOS painted its own dark, blurred edge
-   over it, which read as a smudge across the top of the screen. An opaque
-   strip in the colour theme-color now carries gives iOS a flat surface there
-   instead: blurring a flat colour changes nothing. env() is 0 in a browser
-   tab, so it only exists where the status bar does. Below the bar (699 <
-   700), so the bar's shadow falls on it the same way it falls on the map.
+.bar{background:var(--surface);border-bottom:.5px solid var(--line);gap:6px;padding:8px 10px}
+/* THE FROST STRIP. With the bar floating, the top of the page was map, and
+   iOS 26+ tints and blurs a band there (see the base .bar rule), which read
+   as a smudge across the top of the screen and over the bar. An opaque
+   strip gives iOS a flat surface there instead. Below the bar (699 < 700),
+   so the bar's shadow falls on it the same way it falls on the map.
 
-   It covers the band BELOW the status bar too (v4.20.1), and the bar floats
-   under it. Sized to the inset alone, it left iOS's feathered edge - about
-   35pt deeper - lying across the top of the floating bar: on the phone the
-   tile, the Atlas/Route pill and the search field were dimmed and softened
-   down to 97pt, the Atlas pill's yellow reaching full strength only below
-   that. The 32pt is the same clearance .bar pads by in Route (see the base
-   rule), so both modes clear the band by the same measure. */
+   v4.19.1 added it sized to the status-bar inset and v4.20.1 to the inset
+   plus 32. The inset is 0 in the home-screen app, so on the phone it never
+   existed. Since v4.20.2 it is sized to the frost line, so it is 40px tall
+   there. It is --bg, not --surface: iOS tints the band toward the body's
+   background, so only that colour comes through unchanged. margin-top:0
+   because the base rule's frost margin would otherwise add to top. */
 body:has(#drawer.hidden)::before{content:'';position:fixed;top:0;left:0;right:0;z-index:699;
-  height:calc(env(safe-area-inset-top,0px) + min(32px, env(safe-area-inset-top,0px) * 100));background:var(--surface);pointer-events:none}
-body:has(#drawer.hidden) .bar{position:absolute;z-index:700;
-  top:max(8px, calc(env(safe-area-inset-top,0px) + min(32px, env(safe-area-inset-top,0px) * 100)));left:7px;right:7px;padding:5px;gap:5px;
+  height:calc(env(safe-area-inset-top,0px) + max(var(--frost-gap,0px), min(40px, env(safe-area-inset-top,0px) * 100)));background:var(--bg);pointer-events:none}
+body:has(#drawer.hidden) .bar{position:absolute;z-index:700;margin-top:0;
+  top:max(8px, calc(env(safe-area-inset-top,0px) + max(var(--frost-gap,0px), min(40px, env(safe-area-inset-top,0px) * 100))));left:7px;right:7px;padding:5px;gap:5px;
   border:.5px solid var(--glass-border);border-radius:26px;background:var(--glass);
   box-shadow:var(--glass-shadow);
   -webkit-backdrop-filter:blur(22px) saturate(170%);backdrop-filter:blur(22px) saturate(170%)}
@@ -1222,27 +1237,27 @@ var __mods={};
 function require(p){return __mods[p.replace(/^\.\//,'').replace(/\.js$/,'')];}
 var module={exports:{}};
 </script>
-<script src="lib/waffledist.js?v=4.20.1"></script>
+<script src="lib/waffledist.js?v=4.20.2"></script>
 <script>__mods.waffledist=module.exports;module={exports:{}};</script>
-<script src="lib/atlasfilter.js?v=4.20.1"></script>
+<script src="lib/atlasfilter.js?v=4.20.2"></script>
 <script>__mods.atlasfilter=module.exports;module={exports:{}};</script>
-<script src="lib/routewaffles.js?v=4.20.1"></script>
+<script src="lib/routewaffles.js?v=4.20.2"></script>
 <script>__mods.routewaffles=module.exports;module={exports:{}};</script>
-<script src="lib/vehicleprofile.js?v=4.20.1"></script>
+<script src="lib/vehicleprofile.js?v=4.20.2"></script>
 <script>__mods.vehicleprofile=module.exports;module={exports:{}};</script>
-<script src="lib/triptext.js?v=4.20.1"></script>
+<script src="lib/triptext.js?v=4.20.2"></script>
 <script>__mods.triptext=module.exports;module={exports:{}};</script>
-<script src="lib/escape.js?v=4.20.1"></script>
+<script src="lib/escape.js?v=4.20.2"></script>
 <script>__mods.escape=module.exports;module={exports:{}};</script>
-<script src="lib/flexible-polyline.js?v=4.20.1"></script>
+<script src="lib/flexible-polyline.js?v=4.20.2"></script>
 <script>__mods['flexible-polyline']=module.exports;module={exports:{}};</script>
-<script src="lib/autosuggest.js?v=4.20.1"></script>
+<script src="lib/autosuggest.js?v=4.20.2"></script>
 <script>__mods.autosuggest=module.exports;module={exports:{}};</script>
-<script src="lib/location.js?v=4.20.1"></script>
+<script src="lib/location.js?v=4.20.2"></script>
 <script>__mods.location=module.exports;module={exports:{}};</script>
-<script src="lib/routeoptions.js?v=4.20.1"></script>
+<script src="lib/routeoptions.js?v=4.20.2"></script>
 <script>__mods.routeoptions=module.exports;module={exports:{}};</script>
-<script src="lib/baselayer.js?v=4.20.1"></script>
+<script src="lib/baselayer.js?v=4.20.2"></script>
 <script>__mods.baselayer=module.exports;module={exports:{}};</script>
 
 <script>
@@ -1294,7 +1309,7 @@ var HERE_API_KEY = '7RDploUiahAnm08IZA9X7YSbb0Qh99pvqV2NCNQX_Hg';
    APP_VERSION - the code. Shown in the legend card. Bumped every change,
                 and stamped onto every lib/ URL as a cache-buster. */
 var ATLAS_REV   = 'Atlas Rev 13-2026';
-var APP_VERSION = '4.20.1';
+var APP_VERSION = '4.20.2';
 
 /* ===== DATA ==========================================================
    61 rows - 60 walkable exits plus one honorary - carrying 73 pairings,
