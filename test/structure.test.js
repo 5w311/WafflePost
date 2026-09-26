@@ -354,25 +354,35 @@ t.eq(/getComputedStyle\(bar\)\.backgroundColor/.test(themeColorSrc), false,
      'and never from the bar, which is see-through while it floats');
 // ...and something opaque in that colour sits under the status bar while the
 // bar floats, so iOS has a flat surface to draw over instead of map.
-// THE FROST LINE (v4.20.1). iOS 26+ blurs and dims a band running about 35pt
-// BELOW the status bar as well (measured off a phone: dimming ends at 97pt
-// under a 62pt inset, 1% by inset + 32). One expression says where that band
-// ends, and every top edge uses exactly it: the strip fills down to it, the
-// floating bar starts at it, and the in-flow bar pads to it in Route.
-var FROST = 'calc(env(safe-area-inset-top,0px) + min(32px, env(safe-area-inset-top,0px) * 100))';
+// THE FROST LINE (v4.20.2). iOS 26+ tints and blurs a band 35-38pt deep at
+// the top of the page (35 measured off the owner's phone, dimming gone at
+// 97pt on screen). In the home-screen app the page starts BELOW the status
+// bar - no black-translucent style - so env(safe-area-inset-top) is 0 there,
+// and v4.20.1, which measured from the inset, moved nothing on the phone. The
+// line is inset + 40px wherever the iPhone home-screen app is flagged (or an
+// inset exists at all), and 0 in a plain Safari tab.
+var FROST = 'calc(env(safe-area-inset-top,0px) + max(var(--frost-gap,0px), min(40px, env(safe-area-inset-top,0px) * 100)))';
 t.eq(src.indexOf('body:has(#drawer.hidden)::before{content:\'\';position:fixed;top:0;left:0;right:0;z-index:699;\n  height:' +
-     FROST + ';background:var(--surface);') !== -1, true,
-     'an opaque --surface strip fills the status bar AND the band below it while the bar floats');
-t.eq(src.indexOf('body:has(#drawer.hidden) .bar{position:absolute;z-index:700;\n  top:max(8px, ' + FROST + ');') !== -1, true,
-     'the floating bar starts where the strip ends, below the band');
-t.eq(src.split('padding-top:max(8px, ' + FROST + ')').length - 1, 2,
-     'the in-flow bar pads to the same line, in the base rule and in the design layer');
-t.eq(src.split(FROST).length - 1, 4, 'and nothing else invents its own version of the line');
-// 32pt wherever there is a status bar, 0 in a Safari tab: inset * 100 is
-// either 0 or far past 32. NOT min(32px, inset), which would give a 20pt
-// home-button status bar 20pt against a band nobody has measured shallower.
-t.eq(/min\(\d+px, env\(safe-area-inset-top,0px\)\)/.test(src), false,
-     'the clearance is not scaled down on short status bars');
+     FROST + ';background:var(--bg);') !== -1, true,
+     'an opaque strip fills the frost band while the bar floats');
+// --bg, the body's background: WebKit tints the band toward exactly that, so
+// it is the one colour the band leaves unchanged. --surface graded visibly.
+t.eq(/::before\{[^}]*height:calc\(env\(safe-area-inset-top[^}]*background:var\(--surface\)/.test(src), false,
+     'the strip is not --surface, which the tint would grade toward black');
+t.eq(src.indexOf('body:has(#drawer.hidden) .bar{position:absolute;z-index:700;margin-top:0;\n  top:max(8px, ' + FROST + ');') !== -1, true,
+     'the floating bar starts where the strip ends, with the in-flow margin zeroed so it does not add to top');
+t.eq(src.indexOf('padding:8px 10px;margin-top:' + FROST + ';flex:none;') !== -1, true,
+     'the in-flow bar (Route) is pushed below the band by MARGIN, so the band shows --bg, not the bar');
+t.eq(src.split(FROST).length - 1, 3, 'and nothing else invents its own version of the line');
+t.eq(/padding-top:max\(8px, calc\(env\(safe-area-inset-top/.test(src), false,
+     'no bar pads its own --surface through the band any more');
+// The flag: iPhone home-screen app only, set in the head before first paint,
+// and the gap only in portrait, where iOS shows the status bar and the band.
+t.eq(/@media \(orientation:portrait\)\{html\.standalone\{--frost-gap:40px\}\}/.test(src), true,
+     'the 40px gap applies to the home-screen app in portrait');
+var headSrc = src.slice(0, src.indexOf('</head>'));
+t.eq(/\/iPhone\|iPod\/\.test\(navigator\.userAgent\)&&\(navigator\.standalone===true\|\|\s*matchMedia\('\(display-mode: standalone\)'\)\.matches\)\)\s*document\.documentElement\.classList\.add\('standalone'\)/.test(headSrc), true,
+     'html.standalone is set in the head, before first paint, for the iPhone home-screen app only');
 
 // ---- the Atlas locator (v4.12.0) ----
 // Continuous tracking behind one button. The failure modes worth pinning are
@@ -709,14 +719,12 @@ t.eq(/\.row:hover\{background:transparent\}\s*@media \(hover:hover\)\{/.test(ios
      'row hover is neutralised for touch and tinted only where a pointer hovers');
 t.eq(/\.fld input::placeholder/.test(src), true, 'drawer placeholders use --sub, not the UA grey');
 
-// max(), not calc(). calc(10px + inset) stacks a plain gap on top of an inset
-// that exists to BE that gap - 69px of top padding on a Dynamic Island phone.
-// The one thing added to the inset since v4.20.1 is the frost clearance
-// (pinned above), which is a different band with a measured depth.
+// calc(10px + inset) stacked a plain gap on top of an inset that exists to
+// BE that gap - 69px of top padding on a Dynamic Island phone. The only thing
+// added to the inset is the frost clearance (pinned above), a different band
+// with a measured depth.
 t.eq(/padding-top:calc\([\d.]+px \+ env\(safe-area-inset-top/.test(src), false,
      'the bar does not stack a plain gap on top of the safe area inset');
-t.eq(/padding-top:max\(8px, calc\(env\(safe-area-inset-top,0px\) \+ min\(32px/.test(src), true,
-     'it takes the larger of 8px and the frost line');
 
 // The range inputs are gone on purpose. A reappearing "hours" or "mph" field
 // means the break planner crept back in.
