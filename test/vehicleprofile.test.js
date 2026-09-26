@@ -34,6 +34,6 @@ t.eq(vp.validate({ mode:'custom', heightIn: 1000 }).errors.length, 1, 'and named
 t.eq(vp.validate({ mode:'custom', grossLb: 500 }).ok, false, 'as is an impossible weight');
 
 t.eq(vp.resolve({ mode:'nonsense' }).mode, 'standard', 'an unknown mode falls back to standard');
-t.eq(vp.label({ mode:'standard' }), 'Standard rig', 'label names the profile');
+t.eq(vp.label({ mode:'standard' }), 'Non-Hazmat rig', 'label names the profile');
 t.eq(vp.label({ mode:'hazmat', hazmat:['gas'] }), 'Hazmat \u00b7 1 class', 'singular reads right');
 t.done('vehicleprofile');
