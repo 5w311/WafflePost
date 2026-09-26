@@ -915,7 +915,7 @@ leaderboard.
 
 `run.js` prints one `ok <name> N passed` line per file and then `all green`,
 or names the files that failed. It does not sum the assertions — at v4.18.0
-they came to 1,741 across twelve files; at v4.19.7 they come to 1,808, added up
+they came to 1,741 across twelve files; at v4.20.0 they come to 1,824, added up
 from those lines.
 
 ## Two version strings, on purpose
@@ -931,7 +931,7 @@ Same reasoning as FuelPost, different perishable thing:
   stopped existing; the requirement was "always on screen", not "in the
   header", and the panel tab is on screen in both modes whether the panel is
   open or collapsed. Bump only when the rows are re-audited.
-- **`APP_VERSION`** (`4.19.7`) — the code. Shown in the **legend card**.
+- **`APP_VERSION`** (`4.20.0`) — the code. Shown in the **legend card**.
   Bumped for every shipped change, and stamped onto every `lib/` URL as a
   cache-buster.
 
@@ -951,6 +951,43 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v4.20.0
+
+**The locator is the lower half of one pill with HERE's layers button**, the
+way FuelPost has it. The layers button moves up by its own height and the
+locator takes the slot it left, 24px in from the right; the corners where the
+two meet go square and a hairline divides them. It draws FuelPost's filled
+location arrow, and the states read the same way: plain ink when idle, a
+spinning blue arrow while it finds you, solid blue once it has a fix, grey
+and struck through when switched off. HERE's logo, which v4.14.0 covered, is
+uncovered again.
+
+- **HERE's bottom row is bottom-aligned while the pill shows**, so lifting
+  the layers button does not carry the scale bar up with it. The scale bar
+  stays where it was, beside the locator.
+- **The locator uses the same base as HERE's controls** (`--chrome-h`,
+  floored at the home indicator) plus 24px: HERE's own 16px and the layers
+  control's 8px margin. It rides the panel with them and cannot drift out of
+  the slot; a test holds the two expressions together.
+- **A stop card hides it.** A tall card leaves a 172px strip under the bar.
+  The old stack filled all but 8px of it, and the locator's 40px put zoom-in
+  30px under the bar. With the locator out of the way the layers button goes
+  back to its own slot, fully rounded, and the stack is exactly what it was.
+- **The hint and error chips sit beside the button**, to its left, bottoms
+  level with it.
+- **The release after a hold is swallowed wherever it lands** (FuelPost's
+  v2.2.6). Switching location off re-sorts the list, the panel is as tall as
+  its first three rows, and rows differ in height, so the whole stack can
+  move under a finger that is still down and lift it over the layers button,
+  whose menu opens on the raw release. Checked in the browser by moving the
+  stack 40px mid-press: with the swallow the menu stays shut; with it
+  disabled, the same gesture opens it.
+- **On the shortest phones the zoom buttons step aside.** At 320×568 the
+  taller stack no longer fits between the bar and the open panel. Rather than
+  sit mostly under the bar, the zoom buttons hide until there is room again
+  (collapsing the panel brings them back). Pinch still zooms. 375×667 and
+  larger are unaffected.
 
 ### v4.19.7
 
