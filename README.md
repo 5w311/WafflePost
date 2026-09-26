@@ -915,7 +915,7 @@ leaderboard.
 
 `run.js` prints one `ok <name> N passed` line per file and then `all green`,
 or names the files that failed. It does not sum the assertions — at v4.18.0
-they came to 1,741 across twelve files; at v4.19.5 they come to 1,802, added up
+they came to 1,741 across twelve files; at v4.19.6 they come to 1,808, added up
 from those lines.
 
 ## Two version strings, on purpose
@@ -931,7 +931,7 @@ Same reasoning as FuelPost, different perishable thing:
   stopped existing; the requirement was "always on screen", not "in the
   header", and the panel tab is on screen in both modes whether the panel is
   open or collapsed. Bump only when the rows are re-audited.
-- **`APP_VERSION`** (`4.19.5`) — the code. Shown in the **legend card**.
+- **`APP_VERSION`** (`4.19.6`) — the code. Shown in the **legend card**.
   Bumped for every shipped change, and stamped onto every `lib/` URL as a
   cache-buster.
 
@@ -951,6 +951,39 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v4.19.6
+
+**Tapping a pin opens its card every time.** Pins opened their card from
+HERE's marker `tap` event, and HERE decides a DomMarker was hit by the box of
+the element it positions: a 28px square whose top-left corner is the pin's
+coordinate, so it extends **below and right of the tip**. The pin is drawn
+above and left of the tip. The two meet at a single point.
+
+Measured with a mouse at Hope Hull: the pin's head, its sides and its tip all
+registered as a tap on the map; the empty spot 12px below-right of the tip,
+where nothing is drawn, opened the card. A fingertip is wide enough to land
+partly in that invisible box some of the time — hence "sometimes" — and
+because one pin's box can sit on a neighbour's head, a tap could also open the
+**wrong** card.
+
+- The tap is read from native pointer events on the drawn pin, through
+  `DomIcon`'s `onAttach`, which hands over each marker's own copy of the pin.
+- HERE's positioned box is made transparent to the pointer, so the empty spot
+  does nothing, and a tap there reaches whatever is really drawn beneath.
+- The release is listened for on the document. Once a touch drifts, HERE can
+  start a pan and capture the pointer, and a captured release never reaches
+  the pin.
+- A tap is a press and release within 14px, however long the press. A first
+  cut also capped it at 800ms and refused steady, deliberate presses.
+
+Checked with real touch input on a touch-emulated page:
+- taps with up to 12px of finger drift, held 60, 400 and 900ms, all opened the
+  right card; a 20px drag pans instead
+- the old invisible spot opens nothing, and a pan that starts on a pin moves
+  the map without opening a card
+- pins that come into view after panning, after a filter is cleared and after
+  a theme switch all work, and so does tapping a second pin with a card open
 
 ### v4.19.5
 
