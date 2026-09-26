@@ -1065,7 +1065,7 @@ html[data-theme=dark] .mile{color:var(--tint-text)}
     </div>
 
     <div class="seg" role="group" aria-label="Vehicle">
-      <button id="vStd"    aria-pressed="true">Standard</button>
+      <button id="vStd"    aria-pressed="true">Non-Hazmat</button>
       <button id="vHaz"    aria-pressed="false">Hazmat</button>
       <button id="vCustom" aria-pressed="false">Custom</button>
     </div>
@@ -1174,27 +1174,27 @@ var __mods={};
 function require(p){return __mods[p.replace(/^\.\//,'').replace(/\.js$/,'')];}
 var module={exports:{}};
 </script>
-<script src="lib/waffledist.js?v=4.19.6"></script>
+<script src="lib/waffledist.js?v=4.19.7"></script>
 <script>__mods.waffledist=module.exports;module={exports:{}};</script>
-<script src="lib/atlasfilter.js?v=4.19.6"></script>
+<script src="lib/atlasfilter.js?v=4.19.7"></script>
 <script>__mods.atlasfilter=module.exports;module={exports:{}};</script>
-<script src="lib/routewaffles.js?v=4.19.6"></script>
+<script src="lib/routewaffles.js?v=4.19.7"></script>
 <script>__mods.routewaffles=module.exports;module={exports:{}};</script>
-<script src="lib/vehicleprofile.js?v=4.19.6"></script>
+<script src="lib/vehicleprofile.js?v=4.19.7"></script>
 <script>__mods.vehicleprofile=module.exports;module={exports:{}};</script>
-<script src="lib/triptext.js?v=4.19.6"></script>
+<script src="lib/triptext.js?v=4.19.7"></script>
 <script>__mods.triptext=module.exports;module={exports:{}};</script>
-<script src="lib/escape.js?v=4.19.6"></script>
+<script src="lib/escape.js?v=4.19.7"></script>
 <script>__mods.escape=module.exports;module={exports:{}};</script>
-<script src="lib/flexible-polyline.js?v=4.19.6"></script>
+<script src="lib/flexible-polyline.js?v=4.19.7"></script>
 <script>__mods['flexible-polyline']=module.exports;module={exports:{}};</script>
-<script src="lib/autosuggest.js?v=4.19.6"></script>
+<script src="lib/autosuggest.js?v=4.19.7"></script>
 <script>__mods.autosuggest=module.exports;module={exports:{}};</script>
-<script src="lib/location.js?v=4.19.6"></script>
+<script src="lib/location.js?v=4.19.7"></script>
 <script>__mods.location=module.exports;module={exports:{}};</script>
-<script src="lib/routeoptions.js?v=4.19.6"></script>
+<script src="lib/routeoptions.js?v=4.19.7"></script>
 <script>__mods.routeoptions=module.exports;module={exports:{}};</script>
-<script src="lib/baselayer.js?v=4.19.6"></script>
+<script src="lib/baselayer.js?v=4.19.7"></script>
 <script>__mods.baselayer=module.exports;module={exports:{}};</script>
 
 <script>
@@ -1246,7 +1246,7 @@ var HERE_API_KEY = '7RDploUiahAnm08IZA9X7YSbb0Qh99pvqV2NCNQX_Hg';
    APP_VERSION - the code. Shown in the legend card. Bumped every change,
                 and stamped onto every lib/ URL as a cache-buster. */
 var ATLAS_REV   = 'Atlas Rev 13-2026';
-var APP_VERSION = '4.19.6';
+var APP_VERSION = '4.19.7';
 
 /* ===== DATA ==========================================================
    61 rows - 60 walkable exits plus one honorary - carrying 73 pairings,
@@ -2605,7 +2605,7 @@ function setVehicleMode(m){
 function syncVehicleLabel(){
   var l = vp.label(state.vehicle);
   $('vLabel').textContent = state.vehicle.mode==='standard'
-    ? "Standard rig \u2014 13'6\" \u00d7 8'6\" \u00d7 70 ft, 80,000 lb"
+    ? "Non-Hazmat rig \u2014 13'6\" \u00d7 8'6\" \u00d7 70 ft, 80,000 lb"
     : l;
   $('drawerProfile').textContent = l;
 }

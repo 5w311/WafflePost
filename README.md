@@ -803,9 +803,9 @@ room for one they rejected, and ghosts running off the edge is correct.
 ### Vehicle profile
 
 Kept in full, because it is the part of FuelPost's route mode that changes
-which roads come back. Standard, Hazmat, or Custom, in the trip drawer.
+which roads come back. Non-Hazmat, Hazmat, or Custom, in the trip drawer.
 
-- **Standard** (default) — 13'6" × 8'6" × 70 ft, 80,000 lb: the federal
+- **Non-Hazmat** (default) — 13'6" × 8'6" × 70 ft, 80,000 lb: the federal
   maximums for a 5-axle rig. A driver who never opens the control still gets
   full dimensional routing.
 - **Hazmat** — the same dimensions plus declared hazard classes.
@@ -915,7 +915,7 @@ leaderboard.
 
 `run.js` prints one `ok <name> N passed` line per file and then `all green`,
 or names the files that failed. It does not sum the assertions — at v4.18.0
-they came to 1,741 across twelve files; at v4.19.6 they come to 1,808, added up
+they came to 1,741 across twelve files; at v4.19.7 they come to 1,808, added up
 from those lines.
 
 ## Two version strings, on purpose
@@ -931,7 +931,7 @@ Same reasoning as FuelPost, different perishable thing:
   stopped existing; the requirement was "always on screen", not "in the
   header", and the panel tab is on screen in both modes whether the panel is
   open or collapsed. Bump only when the rows are re-audited.
-- **`APP_VERSION`** (`4.19.6`) — the code. Shown in the **legend card**.
+- **`APP_VERSION`** (`4.19.7`) — the code. Shown in the **legend card**.
   Bumped for every shipped change, and stamped onto every `lib/` URL as a
   cache-buster.
 
@@ -951,6 +951,18 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v4.19.7
+
+**"Standard" is now "Non-Hazmat".** The default vehicle profile's button in
+the trip drawer, the line under it (`Non-Hazmat rig — 13'6" × 8'6" × 70 ft,
+80,000 lb`), and the profile name in the drawer tab and shared trip text all
+say Non-Hazmat. The choice a driver is actually making there is whether the
+load is placarded, and "Standard" did not say that.
+
+Only the words changed. The profile's stored value is still `standard`, so
+the dimensions, the routing it sends to HERE, and anything already saved are
+untouched. The three-button control still fits on one line at 320px.
 
 ### v4.19.6
 

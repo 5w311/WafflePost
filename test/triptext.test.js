@@ -17,16 +17,16 @@ t.eq(st.indexOf('also: Petro (Iron Skillet) - 659 ft') !== -1, true, 'the second
 t.eq(st.indexOf('! Invisible') !== -1, true, 'and the note');
 t.eq(st.indexOf('30.47809, -90.45646') !== -1, true, 'coordinates survive for a nav app');
 
-var plan = { from:'Orlando, FL', to:'Dallas, TX', miles:1103.4, profile:'Standard rig',
+var plan = { from:'Orlando, FL', to:'Dallas, TX', miles:1103.4, profile:'Non-Hazmat rig',
              tierUsed:1, stops:[{row:row, routeMile:412.7, detourMi:0.34}] };
 var rt = tt.formatRouteText(plan, 'Rev 08-2026');
 t.eq(rt.indexOf('Orlando, FL  ->  Dallas, TX') !== -1, true, 'route text names both ends');
-t.eq(rt.indexOf('1,103 mi  |  Standard rig') !== -1, true, 'miles and the vehicle profile');
+t.eq(rt.indexOf('1,103 mi  |  Non-Hazmat rig') !== -1, true, 'miles and the vehicle profile');
 t.eq(rt.indexOf('1. mile 413  Hammond, LA') !== -1, true, 'stops carry a route mile');
 t.eq(rt.indexOf('0.3 mi off route') !== -1, true, 'and the detour');
 t.eq(rt.indexOf('1 walkable Waffle House on this run') !== -1, true, 'singular reads right');
 
-var none = tt.formatRouteText({from:'A', to:'B', miles:300, profile:'Standard rig',
+var none = tt.formatRouteText({from:'A', to:'B', miles:300, profile:'Non-Hazmat rig',
                                tierUsed:6, stops:[]}, 'x');
 t.eq(none.indexOf('No walkable Waffle House within 6 mi') !== -1, true,
      'an empty run says so plainly rather than printing an empty list');
@@ -44,7 +44,7 @@ t.eq(stopTxt.indexOf('1707 County Road 437, Cullman, AL 35055') !== -1, true,
      'the stop share carries the street address');
 t.eq(stopTxt.indexOf('34.11486, -86.86387') !== -1, true,
      'and still carries the coordinates beside it');
-var routeTxt = tt.formatRouteText({from:'A', to:'B', miles:100, profile:'Standard rig',
+var routeTxt = tt.formatRouteText({from:'A', to:'B', miles:100, profile:'Non-Hazmat rig',
   tierUsed:1, stops:[{row:addrRow, routeMile:49, detourMi:0.3}]}, 'Atlas Rev 08-2026');
 t.eq(routeTxt.indexOf('   1707 County Road 437, Cullman, AL 35055') !== -1, true,
      'each route stop carries its street address');
@@ -92,17 +92,17 @@ t.eq(stopTxt.indexOf('Atlas Rev 08-2026') !== -1, true, 'the rev line itself sur
 
 // A chosen alternative names itself, so a 968 mi run does not read as a
 // routing error to whoever receives the text.
-var picked = {from:'Dallas, TX', to:'Atlanta, GA', miles:968, profile:'Standard rig',
+var picked = {from:'Dallas, TX', to:'Atlanta, GA', miles:968, profile:'Non-Hazmat rig',
               stops:[], tierUsed:6, label:'via I-49, I-65', optionCount:5};
 t.eq(tt.formatRouteText(picked, 'Rev').indexOf('via I-49, I-65  (1 of 5 routes)') !== -1, true,
      'a chosen alternative names itself and says how many there were');
 // One route is not a choice, and saying "1 of 1" would imply it was.
-var only = {from:'A', to:'B', miles:100, profile:'Standard rig', stops:[], tierUsed:6,
+var only = {from:'A', to:'B', miles:100, profile:'Non-Hazmat rig', stops:[], tierUsed:6,
             label:'via I-40', optionCount:1};
 t.eq(only && tt.formatRouteText(only, 'Rev').indexOf('via I-40') === -1, true,
      'a single-route plan adds no route line at all');
 // Older plans carry no label; the text must be unchanged for them.
-var unlabelled = {from:'A', to:'B', miles:100, profile:'Standard rig', stops:[], tierUsed:6};
+var unlabelled = {from:'A', to:'B', miles:100, profile:'Non-Hazmat rig', stops:[], tierUsed:6};
 t.eq(tt.formatRouteText(unlabelled, 'Rev').indexOf('(1 of') === -1, true,
      'a plan with no label is formatted exactly as before');
 
