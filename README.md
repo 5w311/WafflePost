@@ -915,7 +915,7 @@ leaderboard.
 
 `run.js` prints one `ok <name> N passed` line per file and then `all green`,
 or names the files that failed. It does not sum the assertions — at v4.18.0
-they came to 1,741 across twelve files; at v4.19.4 they come to 1,799, added up
+they came to 1,741 across twelve files; at v4.19.5 they come to 1,802, added up
 from those lines.
 
 ## Two version strings, on purpose
@@ -931,7 +931,7 @@ Same reasoning as FuelPost, different perishable thing:
   stopped existing; the requirement was "always on screen", not "in the
   header", and the panel tab is on screen in both modes whether the panel is
   open or collapsed. Bump only when the rows are re-audited.
-- **`APP_VERSION`** (`4.19.4`) — the code. Shown in the **legend card**.
+- **`APP_VERSION`** (`4.19.5`) — the code. Shown in the **legend card**.
   Bumped for every shipped change, and stamped onto every `lib/` URL as a
   cache-buster.
 
@@ -951,6 +951,30 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v4.19.5
+
+**The stop card is as tall as what it says.** Since v4.5.0 it was held to the
+Atlas list's three-row height, measured once at boot — 309px on a 393px phone
+— while the content of a card needs 397 to 916px (median 497). Every one of
+the 69 cards was cut off behind Close and Share, and in Route, where the list
+is taller than three rows, the list showed above the card.
+
+It now grows to its content and stops 180px under the bar, which leaves room
+for the stop's pin and for HERE's zoom and layers buttons (they already rise
+above an open card). It is never shorter than the panel it opens over. Longer
+cards still scroll inside, with Close and Share pinned.
+
+A taller card would have covered the pin, because the map centred the stop in
+a viewport padded for the panel only. `centerAboveSheet` now puts the stop in
+the middle of the map still showing above the card, by shifting screen pixels
+at the current zoom rather than changing the padding — opening a card must
+not move the map's fit, and a padding change can clobber a camera move.
+
+Checked in the browser for the shortest, a median and the tallest card, in
+Atlas and Route, with and without the iPhone notch simulated: the card matches
+its content up to the cap, covers the panel, the pin lands in the visible strip,
+HERE's buttons fit between the bar and the card, and Close and Share are shown.
 
 ### v4.19.4
 
