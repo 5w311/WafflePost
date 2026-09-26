@@ -432,6 +432,12 @@ and floating both would mean measuring two stacked panels. The switch is keyed
 on `#drawer.hidden` rather than a mode class: `setMode` toggles exactly that
 and nothing else, and the tests pin that `setMode` never touches the bar.
 
+It does not start at the status bar, though (v4.20.1). iOS 26 and later
+blur and dim a feathered band that runs about 35pt *below* the status bar
+too, so the opaque strip under the status bar reaches 32pt further down and
+the bar floats just under it. Route's in-flow bar pads to the same line. See
+the v4.20.1 entry.
+
 A floating bar covers the top of the map, so `syncMapPadding` now pads the
 top as well as the bottom — by the bar's **measured overlap** onto the map,
 not a constant. When the bar is in the flow the overlap is zero and the
@@ -915,7 +921,7 @@ leaderboard.
 
 `run.js` prints one `ok <name> N passed` line per file and then `all green`,
 or names the files that failed. It does not sum the assertions — at v4.18.0
-they came to 1,741 across twelve files; at v4.20.0 they come to 1,824, added up
+they came to 1,741 across twelve files; at v4.20.1 they come to 1,828, added up
 from those lines.
 
 ## Two version strings, on purpose
@@ -931,7 +937,7 @@ Same reasoning as FuelPost, different perishable thing:
   stopped existing; the requirement was "always on screen", not "in the
   header", and the panel tab is on screen in both modes whether the panel is
   open or collapsed. Bump only when the rows are re-audited.
-- **`APP_VERSION`** (`4.20.0`) — the code. Shown in the **legend card**.
+- **`APP_VERSION`** (`4.20.1`) — the code. Shown in the **legend card**.
   Bumped for every shipped change, and stamped onto every `lib/` URL as a
   cache-buster.
 
@@ -951,6 +957,33 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v4.20.1
+
+**The top bar starts below iOS's frost band.** Since iOS 26 the system blurs
+and dims a feathered band that runs on *below* the status bar, not just under
+it. Measured off a phone screenshot (62pt status bar, dark theme), the dimming
+reaches down to 97pt and is about 1% by 94pt. The strip added in v4.19.1
+covered only the status bar, so the top of the floating bar sat in the band:
+the waffle tile, the Atlas/Route pill and the search field were dimmed and
+softened, and the Atlas pill's yellow only reached full strength below 97pt.
+
+This takes MilesPost's approach: nothing but flat colour above the band, and
+content below it.
+
+- **One frost line**, 32pt below the status bar wherever there is one, and
+  nothing extra in a Safari tab where the inset is 0.
+- **Atlas:** the opaque strip under the status bar now fills down to that
+  line, and the floating bar starts at it. iOS still dims the top of the
+  screen, but over a flat colour that reads as a smooth shade, not frost.
+- **Route:** the in-flow bar pads to the same line, so its controls also
+  start below the band.
+- **32pt flat, not scaled to the status bar.** MilesPost pads by
+  `min(24px, inset)`, which would give a 20pt home-button status bar only
+  20pt of clearance, and nothing says iOS draws a shallower band there.
+- **The cost is 32pt of map at the top** on phones with a status bar. The map
+  fit, the filters popover and the stop card all measure the bar, so they
+  follow it down on their own.
 
 ### v4.20.0
 
