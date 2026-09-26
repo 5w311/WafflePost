@@ -602,6 +602,23 @@ var casSrc = (src.match(/function centerAboveSheet\(lat, lng\)\{[\s\S]*?\n\}/) |
 t.eq(/setPadding/.test(casSrc), false,
      'and does it without touching the map padding, which a sheet must not move');
 
+// ---- a pin opens from where it is DRAWN (v4.19.6) ----
+// HERE hit-tests a DomMarker against the box of the element it positions,
+// which sits below and right of the tip - the pin is drawn above and left of
+// it. Taps on the visible pin missed; taps on the empty spot opened it (or a
+// neighbour's card). The tap is now read from the drawn pin.
+t.eq(/m\.addEventListener\('tap'/.test(src), false, 'no HERE marker tap handler: its hit box is not where the pin is');
+t.eq(/new H\.map\.DomIcon\(w\.firstElementChild, \{onAttach:pinAttach, onDetach:pinDetach\}\)/.test(src), true,
+     'each pin gets native tap handling on its own clone');
+t.eq(/\.pinbox\{pointer-events:none!important\}/.test(src) && /\.pin\{pointer-events:auto\}/.test(src), true,
+     'HERE\'s empty positioned box is transparent to taps; only the drawn pin takes them');
+var attachSrc = (src.match(/function pinAttach\(el, icon, marker\)\{[\s\S]*?\n\}/) || [''])[0];
+t.eq(/document\.addEventListener\('pointerup', end, true\)/.test(attachSrc), true,
+     'the release is heard on the document, so HERE capturing the pointer cannot swallow it');
+t.eq(/PIN_TAP_SLOP/.test(attachSrc) && !/Date\.now\(\)/.test(attachSrc), true,
+     'a tap is judged by movement only: a steady long press still opens the card');
+t.eq(/data:row\}/.test(src), true, 'the row rides on the marker, since icons are shared');
+
 // ---- the search box (v4.19.3) ----
 t.eq(/\.searchwrap \.clr\{[^}]*min-width:34px;min-height:34px/.test(src), true,
      'the search clear button is a 34px target like the rest of the bar');

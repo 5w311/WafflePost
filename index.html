@@ -510,6 +510,14 @@ html[data-theme=dark] .mile{color:#E8B96B}
    against the element's own size, and an auto-width block div would resolve
    -50% against the whole map. */
 .pinwrap{width:28px;height:28px;transform:translate(-50%,-100%)}
+/* HERE sizes and positions the OUTER element - the 28px box below and right
+   of the tip - and gives it an inline pointer-events:all. That box is where
+   HERE thinks the marker is, and it is empty: tapping it opened the card for
+   a pin drawn somewhere else. Only the drawn pin takes a tap now; the box is
+   transparent to the pointer, so a tap there reaches the map or whichever
+   pin is really drawn under it. !important because HERE's value is inline. */
+.pinbox{pointer-events:none!important}
+.pin{pointer-events:auto}
 .endwrap{width:16px;height:16px;transform:translate(-50%,-50%)}
 .endpin{width:16px;height:16px;border-radius:50%;border:3px solid var(--char);
   background:var(--sign)}
@@ -1166,27 +1174,27 @@ var __mods={};
 function require(p){return __mods[p.replace(/^\.\//,'').replace(/\.js$/,'')];}
 var module={exports:{}};
 </script>
-<script src="lib/waffledist.js?v=4.19.5"></script>
+<script src="lib/waffledist.js?v=4.19.6"></script>
 <script>__mods.waffledist=module.exports;module={exports:{}};</script>
-<script src="lib/atlasfilter.js?v=4.19.5"></script>
+<script src="lib/atlasfilter.js?v=4.19.6"></script>
 <script>__mods.atlasfilter=module.exports;module={exports:{}};</script>
-<script src="lib/routewaffles.js?v=4.19.5"></script>
+<script src="lib/routewaffles.js?v=4.19.6"></script>
 <script>__mods.routewaffles=module.exports;module={exports:{}};</script>
-<script src="lib/vehicleprofile.js?v=4.19.5"></script>
+<script src="lib/vehicleprofile.js?v=4.19.6"></script>
 <script>__mods.vehicleprofile=module.exports;module={exports:{}};</script>
-<script src="lib/triptext.js?v=4.19.5"></script>
+<script src="lib/triptext.js?v=4.19.6"></script>
 <script>__mods.triptext=module.exports;module={exports:{}};</script>
-<script src="lib/escape.js?v=4.19.5"></script>
+<script src="lib/escape.js?v=4.19.6"></script>
 <script>__mods.escape=module.exports;module={exports:{}};</script>
-<script src="lib/flexible-polyline.js?v=4.19.5"></script>
+<script src="lib/flexible-polyline.js?v=4.19.6"></script>
 <script>__mods['flexible-polyline']=module.exports;module={exports:{}};</script>
-<script src="lib/autosuggest.js?v=4.19.5"></script>
+<script src="lib/autosuggest.js?v=4.19.6"></script>
 <script>__mods.autosuggest=module.exports;module={exports:{}};</script>
-<script src="lib/location.js?v=4.19.5"></script>
+<script src="lib/location.js?v=4.19.6"></script>
 <script>__mods.location=module.exports;module={exports:{}};</script>
-<script src="lib/routeoptions.js?v=4.19.5"></script>
+<script src="lib/routeoptions.js?v=4.19.6"></script>
 <script>__mods.routeoptions=module.exports;module={exports:{}};</script>
-<script src="lib/baselayer.js?v=4.19.5"></script>
+<script src="lib/baselayer.js?v=4.19.6"></script>
 <script>__mods.baselayer=module.exports;module={exports:{}};</script>
 
 <script>
@@ -1238,7 +1246,7 @@ var HERE_API_KEY = '7RDploUiahAnm08IZA9X7YSbb0Qh99pvqV2NCNQX_Hg';
    APP_VERSION - the code. Shown in the legend card. Bumped every change,
                 and stamped onto every lib/ URL as a cache-buster. */
 var ATLAS_REV   = 'Atlas Rev 13-2026';
-var APP_VERSION = '4.19.5';
+var APP_VERSION = '4.19.6';
 
 /* ===== DATA ==========================================================
    61 rows - 60 walkable exits plus one honorary - carrying 73 pairings,
@@ -1649,6 +1657,50 @@ function mapResized(){
    independent element and the template is never mutated. Route endpoint
    pins are per plan and stay uncached. */
 var iconCache = {};
+/* THE PIN IS TAPPED WHERE IT IS DRAWN (v4.19.6). Through v4.19.5 a pin opened
+   its card from HERE's own marker 'tap' event, and HERE hit-tests a DomMarker
+   against the box of the element it positions: a 28px square whose top-left
+   corner sits on the coordinate - BELOW AND RIGHT of the tip. The pin itself
+   is drawn above and left of the tip (see .pinwrap), so the two overlap at a
+   single point. Tapping the visible pin hit the map; tapping the empty spot
+   under it opened the card. A fingertip is wide enough to land partly in that
+   box some of the time, which is why it "sometimes" worked - and because one
+   pin's invisible box can sit on a neighbour's head, it could open the WRONG
+   card.
+   So the tap is read from native pointer events on the drawn pin, via
+   DomIcon's onAttach, which hands over each marker's own clone. A tap is a
+   press and release no more than PIN_TAP_SLOP px apart, however long the
+   press: a first cut also capped the duration at 800ms, and a steady
+   deliberate press - exactly how someone taps at a truck stop - was then
+   refused. A pan that starts on a pin moves far further than 14px. */
+var PIN_TAP_SLOP = 14;
+/* The release is listened for on the DOCUMENT, not on the pin: once a touch
+   drifts a few px HERE may start a pan and capture the pointer, and a
+   captured pointer's pointerup goes to the capturing element, never back to
+   the pin. That made a slightly unsteady tap on a pin fail intermittently.
+   Judged by how far the finger actually moved, whoever holds the capture. */
+function pinAttach(el, icon, marker){
+  function start(e){
+    if (!(e.target.closest && e.target.closest('.pin'))) return;
+    var x = e.clientX, y = e.clientY, id = e.pointerId;
+    function end(ev){
+      if (ev.pointerId !== id) return;
+      document.removeEventListener('pointerup', end, true);
+      document.removeEventListener('pointercancel', end, true);
+      if (ev.type !== 'pointerup') return;
+      var row = marker.getData();
+      if (row && Math.hypot(ev.clientX - x, ev.clientY - y) <= PIN_TAP_SLOP) openSheet(row);
+    }
+    document.addEventListener('pointerup', end, true);
+    document.addEventListener('pointercancel', end, true);
+  }
+  el.addEventListener('pointerdown', start);
+  el.__pinTap = start;
+}
+function pinDetach(el){
+  if (el.__pinTap) el.removeEventListener('pointerdown', el.__pinTap);
+  el.__pinTap = null;
+}
 function pinIcon(row){
   var tier = wd.tierFor(row.feet), key = tier==='honorary' ? 'hon' : tier;
   var letter = BRAND[row.brand] ? BRAND[row.brand].letter : '★';
@@ -1659,10 +1711,10 @@ function pinIcon(row){
        inline transform onto; .pinwrap one level in carries the anchor
        translate, and .pin inside that keeps its own rotate. See the CSS. */
     var w = document.createElement('div');
-    w.innerHTML = '<div><div class="pinwrap"><div class="pin' +
+    w.innerHTML = '<div class="pinbox"><div class="pinwrap"><div class="pin' +
       (key==='hon'?' hon':'') + '" style="background:var(--t-'+key+
       ');color:var(--t-'+key+'-ink)"><b>' + esc(letter) + '</b></div></div></div>';
-    icon = new H.map.DomIcon(w.firstElementChild);
+    icon = new H.map.DomIcon(w.firstElementChild, {onAttach:pinAttach, onDetach:pinDetach});
     iconCache[cacheKey] = icon;
   }
   return icon;
@@ -1867,8 +1919,10 @@ if (MAP_ON) {
      setVisibility (see render); nothing is constructed per keystroke.
      One addObjects call: the group does its bookkeeping once. */
   markerGroup.addObjects(DATA.map(function(row,i){
-    var m = new H.map.DomMarker({lat:row.lat,lng:row.lon},{icon:pinIcon(row)});
-    m.addEventListener('tap',function(){ openSheet(row); });
+    /* The row rides on the marker, not the icon: icons are shared between
+       every pin that looks alike, and pinAttach reads it back per marker.
+       No 'tap' listener - see pinAttach for why HERE's is the wrong one. */
+    var m = new H.map.DomMarker({lat:row.lat,lng:row.lon},{icon:pinIcon(row), data:row});
     markers[i]=m;
     return m;
   }));
