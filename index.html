@@ -308,7 +308,6 @@ input,select,textarea{font-size:16px}
 .searchwrap{position:relative;flex:1;min-width:0}
 .searchwrap input{width:100%;padding:8px 8px 8px 22px;border:1px solid var(--line);
   border-radius:9px;background:var(--bg);color:var(--ink);min-height:34px}
-.searchwrap:has(.clr.on) input{padding-right:28px}
 .searchwrap input::placeholder{color:var(--sub)}
 .searchwrap .mag{position:absolute;left:9px;top:50%;transform:translateY(-50%);
   color:var(--sub);pointer-events:none;font-size:13px}
@@ -316,6 +315,22 @@ input,select,textarea{font-size:16px}
   background:transparent;color:var(--sub);cursor:pointer;font-size:17px;padding:2px 6px;
   line-height:1;display:none}
 .clr.on{display:block}
+/* The search bar's own clear button, 34px square like every other target in
+   the bar (v4.19.3) - it measured 26x21. Scoped to .searchwrap: the trip
+   drawer's clear buttons share a slot system with the locate button that a
+   bigger box would break. padding-right on the field makes room for it only
+   while it shows, so the placeholder keeps the width. */
+.searchwrap .clr{right:3px;min-width:34px;min-height:34px;padding:0;place-items:center}
+.searchwrap .clr.on{display:grid}
+.searchwrap:has(.clr.on) input{padding-right:38px}
+/* WebKit and Blink draw their own cancel X inside type=search. It doubled up
+   with the app's, and it reserves ~15px of the field even while hidden -
+   15px the placeholder was being clipped for. */
+.searchwrap input::-webkit-search-cancel-button,
+.searchwrap input::-webkit-search-decoration{-webkit-appearance:none;appearance:none;display:none}
+/* Drawer placeholders used the browser default grey, 2.8:1 on the dark
+   fields. */
+.fld input::placeholder,.vfields input::placeholder{color:var(--sub)}
 .barbtn{position:relative;width:34px;height:34px;flex:none;display:grid;place-items:center;
   border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:9px;
   cursor:pointer;padding:0}
@@ -694,7 +709,7 @@ html[data-theme=dark] .mile{color:#E8B96B}
    The canvas mockup this was built from is linked in the README. */
 
 :root{
-  --bg:#F2F2F7; --surface:#FFFFFF; --ink:#1C1C1E; --sub:#6C6C70; --line:#E1E1E6;
+  --bg:#F2F2F7; --surface:#FFFFFF; --ink:#1C1C1E; --sub:#5C5C60; --line:#E1E1E6;
   --fill:rgba(118,118,128,.12); --seg-sel:#FFFFFF;
   /* Tiers move to Apple's system orange and brown. Both take DARK ink now:
      systemBrown is far lighter than the syrup it replaces, and cream on it
@@ -704,21 +719,34 @@ html[data-theme=dark] .mile{color:#E8B96B}
   --danger-text:#D70015;
   /* Sign yellow is the tint, but yellow TEXT on white is 1.6:1. Anything
      tinted that is read as text uses this instead. */
-  --tint-text:#8F5E00; --warn-text:#B25000;
+  --tint-text:#8F5E00; --warn-text:#9A4500;
   --you:#007AFF;
-  --glass:rgba(255,255,255,.78); --glass-border:rgba(0,0,0,.08);
+  /* READABLE OVER ANY MAP (v4.19.3). v4.19.0 shipped the glass at .78 (light)
+     and .72 (dark) with --sub at #6C6C70 / #98989F. Over satellite imagery
+     that let grey text fall to 2.8:1 in light and 2.1:1 in dark, and text on
+     --fill (the search placeholder, pills, the unselected tab) lower still.
+     These values were SOLVED, not picked: each is the smallest change that
+     keeps every text pair on the panel and bar at 4.5:1 or better over every
+     backdrop grey from black to white, composited the way the browser does.
+     Density alone could not do it - even at .96 grey on --fill stays near
+     4:1 - so --sub moved as well. .92 still blurs and still reads as glass.
+     The #6C6C70 / #98989F pair is what to put back if this is ever reverted
+     for looks, and the contrast is what that costs. */
+  --glass:rgba(255,255,255,.92); --glass-border:rgba(0,0,0,.08);
+  --hover:rgba(118,118,128,.06);
   --glass-shadow:0 8px 24px rgba(0,0,0,.14);
   --sheet-shadow:0 -10px 40px rgba(0,0,0,.18);
   --sheet-bg:rgba(255,255,255,.96);
 }
 html[data-theme=dark]{
-  --bg:#000000; --surface:#1C1C1E; --ink:#FFFFFF; --sub:#98989F; --line:#38383A;
+  --bg:#000000; --surface:#1C1C1E; --ink:#FFFFFF; --sub:#AEAEB2; --line:#38383A;
   --fill:rgba(118,118,128,.24); --seg-sel:#636366;
   --t-long:#AC8E68;
   --danger-text:#FF6961;
   --tint-text:#FFC72C; --warn-text:#FF9F0A;
   --you:#0A84FF;
-  --glass:rgba(30,30,32,.72); --glass-border:rgba(255,255,255,.14);
+  --glass:rgba(30,30,32,.92); --glass-border:rgba(255,255,255,.14);
+  --hover:rgba(118,118,128,.08);
   --glass-shadow:0 8px 28px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.10);
   --sheet-shadow:0 -10px 40px rgba(0,0,0,.55);
   --sheet-bg:rgba(28,28,30,.96);
@@ -785,7 +813,7 @@ html[data-theme=dark] .gpsnote{color:var(--tint-text)}
 .seg:not(.opts) button{border:0;background:transparent;border-radius:9px;color:var(--ink);font-weight:600}
 .seg:not(.opts) button[aria-pressed=true]{background:var(--seg-sel);color:var(--ink);
   box-shadow:0 1px 4px rgba(0,0,0,.18)}
-.vfields input{border:0;border-radius:10px;background:var(--fill)}
+.vfields input{border:0;border-radius:10px;background:var(--fill);color:var(--ink)}
 .go{border:0;border-radius:14px;min-height:48px;font-size:16px;font-weight:700}
 
 /* ---- Over the map: the panel, the stop sheet, the popover ------------------
@@ -801,7 +829,18 @@ html[data-theme=dark] .gpsnote{color:var(--tint-text)}
 .panel-tab .count{font-size:17px;font-weight:700;letter-spacing:-.01em}
 .row{position:relative;border-bottom:0;padding:10px 16px}
 .row::after{content:'';position:absolute;left:18px;right:0;bottom:0;height:.5px;background:var(--line)}
-.row:hover{background:var(--fill)}
+/* ROW HOVER, v4.19.4. Neutralised first, for touch: the base sheet's
+   .row:hover{background:var(--bg)} is unconditional, iOS leaves :hover stuck
+   on a tapped row, and this layer's --bg is pure black in dark mode - a
+   tapped row would have become a black band on the glass. Then a tint only
+   where a pointer can actually hover, at a density SOLVED like the glass:
+   --fill (.12/.24) under a "read first" pill dropped it to 3.9:1; .06/.08
+   keeps every pill on a hovered row at 4.5:1 over any backdrop. */
+.row:hover{background:transparent}
+@media (hover:hover){
+  .row:hover{background:var(--hover)}
+  .row:hover .pill:not(.warn){background:transparent;border:.5px solid var(--sub)}
+}
 /* A route row carries four things on its top line - mile, city, exit, feet
    - and at 17px it ran out of width and broke "2,031 ft" across two lines.
    Numbers and the city never wrap. The exit label is the one that gives way,
@@ -891,6 +930,11 @@ html[data-theme=dark] .mile{color:var(--tint-text)}
   -webkit-backdrop-filter:blur(22px) saturate(170%);backdrop-filter:blur(22px) saturate(170%)}
 #map .H_ui .H_ctl:not(.H_zoom) > .H_btn{border-radius:14px}
 #map .H_ui .H_btn .H_icon{fill:var(--ink)}
+/* HERE's own .H_active > svg.H_icon{fill:#0F1621 !important} survives the rule
+   above, so in dark mode the layers glyph turned navy on dark glass (1.06:1)
+   whenever its menu was open. Its matching light background loses to the
+   glass, so the icon keeps --ink instead. */
+#map .H_ui .H_btn.H_active > svg.H_icon{fill:var(--ink) !important}
 #map .H_ui .H_zoom .H_btn + .H_btn{border-top:.5px solid var(--line)}
 #map .H_ui .H_overlay{background:var(--surface);color:var(--ink);border-radius:16px;
   border:.5px solid var(--glass-border);box-shadow:0 12px 32px rgba(0,0,0,.3)}
@@ -906,6 +950,11 @@ html[data-theme=dark] .mile{color:var(--tint-text)}
 .leg{font-size:12px;padding:8px 16px 8px}
 .route-line{font-size:13px;padding:10px 16px 4px}
 .seg.opts button[aria-pressed=true]{background:var(--sign);color:var(--char)}
+/* A pill on an unselected card stacked a second --fill on the card's, which
+   is what dropped "most waffles" under 4:1 on every backdrop. Outlined, it
+   reads as a tag without darkening the ground its text sits on. */
+.seg.opts button:not([aria-pressed=true]) .pill{background:transparent;border:.5px solid var(--sub)}
+.seg.opts button[aria-pressed=true] .pill{border:.5px solid rgba(20,17,14,.4)}
 .dry{border-bottom:0;padding:8px 16px;font-size:13px}
 .dry-rail{border-left-color:var(--sub);opacity:.5}
 </style>
@@ -1105,27 +1154,27 @@ var __mods={};
 function require(p){return __mods[p.replace(/^\.\//,'').replace(/\.js$/,'')];}
 var module={exports:{}};
 </script>
-<script src="lib/waffledist.js?v=4.19.2"></script>
+<script src="lib/waffledist.js?v=4.19.4"></script>
 <script>__mods.waffledist=module.exports;module={exports:{}};</script>
-<script src="lib/atlasfilter.js?v=4.19.2"></script>
+<script src="lib/atlasfilter.js?v=4.19.4"></script>
 <script>__mods.atlasfilter=module.exports;module={exports:{}};</script>
-<script src="lib/routewaffles.js?v=4.19.2"></script>
+<script src="lib/routewaffles.js?v=4.19.4"></script>
 <script>__mods.routewaffles=module.exports;module={exports:{}};</script>
-<script src="lib/vehicleprofile.js?v=4.19.2"></script>
+<script src="lib/vehicleprofile.js?v=4.19.4"></script>
 <script>__mods.vehicleprofile=module.exports;module={exports:{}};</script>
-<script src="lib/triptext.js?v=4.19.2"></script>
+<script src="lib/triptext.js?v=4.19.4"></script>
 <script>__mods.triptext=module.exports;module={exports:{}};</script>
-<script src="lib/escape.js?v=4.19.2"></script>
+<script src="lib/escape.js?v=4.19.4"></script>
 <script>__mods.escape=module.exports;module={exports:{}};</script>
-<script src="lib/flexible-polyline.js?v=4.19.2"></script>
+<script src="lib/flexible-polyline.js?v=4.19.4"></script>
 <script>__mods['flexible-polyline']=module.exports;module={exports:{}};</script>
-<script src="lib/autosuggest.js?v=4.19.2"></script>
+<script src="lib/autosuggest.js?v=4.19.4"></script>
 <script>__mods.autosuggest=module.exports;module={exports:{}};</script>
-<script src="lib/location.js?v=4.19.2"></script>
+<script src="lib/location.js?v=4.19.4"></script>
 <script>__mods.location=module.exports;module={exports:{}};</script>
-<script src="lib/routeoptions.js?v=4.19.2"></script>
+<script src="lib/routeoptions.js?v=4.19.4"></script>
 <script>__mods.routeoptions=module.exports;module={exports:{}};</script>
-<script src="lib/baselayer.js?v=4.19.2"></script>
+<script src="lib/baselayer.js?v=4.19.4"></script>
 <script>__mods.baselayer=module.exports;module={exports:{}};</script>
 
 <script>
@@ -1177,7 +1226,7 @@ var HERE_API_KEY = '7RDploUiahAnm08IZA9X7YSbb0Qh99pvqV2NCNQX_Hg';
    APP_VERSION - the code. Shown in the legend card. Bumped every change,
                 and stamped onto every lib/ URL as a cache-buster. */
 var ATLAS_REV   = 'Atlas Rev 13-2026';
-var APP_VERSION = '4.19.2';
+var APP_VERSION = '4.19.4';
 
 /* ===== DATA ==========================================================
    61 rows - 60 walkable exits plus one honorary - carrying 73 pairings,
@@ -3064,6 +3113,32 @@ $('fReset').addEventListener('click',function(){
   ['fFree','fScale','fDiner','fDouble','fHide'].forEach(function(id){ $(id).checked=false; });
   render();
 });
+/* THE PLACEHOLDER IS MEASURED, not assumed to fit (v4.19.3). "City, exit,
+   stop" fits from about 375px up; at 320 - the first-generation SE, and the
+   Display Zoom width of larger iPhones - the fixed tile and tabs leave the
+   field about 110px and it clipped to "City, e". So the longest candidate
+   that fits is used. Measured the README's way: the text as the field's
+   VALUE, scrollWidth against clientWidth. An empty field's scrollWidth
+   ignores placeholder text and reports a fit that is not there. Skipped while
+   the driver is typing or the field is focused, so nothing they see moves. */
+var Q_PLACEHOLDERS = ['City, exit, stop', 'City or exit', 'Search'];
+function fitSearchPlaceholder(){
+  var q = $('q');
+  if (!q || q.value || document.activeElement === q || !q.clientWidth) return;
+  for (var i = 0; i < Q_PLACEHOLDERS.length; i++) {
+    q.value = Q_PLACEHOLDERS[i];
+    var fits = q.scrollWidth <= q.clientWidth;
+    q.value = '';
+    if (fits || i === Q_PLACEHOLDERS.length - 1) { q.placeholder = Q_PLACEHOLDERS[i]; return; }
+  }
+}
+window.addEventListener('resize', fitSearchPlaceholder);
+/* A resize while the field was focused or held text was skipped; catch up
+   once it is left. Blur fires while a clear-button tap's value is still set,
+   so the guard returns and nothing moves under the finger. */
+$('q').addEventListener('blur', fitSearchPlaceholder);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitSearchPlaceholder);
+fitSearchPlaceholder();
 $('q').addEventListener('input',function(){
   state.q=this.value; $('qClear').classList.toggle('on',!!this.value); render();
 });
@@ -3093,6 +3168,11 @@ function setMode(m){
     $(id).classList.toggle('hidden', m!=='atlas');
   });
   $('drawer').classList.toggle('hidden', m!=='route');
+  /* Re-fit the search placeholder on the way back to Atlas - here, AFTER the
+     drawer hides and the bar leaves the flow, not before. v4.19.3 ran it
+     earlier in this function and measured the Route layout, which brought
+     the placeholder back clipped at 320 and 360. */
+  if (m==='atlas') fitSearchPlaceholder();
   /* A mode change dismisses the sheet, which changes what HERE's controls
      have to clear. render()'s own path to syncChromeH runs only when the cap
      applies - not in Route, not when a filter leaves fewer than three rows -

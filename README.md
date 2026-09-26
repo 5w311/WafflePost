@@ -438,12 +438,18 @@ not a constant. When the bar is in the flow the overlap is zero and the
 padding is exactly what it always was. The same number becomes `--bar-bleed`,
 which drops the filters popover below the bar instead of under it.
 
-Search still gets about 167px and still reads "City, exit, stop". The room the
+At 393px search gets about 170px and reads "City, exit, stop". The room the
 floating inset took came back out of whitespace — the bar's inset and gap, the
 tile, the tabs' side padding. The fit was measured with the placeholder set as
 the field's **value**: an empty field's `scrollWidth` ignores placeholder text
 and reports a fit that is not there. That trap bit the first pass of this
 change exactly as it bit v4.3.0.
+
+It does **not** fit at every width, and v4.19.0 said it did. The tile and tabs
+are fixed, so the field is the only thing that shrinks. Since v4.19.3 the
+placeholder is chosen at runtime by the same measurement: "City, exit, stop"
+from about 375px up, "City or exit" around 360, "Search" at 320 (measured in
+this sandbox's wider fallback font; SF Pro is narrower).
 
 ## The key draws the map now
 
@@ -909,7 +915,7 @@ leaderboard.
 
 `run.js` prints one `ok <name> N passed` line per file and then `all green`,
 or names the files that failed. It does not sum the assertions — at v4.18.0
-they came to 1,741 across twelve files; at v4.19.2 they come to 1,775, added up
+they came to 1,741 across twelve files; at v4.19.4 they come to 1,799, added up
 from those lines.
 
 ## Two version strings, on purpose
@@ -925,7 +931,7 @@ Same reasoning as FuelPost, different perishable thing:
   stopped existing; the requirement was "always on screen", not "in the
   header", and the panel tab is on screen in both modes whether the panel is
   open or collapsed. Bump only when the rows are re-audited.
-- **`APP_VERSION`** (`4.19.2`) — the code. Shown in the **legend card**.
+- **`APP_VERSION`** (`4.19.4`) — the code. Shown in the **legend card**.
   Bumped for every shipped change, and stamped onto every `lib/` URL as a
   cache-buster.
 
@@ -945,6 +951,66 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v4.19.4
+
+What an independent browser check of v4.19.3 found. It confirmed the main
+claim — every text pair on the bar and panel holds 4.5:1 over every backdrop
+in both themes (v4.19.2 failed 23 light and 28 dark) — and turned up these.
+
+- **Returning to Atlas re-fits the placeholder after the drawer hides.**
+  v4.19.3 measured before, against the Route layout, and at 320 and 360 the
+  placeholder came back clipped ("City or e"). It also re-fits on blur, for a
+  resize that happened while the field was in use.
+- **HERE's layers icon stays visible while its menu is open.** HERE's own
+  stylesheet forces the active icon navy with `!important`; on the dark glass
+  that was 1.06:1.
+- **Typed values in the custom vehicle fields read as ink**, not the same grey
+  as their placeholders.
+- **The selected route card's pill keeps its outline**, matching the
+  unselected one.
+- **Row hover.** The v4.18 base rule `.row:hover{background:var(--bg)}` is
+  unconditional, iOS leaves `:hover` stuck on a tapped row, and the layer's
+  `--bg` is pure black in dark mode, so a tapped row risked a black band. The
+  layer now neutralises it, and tints only under `@media (hover:hover)`, at a
+  density solved like the glass (`--hover`, .06 light / .08 dark) so a "read
+  first" pill on a hovered row still clears 4.5:1.
+- **A contrast floor in the tests.** `structure.test.js` reads the layer's own
+  tokens and composites each text pair on the glass over every backdrop grey,
+  failing under 4.5:1. Putting back v4.19.0's grey or glass density fails it;
+  a different value that still passes does not.
+
+### v4.19.3
+
+The three open findings from the v4.19.0 verification run.
+
+- **Text on the glass is readable over any map.** v4.19.0's glass (.78 light,
+  .72 dark) let satellite imagery drag grey text down to 2.8:1 in light and
+  2.1:1 in dark, and text on a tinted chip — the search placeholder, pills,
+  the unselected tab — lower still. The fix was solved rather than picked:
+  every text pair on the bar and panel was composited over each backdrop grey
+  from black to white, and the values below are the smallest change that
+  keeps all of them at 4.5:1 or better. Density alone could not do it — even
+  at .96, grey on a tinted chip stays near 4:1 — so the secondary text moved
+  too.
+  - glass .92 in both themes (it still blurs and still reads as glass)
+  - `--sub` #6C6C70 → #5C5C60 light, #98989F → #AEAEB2 dark
+  - light `--warn-text` #B25000 → #9A4500, for "read first"
+  - a pill on an unselected route card is outlined rather than stacking a
+    second tint on the card's
+  - trip drawer placeholders use `--sub` instead of the browser's default grey
+- **The search placeholder is measured, not assumed to fit.** "City, exit,
+  stop" fits from about 375px up. At 320 — the first SE, and the Display Zoom
+  width of larger iPhones — it clipped to "City, e". The longest of "City,
+  exit, stop", "City or exit" and "Search" that fits is used, measured the
+  README's way with the text as the field's value, re-checked on resize and on
+  returning to Atlas, and never while the driver is typing. The browser's own
+  cancel X inside the search field is suppressed: it doubled the app's clear
+  button and reserved 15px of the field even while hidden, which alone makes
+  375 fit.
+- **The search clear button is a 34px target** like the rest of the bar. It
+  measured 26×21. The trip drawer's clear buttons are unchanged; they share a
+  hand-tuned layout with the locate button.
 
 ### v4.19.2
 
