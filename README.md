@@ -437,7 +437,7 @@ and nothing else, and the tests pin that `setMode` never touches the bar.
 
 It does not start at the top of the page, though (v4.20.2). iOS 26 and
 later tint and blur a feathered band at the top of the page, 35-38pt deep. In
-the iPhone home-screen app a 40px strip in the body's own background colour
+the iPhone home-screen app a 30px strip in the body's own background colour
 fills that band, and the bar floats just under it; Route's in-flow bar is
 pushed below it by margin. A Safari tab is unchanged. See the v4.20.2 entry,
 and v4.20.1 for the version that measured from the wrong place.
@@ -925,7 +925,7 @@ leaderboard.
 
 `run.js` prints one `ok <name> N passed` line per file and then `all green`,
 or names the files that failed. It does not sum the assertions — at v4.18.0
-they came to 1,741 across twelve files; at v4.20.2 they come to 1,830, added up
+they came to 1,741 across twelve files; at v4.20.3 they come to 1,830, added up
 from those lines.
 
 ## Two version strings, on purpose
@@ -941,7 +941,7 @@ Same reasoning as FuelPost, different perishable thing:
   stopped existing; the requirement was "always on screen", not "in the
   header", and the panel tab is on screen in both modes whether the panel is
   open or collapsed. Bump only when the rows are re-audited.
-- **`APP_VERSION`** (`4.20.2`) — the code. Shown in the **legend card**.
+- **`APP_VERSION`** (`4.20.3`) — the code. Shown in the **legend card**.
   Bumped for every shipped change, and stamped onto every `lib/` URL as a
   cache-buster.
 
@@ -961,6 +961,17 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v4.20.3
+
+**The top bar comes up 10px.** v4.20.2 cleared the frost with room to spare,
+and on the phone it read as too low. A screenshot showed the flat strip
+running to 101pt with the bar's glass at full strength from its first row,
+so none of the band reached the bar. The frost gap is now 30px, not 40. The
+Atlas controls start at 36px (98pt on screen), just past the measured end
+of the band at 97pt. Only the bar's own top edge sits in the band's last ~2%,
+which is invisible on the glass. Route's controls start at 38px. Safari
+tabs, desktop and landscape are still unchanged.
 
 ### v4.20.2
 
