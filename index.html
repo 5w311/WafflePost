@@ -276,16 +276,23 @@ input,select,textarea{font-size:16px}
    the inset, computed nothing on the phone, and moved nothing: the band is
    the top ~35pt of the page itself, and the "8pt offset" that looked
    unexplained in the screenshot was just max(8px, 0). So the line is:
-     inset + 40px   in the iPhone home-screen app in portrait (html.standalone
+     inset + 30px   in the iPhone home-screen app in portrait (html.standalone
                     sets --frost-gap; landscape hides the status bar and
                     draws no band), and wherever an inset exists at all
      0              in a Safari tab with no inset, where nothing moves.
    MARGIN, not padding: the band shows the body's --bg, the tint colour,
-   rather than the bar's --surface graded toward it. */
+   rather than the bar's --surface graded toward it.
+
+   30, not 40 (v4.20.3). 40 cleared the band with room to spare - on the
+   phone the strip ran to 101pt and the bar's glass was undimmed from its
+   first row - and it read as too low. 30 puts the Atlas controls at 36px,
+   98pt on screen, just past the measured end of the band (97pt), and
+   leaves only the bar's own top edge in the band's last ~2%, which is
+   invisible on the glass. Route's controls start at 38px. */
 .bar{background:var(--surface);color:var(--ink);display:flex;align-items:center;gap:7px;
-  padding:8px 10px;margin-top:calc(env(safe-area-inset-top,0px) + max(var(--frost-gap,0px), min(40px, env(safe-area-inset-top,0px) * 100)));flex:none;
+  padding:8px 10px;margin-top:calc(env(safe-area-inset-top,0px) + max(var(--frost-gap,0px), min(30px, env(safe-area-inset-top,0px) * 100)));flex:none;
   border-bottom:1px solid var(--line)}
-@media (orientation:portrait){html.standalone{--frost-gap:40px}}
+@media (orientation:portrait){html.standalone{--frost-gap:30px}}
 /* The home screen icon itself since v4.18.1: tile.png is the supplied
    1024px waffle artwork scaled to 84px, which is 28px at 3x. It replaced a
    live-text sign-yellow W, so the bar and the home screen now show the same
@@ -839,14 +846,14 @@ button{-webkit-tap-highlight-color:transparent}
 
    v4.19.1 added it sized to the status-bar inset and v4.20.1 to the inset
    plus 32. The inset is 0 in the home-screen app, so on the phone it never
-   existed. Since v4.20.2 it is sized to the frost line, so it is 40px tall
-   there. It is --bg, not --surface: iOS tints the band toward the body's
+   existed. Since v4.20.2 it is sized to the frost line, so it is 30px tall
+   there (40 in v4.20.2). It is --bg, not --surface: iOS tints the band toward the body's
    background, so only that colour comes through unchanged. margin-top:0
    because the base rule's frost margin would otherwise add to top. */
 body:has(#drawer.hidden)::before{content:'';position:fixed;top:0;left:0;right:0;z-index:699;
-  height:calc(env(safe-area-inset-top,0px) + max(var(--frost-gap,0px), min(40px, env(safe-area-inset-top,0px) * 100)));background:var(--bg);pointer-events:none}
+  height:calc(env(safe-area-inset-top,0px) + max(var(--frost-gap,0px), min(30px, env(safe-area-inset-top,0px) * 100)));background:var(--bg);pointer-events:none}
 body:has(#drawer.hidden) .bar{position:absolute;z-index:700;margin-top:0;
-  top:max(8px, calc(env(safe-area-inset-top,0px) + max(var(--frost-gap,0px), min(40px, env(safe-area-inset-top,0px) * 100))));left:7px;right:7px;padding:5px;gap:5px;
+  top:max(8px, calc(env(safe-area-inset-top,0px) + max(var(--frost-gap,0px), min(30px, env(safe-area-inset-top,0px) * 100))));left:7px;right:7px;padding:5px;gap:5px;
   border:.5px solid var(--glass-border);border-radius:26px;background:var(--glass);
   box-shadow:var(--glass-shadow);
   -webkit-backdrop-filter:blur(22px) saturate(170%);backdrop-filter:blur(22px) saturate(170%)}
@@ -1237,27 +1244,27 @@ var __mods={};
 function require(p){return __mods[p.replace(/^\.\//,'').replace(/\.js$/,'')];}
 var module={exports:{}};
 </script>
-<script src="lib/waffledist.js?v=4.20.2"></script>
+<script src="lib/waffledist.js?v=4.20.3"></script>
 <script>__mods.waffledist=module.exports;module={exports:{}};</script>
-<script src="lib/atlasfilter.js?v=4.20.2"></script>
+<script src="lib/atlasfilter.js?v=4.20.3"></script>
 <script>__mods.atlasfilter=module.exports;module={exports:{}};</script>
-<script src="lib/routewaffles.js?v=4.20.2"></script>
+<script src="lib/routewaffles.js?v=4.20.3"></script>
 <script>__mods.routewaffles=module.exports;module={exports:{}};</script>
-<script src="lib/vehicleprofile.js?v=4.20.2"></script>
+<script src="lib/vehicleprofile.js?v=4.20.3"></script>
 <script>__mods.vehicleprofile=module.exports;module={exports:{}};</script>
-<script src="lib/triptext.js?v=4.20.2"></script>
+<script src="lib/triptext.js?v=4.20.3"></script>
 <script>__mods.triptext=module.exports;module={exports:{}};</script>
-<script src="lib/escape.js?v=4.20.2"></script>
+<script src="lib/escape.js?v=4.20.3"></script>
 <script>__mods.escape=module.exports;module={exports:{}};</script>
-<script src="lib/flexible-polyline.js?v=4.20.2"></script>
+<script src="lib/flexible-polyline.js?v=4.20.3"></script>
 <script>__mods['flexible-polyline']=module.exports;module={exports:{}};</script>
-<script src="lib/autosuggest.js?v=4.20.2"></script>
+<script src="lib/autosuggest.js?v=4.20.3"></script>
 <script>__mods.autosuggest=module.exports;module={exports:{}};</script>
-<script src="lib/location.js?v=4.20.2"></script>
+<script src="lib/location.js?v=4.20.3"></script>
 <script>__mods.location=module.exports;module={exports:{}};</script>
-<script src="lib/routeoptions.js?v=4.20.2"></script>
+<script src="lib/routeoptions.js?v=4.20.3"></script>
 <script>__mods.routeoptions=module.exports;module={exports:{}};</script>
-<script src="lib/baselayer.js?v=4.20.2"></script>
+<script src="lib/baselayer.js?v=4.20.3"></script>
 <script>__mods.baselayer=module.exports;module={exports:{}};</script>
 
 <script>
@@ -1309,7 +1316,7 @@ var HERE_API_KEY = '7RDploUiahAnm08IZA9X7YSbb0Qh99pvqV2NCNQX_Hg';
    APP_VERSION - the code. Shown in the legend card. Bumped every change,
                 and stamped onto every lib/ URL as a cache-buster. */
 var ATLAS_REV   = 'Atlas Rev 13-2026';
-var APP_VERSION = '4.20.2';
+var APP_VERSION = '4.20.3';
 
 /* ===== DATA ==========================================================
    61 rows - 60 walkable exits plus one honorary - carrying 73 pairings,
