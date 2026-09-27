@@ -383,9 +383,6 @@ padding-top: calc(10px + env(safe-area-inset-top,0px))   /* 69px on a 15 Pro */
 padding-top: max(8px, env(safe-area-inset-top,0px))      /* the inset is the gap */
 ```
 
-(Since v4.20.2 the bar also clears iOS's frost band, by margin rather than
-padding; see *Since v4.19.0 it floats*, below.)
-
 The wordmark went with it — the tile carries the W and the app name is on the
 home screen — and the tile came down from 34px to 28.
 
@@ -435,12 +432,10 @@ and floating both would mean measuring two stacked panels. The switch is keyed
 on `#drawer.hidden` rather than a mode class: `setMode` toggles exactly that
 and nothing else, and the tests pin that `setMode` never touches the bar.
 
-It does not start at the top of the page, though (v4.20.2). iOS 26 and
-later tint and blur a feathered band at the top of the page, 35-38pt deep. In
-the iPhone home-screen app a 30px strip in the body's own background colour
-fills that band, and the bar floats just under it; Route's in-flow bar is
-pushed below it by margin. A Safari tab is unchanged. See the v4.20.2 entry,
-and v4.20.1 for the version that measured from the wrong place.
+iOS 26 and later tint and blur the top 35-38pt of the page, and the top of
+the bar sits in that band. That is a choice: v4.20.1-v4.20.3 cleared the band
+by lowering the bar 30-40px, and v4.20.4 put it back at the top, with the
+frost. See those entries.
 
 A floating bar covers the top of the map, so `syncMapPadding` now pads the
 top as well as the bottom — by the bar's **measured overlap** onto the map,
@@ -925,7 +920,7 @@ leaderboard.
 
 `run.js` prints one `ok <name> N passed` line per file and then `all green`,
 or names the files that failed. It does not sum the assertions — at v4.18.0
-they came to 1,741 across twelve files; at v4.20.3 they come to 1,830, added up
+they came to 1,741 across twelve files; at v4.20.4 they come to 1,824, added up
 from those lines.
 
 ## Two version strings, on purpose
@@ -941,7 +936,7 @@ Same reasoning as FuelPost, different perishable thing:
   stopped existing; the requirement was "always on screen", not "in the
   header", and the panel tab is on screen in both modes whether the panel is
   open or collapsed. Bump only when the rows are re-audited.
-- **`APP_VERSION`** (`4.20.3`) — the code. Shown in the **legend card**.
+- **`APP_VERSION`** (`4.20.4`) — the code. Shown in the **legend card**.
   Bumped for every shipped change, and stamped onto every `lib/` URL as a
   cache-buster.
 
@@ -961,6 +956,22 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v4.20.4
+
+**Back to the v4.20.0 top layout, frost included, by choice.** With the
+frost cleared, the bar sat too low: 30px down in v4.20.3 was still too low
+on the phone. Nothing puts it higher and frost-free. iOS 26 and later tint
+and blur the top ~35pt of the page toward the body's background, there is no
+switch for it in WebKit, and anything drawn in that band is frosted. So the
+choice is the bar at the top with frost on its upper edge, or the frost gone
+and the bar lowered. The owner chose the bar at the top.
+
+`index.html` and the structure tests are back to exactly v4.20.0, apart from
+the version stamps and a note at the status strip recording this choice, so
+nobody spends three releases rediscovering it. The v4.20.1-v4.20.3 entries
+below stay as the record. If the frost is ever worth the lower bar, v4.20.3
+is the version that worked: a 30px `--bg` strip, the bar floating under it.
 
 ### v4.20.3
 
