@@ -461,6 +461,10 @@ html[data-theme=dark] .gpsnote{color:#E8B96B}
    to 0, and without the max() the zoom and layers buttons sat in the home
    indicator's swipe zone, where a tap competes with the gesture. */
 .H_ui{z-index:600}
+/* Show all's four-corners icon is a line drawing, so it takes the ink as a
+   stroke where + and - take it as a fill. */
+#map .H_ui #fitAllBtn svg.H_icon .H_icon_stroke{stroke:var(--ink);stroke-width:2.2;
+  stroke-linecap:round;stroke-linejoin:round;fill:none}
 .H_l_bottom{bottom:calc(max(var(--chrome-h, var(--panel-h,0px)), env(safe-area-inset-bottom,0px)) + 16px)}
 .H_imprint{z-index:600!important;
   bottom:max(var(--chrome-h, var(--panel-h,0px)), env(safe-area-inset-bottom,0px))!important}
@@ -1214,27 +1218,27 @@ var __mods={};
 function require(p){return __mods[p.replace(/^\.\//,'').replace(/\.js$/,'')];}
 var module={exports:{}};
 </script>
-<script src="lib/waffledist.js?v=4.20.4"></script>
+<script src="lib/waffledist.js?v=4.21.0"></script>
 <script>__mods.waffledist=module.exports;module={exports:{}};</script>
-<script src="lib/atlasfilter.js?v=4.20.4"></script>
+<script src="lib/atlasfilter.js?v=4.21.0"></script>
 <script>__mods.atlasfilter=module.exports;module={exports:{}};</script>
-<script src="lib/routewaffles.js?v=4.20.4"></script>
+<script src="lib/routewaffles.js?v=4.21.0"></script>
 <script>__mods.routewaffles=module.exports;module={exports:{}};</script>
-<script src="lib/vehicleprofile.js?v=4.20.4"></script>
+<script src="lib/vehicleprofile.js?v=4.21.0"></script>
 <script>__mods.vehicleprofile=module.exports;module={exports:{}};</script>
-<script src="lib/triptext.js?v=4.20.4"></script>
+<script src="lib/triptext.js?v=4.21.0"></script>
 <script>__mods.triptext=module.exports;module={exports:{}};</script>
-<script src="lib/escape.js?v=4.20.4"></script>
+<script src="lib/escape.js?v=4.21.0"></script>
 <script>__mods.escape=module.exports;module={exports:{}};</script>
-<script src="lib/flexible-polyline.js?v=4.20.4"></script>
+<script src="lib/flexible-polyline.js?v=4.21.0"></script>
 <script>__mods['flexible-polyline']=module.exports;module={exports:{}};</script>
-<script src="lib/autosuggest.js?v=4.20.4"></script>
+<script src="lib/autosuggest.js?v=4.21.0"></script>
 <script>__mods.autosuggest=module.exports;module={exports:{}};</script>
-<script src="lib/location.js?v=4.20.4"></script>
+<script src="lib/location.js?v=4.21.0"></script>
 <script>__mods.location=module.exports;module={exports:{}};</script>
-<script src="lib/routeoptions.js?v=4.20.4"></script>
+<script src="lib/routeoptions.js?v=4.21.0"></script>
 <script>__mods.routeoptions=module.exports;module={exports:{}};</script>
-<script src="lib/baselayer.js?v=4.20.4"></script>
+<script src="lib/baselayer.js?v=4.21.0"></script>
 <script>__mods.baselayer=module.exports;module={exports:{}};</script>
 
 <script>
@@ -1286,7 +1290,7 @@ var HERE_API_KEY = '7RDploUiahAnm08IZA9X7YSbb0Qh99pvqV2NCNQX_Hg';
    APP_VERSION - the code. Shown in the legend card. Bumped every change,
                 and stamped onto every lib/ URL as a cache-buster. */
 var ATLAS_REV   = 'Atlas Rev 13-2026';
-var APP_VERSION = '4.20.4';
+var APP_VERSION = '4.21.0';
 
 /* ===== DATA ==========================================================
    61 rows - 60 walkable exits plus one honorary - carrying 73 pairings,
@@ -1794,6 +1798,69 @@ function fitAtlas(){
   map.getViewModel().setLookAtData({bounds:b});
 }
 
+/* THE CAMERA MOVES A DRIVER ASKS FOR - the locator and Show all - fly there
+   quickly instead of cutting, so it is plain which way the map went
+   (v4.21.0, matching FuelPost v2.4.14). This is HERE's own fly-to, sped up:
+   setLookAtData takes a speed factor as well as true and divides its
+   duration by it. HERE's default runs clamp(3000ms x zoom change, 300,
+   4000) - FuelPost measured 4.5s from street level out to a whole network;
+   4x makes that about a second, and a small move a fraction of it. NEVER
+   true: that is the full 4.5s.
+
+   The moves the app makes on its own stay snaps: the startup fitAtlas, which
+   must never be seen moving, and the route fit, which follows a plan the
+   driver is already waiting on. Reduce Motion (Settings > Accessibility >
+   Motion) snaps too, asked at every move so switching it needs no reload. */
+var MAP_MOVE_SPEED = 4;
+function mapMoveAnimation(){
+  var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  return reduce ? false : MAP_MOVE_SPEED;
+}
+/* Centre and zoom in one look-at change, so one flight does both rather than
+   a pan and a zoom racing each other. */
+function flyTo(lat, lng, zoom){
+  map.getViewModel().setLookAtData({position:{lat:lat, lng:lng}, zoom:zoom}, mapMoveAnimation());
+}
+
+/* SHOW ALL (v4.21.0, FuelPost's v2.4.13): a third button under HERE's + and
+   -, four corners pointing out. In Atlas it frames the stops the filters
+   leave showing; with none showing, the whole atlas. In Route with a plan it
+   re-frames the chosen route exactly as planning framed it; before a plan,
+   the whole atlas. One stop - or a tight cluster - would frame to street
+   level, so the view never gets narrower than FIT_MIN_HALF_MI either side,
+   FuelPost's floor for the same reason.
+   The group is 41px taller for it, so with a tall stop card open - the card
+   leaves a 172px strip under the bar - the whole zoom group steps aside
+   (syncChromeH's zoom-aside) where it used to fit with 8px to spare. Pinch
+   still zooms, and closing the card brings the buttons back.
+   syncMapPadding BEFORE the fit, never after: a padding change while HERE
+   is still applying a look-at change cancels the move (see THE LIST BEFORE
+   THE CAMERA in startWatch). */
+var FIT_MIN_HALF_MI = 7.5, MI_PER_DEG_LAT = 69;
+function fitAll(){
+  if (!map) return;
+  syncMapPadding();
+  var anim = mapMoveAnimation(), opt = state.options && state.options[state.optionIdx];
+  if (state.mode==='route' && opt) {
+    map.getViewModel().setLookAtData({bounds:lineFor(opt.poly).getBoundingBox()}, anim);
+    return;
+  }
+  var pts = [];
+  DATA.forEach(function(r,i){ if (markers[i] && markers[i].getVisibility()) pts.push(r); });
+  if (state.mode==='route' || !pts.length) pts = DATA;
+  var top=-90, bottom=90, left=180, right=-180;
+  pts.forEach(function(r){
+    top=Math.max(top,r.lat); bottom=Math.min(bottom,r.lat);
+    left=Math.min(left,r.lon); right=Math.max(right,r.lon);
+  });
+  var midLat=(top+bottom)/2, midLng=(left+right)/2;
+  var cos = Math.max(0.2, Math.cos(midLat*Math.PI/180));
+  var halfLat = Math.max((top-bottom)/2, FIT_MIN_HALF_MI/MI_PER_DEG_LAT);
+  var halfLng = Math.max((right-left)/2, FIT_MIN_HALF_MI/(MI_PER_DEG_LAT*cos));
+  map.getViewModel().setLookAtData({bounds:new H.geo.Rect(midLat+halfLat, midLng-halfLng,
+    midLat-halfLat, midLng+halfLng)}, anim);
+}
+
 if (MAP_ON) {
   /* Under 3.1 the engine type had to be passed in BOTH places or the map
      half-worked: omit it from createDefaultLayers and HARP threw "Wrong style
@@ -1927,6 +1994,25 @@ if (MAP_ON) {
   /* After setUnitSystem above, not before: a control added earlier comes up
      metric, because it reads the UI's unit system when it is attached. */
   installMapSettings(initialTheme);
+
+  /* Show all, added through HERE's own control API - addChild on the zoom
+     group - rather than by editing its DOM, so it takes the group's glass,
+     hairline and rounded bottom with no styling of its own beyond the icon.
+     A tap moves the button through DOWN then UP; acting on UP only is what
+     makes one tap one fit. See fitAll. */
+  var fitAllBtn = new H.ui.base.Button({
+    label:'<svg class="H_icon" viewBox="0 0 24 24" aria-hidden="true"><path class="H_icon_stroke" '+
+          'd="M5 9.5V5h4.5M19 9.5V5h-4.5M5 14.5V19h4.5M19 14.5V19h-4.5"/></svg>',
+    onStateChange:function(){ if (fitAllBtn.getState() === H.ui.base.Button.State.UP) fitAll(); }
+  });
+  ui.getControl('zoom').addChild(fitAllBtn);
+  var fitAllEl = fitAllBtn.getElement();
+  if (fitAllEl) {
+    fitAllEl.id = 'fitAllBtn';
+    fitAllEl.setAttribute('role','button');
+    fitAllEl.title = 'Show all';
+    fitAllEl.setAttribute('aria-label','Show all stops');
+  }
 
   /* The hybrid satellite view's vector half follows its raster half from here,
      and ONLY from here, because baselayerchange is the one place that sees
@@ -3072,7 +3158,9 @@ function startWatch(){
        Recentring first therefore silently did nothing: the dot appeared, the
        list re-sorted, and the map sat on the startup atlas fit. Moving the
        camera last makes it the final word, which is also the honest reading
-       of what the tap asked for. */
+       of what the tap asked for. Since v4.21.0 the camera FLIES (flyTo), and
+       the same rule covers the whole flight: nothing may set padding until
+       it lands, or the move is cancelled where it stands. */
     if (state.nearest && state.mode==='atlas' && (!nearestAnchor ||
         wd.haversine(nearestAnchor, fixPoint()) > NEAREST_REFRESH_MI)) {
       /* No anchor yet means this fix is the one BUILDING the order, so the
@@ -3095,8 +3183,7 @@ function startWatch(){
        started tracking appears to have done nothing. */
     if (locatePending) {
       locatePending = false;
-      map.setCenter({lat:liveFix.lat, lng:liveFix.lng});
-      map.setZoom(11);
+      flyTo(liveFix.lat, liveFix.lng, 11);
     }
   }, function(err){ failLocate(geoErrorMessage(err)); }, GEO_OPTIONS);
 }
@@ -3244,11 +3331,10 @@ $('locateBtn').addEventListener('click', function(){
   setNearest(true);
   /* THE LIST BEFORE THE CAMERA, same as the watch callback: setNearest ends
      in render, render ends on the capped path in syncMapPadding, and HERE's
-     setPadding discards a setCenter it has not applied yet. */
+     setPadding discards a camera move it has not applied yet. */
   if (liveFix) {
     showLocateHint(NEAREST_ON_HINT);
-    map.setCenter({lat:liveFix.lat, lng:liveFix.lng});
-    map.setZoom(Math.max(map.getZoom(), 11));
+    flyTo(liveFix.lat, liveFix.lng, Math.max(map.getZoom(), 11));
     return;
   }
   showLocateHint(FINDING_HINT);

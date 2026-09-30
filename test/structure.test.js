@@ -475,8 +475,8 @@ t.eq(/showLocateHint/.test(setNearestSrc), false,
 // the same task and not yet applied. Recentring first made the tap silently
 // fail to move the map. Pinned as an ordering, because that is what it is.
 var watchCb = (src.match(/watchPosition\(function\(pos\)\{[\s\S]*?\}, function\(err\)/) || [''])[0];
-t.eq(watchCb.indexOf('refreshNearest()') !== -1 &&
-     watchCb.indexOf('refreshNearest()') < watchCb.indexOf('map.setCenter('), true,
+t.eq(watchCb.indexOf('refreshNearest()') !== -1 && watchCb.indexOf('flyTo(') !== -1 &&
+     watchCb.indexOf('refreshNearest()') < watchCb.indexOf('flyTo('), true,
      'the fix refreshes the list BEFORE it moves the camera');
 // A moving truck must not rebuild the panel on every GPS tick and yank the
 // row out from under a thumb.
@@ -510,6 +510,52 @@ t.eq(/\.kv > span:first-child\{/.test(src), true,
      'the kv label rule is scoped to a direct child');
 t.eq(/\.kv span:first-child\{/.test(src), false,
      'and not the descendant form, which also captures the nested address');
+
+// ---- camera moves the driver asks for fly, at FuelPost's speed (v4.21.0) ----
+// setLookAtData divides HERE's fly-to duration by a number passed as its
+// second argument. 4 turns a 4.5s street-to-country zoom into about a second.
+// `true` is the full 4.5s, so it must never be what the locator or Show all
+// pass; Reduce Motion gets a snap.
+t.eq(/var MAP_MOVE_SPEED = 4;/.test(src), true, 'the fly-to speed is FuelPost\'s 4x');
+var mmaSrc = (src.match(/function mapMoveAnimation\(\)\{[\s\S]*?\n\}/) || [''])[0];
+t.eq(/prefers-reduced-motion: reduce/.test(mmaSrc) && /return reduce \? false : MAP_MOVE_SPEED;/.test(mmaSrc), true,
+     'Reduce Motion snaps, asked at every move');
+t.eq(/function flyTo\(lat, lng, zoom\)\{\s*map\.getViewModel\(\)\.setLookAtData\(\{position:\{lat:lat, lng:lng\}, zoom:zoom\}, mapMoveAnimation\(\)\);/.test(src), true,
+     'flyTo centres and zooms in ONE look-at change, at the driver-move speed');
+t.eq(/setLookAtData\([^;]*,\s*true\)/.test(src), false, 'no look-at change passes true (4.5s)');
+var locClick = (src.match(/\$\('locateBtn'\)\.addEventListener\('click'[\s\S]*?\n\}\);/) || [''])[0];
+t.eq(/flyTo\(liveFix\.lat, liveFix\.lng, Math\.max\(map\.getZoom\(\), 11\)\)/.test(locClick), true,
+     'a locator tap with a fix flies there');
+t.eq(/flyTo\(liveFix\.lat, liveFix\.lng, 11\)/.test(watchCb), true, 'and so does the first fix after a tap');
+t.eq(/map\.setCenter\(\{lat:liveFix/.test(src), false, 'the locator no longer cuts to the fix');
+// The moves the app makes on its own stay snaps.
+t.eq(/function fitAtlas\(\)\{[\s\S]*?setLookAtData\(\{bounds:b\}\);\n\}/.test(src), true,
+     'the startup fit is still a snap');
+t.eq(/setLookAtData\(\{bounds:line\.getBoundingBox\(\)\}\);/.test(src), true,
+     'and so is the route fit after planning');
+
+// ---- Show all (v4.21.0) ----
+// A third button in HERE's zoom group, added through HERE's own API so it
+// takes the group's glass and hairline, acting on UP only so one tap is one fit.
+t.eq(/ui\.getControl\('zoom'\)\.addChild\(fitAllBtn\);/.test(src), true,
+     'Show all joins HERE\'s zoom group through addChild');
+t.eq(/onStateChange:function\(\)\{ if \(fitAllBtn\.getState\(\) === H\.ui\.base\.Button\.State\.UP\) fitAll\(\); \}/.test(src), true,
+     'it acts on the UP state only');
+t.eq(/fitAllEl\.setAttribute\('aria-label','Show all stops'\)/.test(src), true, 'and has an accessible name');
+var fitAllSrc = (src.match(/function fitAll\(\)\{[\s\S]*?\n\}/) || [''])[0];
+t.eq(fitAllSrc.indexOf('syncMapPadding();') !== -1 &&
+     fitAllSrc.indexOf('syncMapPadding();') < fitAllSrc.indexOf('setLookAtData'), true,
+     'padding is synced BEFORE the fit, never during it');
+t.eq((fitAllSrc.match(/setLookAtData\([^;]*anim\);/g) || []).length, 2,
+     'both of its fits fly at the driver-move speed');
+t.eq(/state\.mode==='route' && opt\) \{\s*map\.getViewModel\(\)\.setLookAtData\(\{bounds:lineFor\(opt\.poly\)\.getBoundingBox\(\)\}/.test(fitAllSrc), true,
+     'on Route with a plan it re-frames the chosen route, as planning did');
+t.eq(/markers\[i\]\.getVisibility\(\)/.test(fitAllSrc) && /if \(state\.mode==='route' \|\| !pts\.length\) pts = DATA;/.test(fitAllSrc), true,
+     'in Atlas it frames the stops the filters leave showing, else the whole atlas');
+t.eq(/var FIT_MIN_HALF_MI = 7\.5/.test(src) && /Math\.max\(\(top-bottom\)\/2, FIT_MIN_HALF_MI\/MI_PER_DEG_LAT\)/.test(fitAllSrc), true,
+     'one stop never frames to street level');
+t.eq(/#fitAllBtn svg\.H_icon \.H_icon_stroke\{stroke:var\(--ink\)/.test(src), true,
+     'its line-drawn icon takes the ink as a stroke');
 
 // ---- the locator is the lower half of a pill with HERE's layers button (v4.20.0) ----
 // FuelPost's arrangement, by request. This replaces v4.14.0's corner-over-the-
