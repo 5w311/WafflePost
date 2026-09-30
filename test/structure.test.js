@@ -534,6 +534,23 @@ t.eq(/function fitAtlas\(\)\{[\s\S]*?setLookAtData\(\{bounds:b\}\);\n\}/.test(sr
 t.eq(/setLookAtData\(\{bounds:line\.getBoundingBox\(\)\}\);/.test(src), true,
      'and so is the route fit after planning');
 
+// ---- the route fit waits for HERE to take the new size (v4.21.1) ----
+// Maps 3.2's ViewPort.resize() is asynchronous, and a padding change is
+// applied late too. A fit in the same task as either used the stale value:
+// every freshly planned route landed 1.3-1.8 zoom levels too far out, and
+// returning to Route from Atlas left the route off screen.
+var drawSrc = (src.match(/function drawRoute\(options, idx, ends\)\{[\s\S]*?\n\}/) || [''])[0];
+var fitAt = drawSrc.indexOf('requestAnimationFrame(function fitWhenSized(){');
+t.eq(fitAt !== -1 && drawSrc.indexOf('map.getViewPort().resize();\n  syncMapPadding();') !== -1 &&
+     drawSrc.indexOf('syncMapPadding();') < fitAt, true,
+     'resize and padding are applied first, and the fit runs at least a frame later');
+var fwsSrc = drawSrc.slice(fitAt);
+t.eq(/Math\.abs\(vp\.width - r\.width\) > 1 \|\| Math\.abs\(vp\.height - r\.height\) > 1\) && \+\+frames < 10/.test(fwsSrc), true,
+     'it waits until HERE\'s viewport agrees with the element, capped at ten frames');
+t.eq(fwsSrc.indexOf("if (routeGroup.getObjects().indexOf(line) === -1) return;") !== -1, true,
+     'and fits nothing if the route was cleared or redrawn meanwhile');
+t.eq(/syncMapPadding\(\)/.test(fwsSrc), false, 'no padding change in the fit\'s own task');
+
 // ---- Show all (v4.21.0) ----
 // A third button in HERE's zoom group, added through HERE's own API so it
 // takes the group's glass and hairline, acting on UP only so one tap is one fit.

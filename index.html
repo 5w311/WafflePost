@@ -1218,27 +1218,27 @@ var __mods={};
 function require(p){return __mods[p.replace(/^\.\//,'').replace(/\.js$/,'')];}
 var module={exports:{}};
 </script>
-<script src="lib/waffledist.js?v=4.21.0"></script>
+<script src="lib/waffledist.js?v=4.21.1"></script>
 <script>__mods.waffledist=module.exports;module={exports:{}};</script>
-<script src="lib/atlasfilter.js?v=4.21.0"></script>
+<script src="lib/atlasfilter.js?v=4.21.1"></script>
 <script>__mods.atlasfilter=module.exports;module={exports:{}};</script>
-<script src="lib/routewaffles.js?v=4.21.0"></script>
+<script src="lib/routewaffles.js?v=4.21.1"></script>
 <script>__mods.routewaffles=module.exports;module={exports:{}};</script>
-<script src="lib/vehicleprofile.js?v=4.21.0"></script>
+<script src="lib/vehicleprofile.js?v=4.21.1"></script>
 <script>__mods.vehicleprofile=module.exports;module={exports:{}};</script>
-<script src="lib/triptext.js?v=4.21.0"></script>
+<script src="lib/triptext.js?v=4.21.1"></script>
 <script>__mods.triptext=module.exports;module={exports:{}};</script>
-<script src="lib/escape.js?v=4.21.0"></script>
+<script src="lib/escape.js?v=4.21.1"></script>
 <script>__mods.escape=module.exports;module={exports:{}};</script>
-<script src="lib/flexible-polyline.js?v=4.21.0"></script>
+<script src="lib/flexible-polyline.js?v=4.21.1"></script>
 <script>__mods['flexible-polyline']=module.exports;module={exports:{}};</script>
-<script src="lib/autosuggest.js?v=4.21.0"></script>
+<script src="lib/autosuggest.js?v=4.21.1"></script>
 <script>__mods.autosuggest=module.exports;module={exports:{}};</script>
-<script src="lib/location.js?v=4.21.0"></script>
+<script src="lib/location.js?v=4.21.1"></script>
 <script>__mods.location=module.exports;module={exports:{}};</script>
-<script src="lib/routeoptions.js?v=4.21.0"></script>
+<script src="lib/routeoptions.js?v=4.21.1"></script>
 <script>__mods.routeoptions=module.exports;module={exports:{}};</script>
-<script src="lib/baselayer.js?v=4.21.0"></script>
+<script src="lib/baselayer.js?v=4.21.1"></script>
 <script>__mods.baselayer=module.exports;module={exports:{}};</script>
 
 <script>
@@ -1290,7 +1290,7 @@ var HERE_API_KEY = '7RDploUiahAnm08IZA9X7YSbb0Qh99pvqV2NCNQX_Hg';
    APP_VERSION - the code. Shown in the legend card. Bumped every change,
                 and stamped onto every lib/ URL as a cache-buster. */
 var ATLAS_REV   = 'Atlas Rev 13-2026';
-var APP_VERSION = '4.21.0';
+var APP_VERSION = '4.21.1';
 
 /* ===== DATA ==========================================================
    61 rows - 60 walkable exits plus one honorary - carrying 73 pairings,
@@ -2712,24 +2712,49 @@ function drawRoute(options, idx, ends){
     routeGroup.addObject(new H.map.DomMarker({lat:e.lat,lng:e.lon},
       {icon:new H.map.DomIcon(w.firstElementChild)}));
   });
-  /* Resize BEFORE fitting, synchronously. planRoute collapses the trip
-     drawer immediately before calling here, which grows #map by the whole
-     drawer body in the same frame — but the ResizeObserver's own resize is
-     debounced 120ms, so without this the fit would be computed against a
-     viewport HERE still believes is ~200px shorter, and land wrong. The
-     debounced pass still runs afterwards and is then a no-op.
+  /* Resize BEFORE fitting. planRoute collapses the trip drawer immediately
+     before calling here, which grows #map by the whole drawer body in the
+     same frame - and the ResizeObserver's own resize is debounced 120ms.
 
-     Padding is synced immediately before the fit too, and planRoute renders
-     the panel BEFORE calling here, so the fit measures THIS plan's panel
-     rather than the previous one's. Without the bottom padding the delivery
-     end lands behind the panel. */
+     THE FIT WAITS FOR HERE TO TAKE THE NEW SIZE (v4.21.1, after FuelPost's
+     fix). Maps 3.2 made ViewPort.resize() asynchronous: the engine takes the
+     element's new size on a later frame, where 3.1 took it in the same task.
+     A fit issued right after resize() was computed against the STALE
+     viewport - measured with planRoute running for real: HERE still believed
+     the map was 420px tall when it was 759, and every freshly planned route
+     landed at zoom 3.82 instead of 5.60, filling 9% of the map's height.
+     FuelPost waits one frame. Measured here, one frame was sometimes enough
+     and sometimes not (393 and 440 wide: still stale), so this waits for the
+     condition itself - the viewport's size agreeing with the element's -
+     checked each frame and capped at ten, after which it fits anyway.
+
+     Padding is synced HERE, when the fit is scheduled, and the fit always
+     runs at least one frame later. planRoute renders the panel BEFORE
+     calling here, so the padding measures THIS plan's panel rather than the
+     previous one's; without it the delivery end lands behind the panel. And
+     HERE applies a padding change late too: a fit issued in the same task
+     as the change is computed with the OLD padding (measured: zoom 5.09
+     where the new padding gives 4.97; one frame later, 4.96). Planning grows
+     the panel - bottom padding 178 to 350 on a phone - right before this.
+
+     Each frame checks the line is still on the map: a Clear, a new plan or
+     another option tapped in between removes it, and a fit to a route that
+     is no longer drawn would yank the camera for nothing. */
   map.getViewPort().resize();
   syncMapPadding();
-  /* Fit the CHOSEN route, never the union of all of them. Fitting a 968 mi
-     alternative would shrink the 782 mi route the driver actually picked to
-     make room for a road they rejected. Ghosts running off the edge is the
-     correct outcome: the selected route is the subject. */
-  map.getViewModel().setLookAtData({bounds:line.getBoundingBox()});
+  var frames = 0;
+  requestAnimationFrame(function fitWhenSized(){
+    if (routeGroup.getObjects().indexOf(line) === -1) return;
+    var vp = map.getViewPort(), r = document.getElementById('map').getBoundingClientRect();
+    if ((Math.abs(vp.width - r.width) > 1 || Math.abs(vp.height - r.height) > 1) && ++frames < 10) {
+      requestAnimationFrame(fitWhenSized); return;
+    }
+    /* Fit the CHOSEN route, never the union of all of them. Fitting a 968 mi
+       alternative would shrink the 782 mi route the driver actually picked to
+       make room for a road they rejected. Ghosts running off the edge is the
+       correct outcome: the selected route is the subject. */
+    map.getViewModel().setLookAtData({bounds:line.getBoundingBox()});
+  });
 }
 function showErr(msg){
   var el=$('rErr'); el.textContent=msg||''; el.classList.toggle('hidden',!msg);
