@@ -920,7 +920,7 @@ leaderboard.
 
 `run.js` prints one `ok <name> N passed` line per file and then `all green`,
 or names the files that failed. It does not sum the assertions — at v4.18.0
-they came to 1,741 across twelve files; at v4.21.0 they come to 1,842 added up
+they came to 1,741 across twelve files; at v4.21.1 they come to 1,846 added up
 from those lines.
 
 ## Two version strings, on purpose
@@ -936,7 +936,7 @@ Same reasoning as FuelPost, different perishable thing:
   stopped existing; the requirement was "always on screen", not "in the
   header", and the panel tab is on screen in both modes whether the panel is
   open or collapsed. Bump only when the rows are re-audited.
-- **`APP_VERSION`** (`4.21.0`) — the code. Shown in the **legend card**.
+- **`APP_VERSION`** (`4.21.1`) — the code. Shown in the **legend card**.
   Bumped for every shipped change, and stamped onto every `lib/` URL as a
   cache-buster.
 
@@ -956,6 +956,44 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v4.21.1
+
+**A freshly planned route fills the map again.** Maps 3.2 made
+`ViewPort.resize()` asynchronous: the engine takes the map element's new size
+on a later frame, where 3.1 took it in the same task. `drawRoute` resized and
+fitted in one task, so the fit used the size the map had *before* the trip
+drawer collapsed. This was measured with `planRoute` running for real and
+only HERE's network calls stubbed. At the moment of the fit, HERE believed
+the map was 420px tall when it was 759, and every planned route landed well
+short of where it should:
+
+| Phone width | Landed | Correct | Route filled |
+|---|---|---|---|
+| 393 | zoom 3.82 | 5.60 | 29% of the width, 9% of the height |
+| 375 | zoom 4.15 | 5.49 | |
+| 440 | zoom 5.29 | 5.81 | |
+
+Returning to Route from Atlas was worse: the route was left off screen, with
+121 of its points outside the map and up to 1,335px away.
+
+- **FuelPost's fix, made firmer.** FuelPost fits one frame later. Measured
+  here, one frame was sometimes not enough: at 375 wide HERE took about
+  150ms. So the fit waits for the condition itself, HERE's viewport size
+  agreeing with the element's. It checks each frame and is capped at ten.
+- **Padding goes first, and not in the fit's own task.** HERE applies a
+  padding change late as well. A fit issued in the same task as a padding
+  change was computed with the old padding: zoom 5.09 where the new padding
+  gives 4.97, and one frame later 4.96. Planning grows the results panel
+  (bottom padding 178 → 350 on a phone) right before the fit. On a
+  north–south route that is what keeps the delivery end out from behind the
+  panel.
+- **Nothing fits a route that is gone.** If Clear, a new plan or another
+  option lands between scheduling and the frame, the fit is skipped.
+- **Now:** every case lands exactly on the correct zoom (5.603, 5.485 and
+  5.809 at the three widths), filling 98–99% of the width. A north–south
+  run fits at zoom 4.72, where it was 2.79. Switching options and returning
+  to Route fit correctly, and Clear leaves the camera alone.
 
 ### v4.21.0
 
