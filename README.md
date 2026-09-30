@@ -920,7 +920,7 @@ leaderboard.
 
 `run.js` prints one `ok <name> N passed` line per file and then `all green`,
 or names the files that failed. It does not sum the assertions — at v4.18.0
-they came to 1,741 across twelve files; at v4.20.4 they come to 1,824, added up
+they came to 1,741 across twelve files; at v4.21.0 they come to 1,842 added up
 from those lines.
 
 ## Two version strings, on purpose
@@ -936,7 +936,7 @@ Same reasoning as FuelPost, different perishable thing:
   stopped existing; the requirement was "always on screen", not "in the
   header", and the panel tab is on screen in both modes whether the panel is
   open or collapsed. Bump only when the rows are re-audited.
-- **`APP_VERSION`** (`4.20.4`) — the code. Shown in the **legend card**.
+- **`APP_VERSION`** (`4.21.0`) — the code. Shown in the **legend card**.
   Bumped for every shipped change, and stamped onto every `lib/` URL as a
   cache-buster.
 
@@ -956,6 +956,36 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v4.21.0
+
+**Show all, and the map flies when you ask it to move**, both matching
+FuelPost (its v2.4.13 and v2.4.14).
+
+- **Show all** is a third button under HERE's + and −, with four corners
+  pointing out. In Atlas it frames the stops the filters leave showing; with
+  none showing, it frames the whole atlas. In Route with a plan it re-frames
+  the chosen route; before a plan, it frames the whole atlas. A single stop
+  never frames to street level: the view keeps at least 7.5 mi either side,
+  FuelPost's floor. It is added through HERE's own control API (`addChild` on
+  the zoom group), so it takes the group's glass and hairlines, and it acts
+  on the button's UP state only, so one tap is one fit.
+- **The locator and Show all fly there instead of cutting**, at FuelPost's
+  `MAP_MOVE_SPEED` of 4. HERE's `setLookAtData` divides its fly-to duration
+  by a number passed as its second argument, and HERE's own `true` would
+  take up to 4.5s. Measured on the real SDK: Show all zooms 9 → 4.4 in about
+  0.95s, and the locator zooms 4 → 11 in about 1s. Both land exactly where
+  the old snap did: the same zoom, and the fix dead centre in the
+  unobstructed map. The locator centres and zooms in one look-at change, so
+  one flight does both.
+- **Moves the app makes on its own stay snaps**: the startup atlas fit and
+  the route fit after planning. With Reduce Motion on, everything snaps,
+  checked at every move.
+- **Trade-off:** the zoom group is 41px taller. With a tall stop card open,
+  the strip above the card (172px) no longer holds the whole stack, so the
+  zoom buttons step aside until the card closes. Before, they fitted with
+  8px to spare. With the list open, every phone from the SE 2/3 up still
+  shows them.
 
 ### v4.20.4
 
