@@ -104,7 +104,8 @@ t.eq(q.length - rejectsSent, 100, 'every Opus non-reject goes to Fable');
 t.eq(rejectsSent > 45 && rejectsSent < 105, true, 'about a quarter of Opus rejects are audited (' + rejectsSent + ')');
 t.eq(jd.fableQueue(cs, opusR, { auditShare: 0.25 }).length, q.length, 'the audit sample is stable across reruns');
 t.eq(jd.fableQueue(cs, opusR, { all: true }).length, 400, '--all sends everything');
-t.eq(jd.fableQueue([{ id: 'x' }], {}, {}).length, 1, 'a lead Opus never judged goes to Fable');
+t.eq(jd.fableQueue([{ id: 'x' }], {}, {}).length, 0, 'a lead Opus never reached is not Fable\'s');
+t.eq(jd.fableQueue([{ id: 'x' }], { x: { error: 'API 500' } }, {}).length, 1, 'a lead Opus errored on goes to Fable');
 
 // --- reconcile -----------------------------------------------------------
 function v(over) {

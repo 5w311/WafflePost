@@ -221,14 +221,18 @@ function hash01(s) {
 // Which candidates Fable sees. Everything Opus did not reject, plus a fixed
 // share of what it did reject - a second opinion that only ever reviews
 // Opus's yeses can confirm false positives but never catch a false negative.
-// `all` sends every candidate to Fable.
+// Leads Opus never reached are skipped. `all` sends every candidate to Fable.
 function fableQueue(candidates, opusResults, opts) {
   opts = opts || {};
   var share = opts.auditShare == null ? 0.25 : opts.auditShare;
   return candidates.filter(function (c) {
     if (opts.all) return true;
     var r = opusResults[c.id];
-    if (!r || !r.verdict) return true;            // Opus failed: Fable is the only pass
+    // Never reached by Opus (its budget ran out first): not Fable's job.
+    // Spending the second pass there buys single-model verdicts, which the
+    // report cannot reconcile into anything.
+    if (!r) return false;
+    if (!r.verdict) return true;                  // Opus errored on it: Fable is the only pass
     if (r.verdict.verdict !== 'reject') return true;
     return hash01(c.id) < share;
   });
