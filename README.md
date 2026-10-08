@@ -42,6 +42,9 @@ scripts/remeasure.js      geocodes each truck stop and re-derives feet; regenera
 scripts/remeasure-report.txt  provenance of every surviving figure, every judgment call
 scripts/tsaddr-verify.js  RE-VERIFIES every truck stop address against HERE, forward and reverse
 scripts/tsaddr-report.txt provenance of every truck stop address, and why three rows have none
+scripts/discover.js       DISCOVERY sweep: OSM leads, researched blind by Opus 5.5 and Fable 5.1 - leads, never rows
+scripts/discover/         its pure parts: Overpass query + parse, candidate builder, prompt/schema/cost/reconcile
+scripts/discover-report.txt  the reconciled leads from the last sweep, once one has run
 data/atlas.csv            REGENERATED from DATA by scripts/remeasure.js - never hand-edit
 apple-touch-icon.png      iOS home screen, 180x180 - the bar tile, baked
 icon-192.png              Android home screen
@@ -296,6 +299,63 @@ recoverable; an invented one is not.
 it and is admitted anyway as **honorary**, on the strength of a driver review
 saying in plain words that truckers walk it. `test/data.test.js` asserts there
 is exactly one such row and that it carries its evidence in a flag or a `note`.
+
+## The discovery sweep: leads, not rows
+
+Every row so far came from exit guides, and every blind spot the README
+lists came from exit guides too: concurrencies, and stores the guides put at
+the wrong interchange. `scripts/discover.js` looks from a different direction.
+It asks OpenStreetMap for every Waffle House in the country and every
+truck-capable place within 800 m of one, drops the ones that are already
+rows, and hands each remaining lead to two models with web search.
+
+```
+node scripts/discover.js osm                     # free; builds the lead list
+node scripts/discover.js judge opus  --dry-run   # queue, prompt, projected cost
+node scripts/discover.js judge opus  --budget 40 # Opus 5.5 researches every lead
+node scripts/discover.js judge fable --budget 45 # Fable 5.1, blind to Opus
+node scripts/discover.js report                  # reconcile both; write the report
+```
+
+**The two passes never see each other.** Fable gets the same prompt Opus got
+and is never shown Opus's verdict — the same reason v4.15.0's address research
+was done blind. Fable reviews every lead Opus did not reject plus a fixed
+quarter of the ones it did, because a second opinion that only reviews yeses
+can catch false positives but never a false negative. `--all` sends it every
+lead.
+
+**The models are held to this file's trap list in so many words.** They are
+never shown a distance and the verdict schema has no field to put one in.
+Closure needs two independent sources. A shared road name is not a shared
+interchange. An address is quoted from a cited page or left empty. A lead whose
+straight line crosses a motorway in OSM is flagged as such, because Oak Grove
+is what that looks like.
+
+**`--budget` is a hard cap per model, and it survives restarts.** Spend is
+computed from each response's own `usage` block against the price table in
+`scripts/discover/judge.js` (read from Anthropic's pricing page on 2026-10-07 —
+if the page disagrees, the page is right) and kept in a ledger, so stopping and
+rerunning resumes where it left off and never resets the count. The run stops
+*before* a request that could carry it past the cap.
+
+**What comes out is a reading list.** `VERIFY NEXT` means both models
+established the pair independently and agree on the stop and its street line.
+That earns it the same gate every row passed — geocode the agreed address,
+haversine it with `lib/waffledist`, check it against satellite and Trucker
+Path — and nothing more. `DISPUTED` puts both answers side by side.
+`REJECTED` is kept so nobody re-finds it. The sweep never writes to
+`index.html`. The OSM straight-line figure in the report is labelled as a lead
+for sorting, not a measurement, for the reason in the 13-2026 trap list.
+
+**OSM's coverage is the sweep's ceiling.** The `osm` step reports how many
+existing rows have no Waffle House mapped near them. That number is a direct
+measure of what this sweep can miss, and it will not be zero.
+
+Raw OSM data, the candidate list, the per-model verdicts and the spend ledger
+live in `scripts/discover-out/`, which is gitignored. The report is committed
+the way `remeasure-report.txt` is. `ANTHROPIC_API_KEY` comes from the
+environment and is never committed: unlike the HERE key it is not
+domain-restricted, and it spends money.
 
 ## Addresses are derived, coordinates are audited
 

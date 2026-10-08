@@ -1,0 +1,103 @@
+// OpenStreetMap side of the discovery sweep: the Overpass query, and the
+// parse of its answer into the three things the sweep needs. Pure - no
+// network here. scripts/discover.js does the fetch.
+//
+// WHY OSM. The 13-2026 campaign seeded every corridor from exit guides, and
+// exit guides are where its blind spots came from: concurrencies (Florence
+// KY), and stores the guides list at the wrong interchange (Hammond LA, which
+// "every exit guide" puts two miles off). OSM is a different source with
+// different blind spots, which is the point. It is not authoritative: a
+// Waffle House can be missing from OSM, and a closed one can still be mapped.
+// Nothing found here is a row. It is a lead for the judging pass and then
+// for the same geocode-and-verify gate every row already went through.
+//
+// WHAT IS ASKED FOR, in one query, so the "near a Waffle House" filter runs
+// on Overpass rather than by downloading every fuel station in America:
+//   - every Waffle House in the US (brand tag, wikidata tag or exact name)
+//   - every fuel station, motorway service area and HGV parking lot within
+//     AROUND_M of one of them
+//   - every motorway and trunk carriageway within AROUND_M, with geometry,
+//     so the straight line can be tested for crossing an interstate. Oak
+//     Grove MO is the reason: its Petro measures 1,298 ft and the walk is the
+//     Broadway overpass.
+//
+// AROUND_M is 800 m, about 2,625 ft: past the 2,112 ft walkable line on
+// purpose, so near misses are recorded as near misses (London OH's TA at
+// 2,436 ft) instead of silently never existing.
+
+var AROUND_M = 800;
+var WAFFLE_WIKIDATA = 'Q1701206';
+
+function overpassQuery(aroundM) {
+  var r = aroundM || AROUND_M;
+  return [
+    '[out:json][timeout:600];',
+    'area["ISO3166-1"="US"][admin_level=2]->.us;',
+    '(',
+    '  nwr["brand:wikidata"="' + WAFFLE_WIKIDATA + '"](area.us);',
+    '  nwr["brand"="Waffle House"](area.us);',
+    '  nwr["name"="Waffle House"](area.us);',
+    ')->.wh;',
+    '.wh out center tags;',
+    '(',
+    '  nwr(around.wh:' + r + ')["amenity"="fuel"];',
+    '  nwr(around.wh:' + r + ')["highway"="services"];',
+    '  nwr(around.wh:' + r + ')["amenity"="parking"]["hgv"];',
+    ')->.ts;',
+    '.ts out center tags;',
+    'way(around.wh:' + r + ')["highway"~"^(motorway|trunk)$"];',
+    'out geom;'
+  ].join('\n');
+}
+
+// One element -> one point. Nodes carry lat/lon; ways and relations carry a
+// `center` because the query says `out center`. Anything without a usable
+// coordinate is dropped rather than guessed at.
+function pointOf(el) {
+  if (typeof el.lat === 'number' && typeof el.lon === 'number') return { lat: el.lat, lon: el.lon };
+  if (el.center && typeof el.center.lat === 'number') return { lat: el.center.lat, lon: el.center.lon };
+  return null;
+}
+
+function isWaffleHouse(tags) {
+  tags = tags || {};
+  if (tags['brand:wikidata'] === WAFFLE_WIKIDATA) return true;
+  return tags.brand === 'Waffle House' || tags.name === 'Waffle House';
+}
+
+// Overpass returns the three sets in one flat `elements` list, in query
+// order. Membership is decided by tags, not by position, because a way can
+// in principle match more than one statement.
+function parse(json) {
+  var out = { wafflehouses: [], places: [], roads: [] };
+  var seen = {};
+  ((json && json.elements) || []).forEach(function (el) {
+    var id = el.type + '/' + el.id;
+    var tags = el.tags || {};
+    if (el.type === 'way' && el.geometry && /^(motorway|trunk)$/.test(tags.highway || '')) {
+      if (seen['road:' + id]) return;
+      seen['road:' + id] = 1;
+      out.roads.push({
+        id: id, highway: tags.highway, ref: tags.ref || '',
+        line: el.geometry.map(function (g) { return { lat: g.lat, lon: g.lon }; })
+      });
+      return;
+    }
+    var p = pointOf(el);
+    if (!p) return;
+    if (isWaffleHouse(tags)) {
+      if (seen['wh:' + id]) return;
+      seen['wh:' + id] = 1;
+      out.wafflehouses.push({ id: id, lat: p.lat, lon: p.lon, tags: tags });
+      return;
+    }
+    if (tags.amenity === 'fuel' || tags.highway === 'services' || tags.amenity === 'parking') {
+      if (seen['pl:' + id]) return;
+      seen['pl:' + id] = 1;
+      out.places.push({ id: id, lat: p.lat, lon: p.lon, tags: tags });
+    }
+  });
+  return out;
+}
+
+module.exports = { overpassQuery, parse, isWaffleHouse, pointOf, AROUND_M, WAFFLE_WIKIDATA };
