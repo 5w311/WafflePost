@@ -50,6 +50,60 @@ function overpassQuery(aroundM) {
   ].join('\n');
 }
 
+// Nationwide in one request times out on every public Overpass instance
+// (tested 2026-10-08: 503, 500, 504). So the fetch is two-stage: every Waffle
+// House first, which is light, then the heavy around-query one tile at a time
+// over only the tiles that hold a store. The `around` statements are not
+// bbox-limited, so a truck stop just over a tile edge is still found.
+function waffleOnlyQuery() {
+  return [
+    '[out:json][timeout:240];',
+    'area["ISO3166-1"="US"][admin_level=2]->.us;',
+    '(',
+    '  nwr["brand:wikidata"="' + WAFFLE_WIKIDATA + '"](area.us);',
+    '  nwr["brand"="Waffle House"](area.us);',
+    '  nwr["name"="Waffle House"](area.us);',
+    ');',
+    'out center tags;'
+  ].join('\n');
+}
+
+// bbox is [south, west, north, east].
+function tileQuery(bbox, aroundM) {
+  var r = aroundM || AROUND_M, b = bbox.join(',');
+  return [
+    '[out:json][timeout:300];',
+    '(',
+    '  nwr["brand:wikidata"="' + WAFFLE_WIKIDATA + '"](' + b + ');',
+    '  nwr["brand"="Waffle House"](' + b + ');',
+    '  nwr["name"="Waffle House"](' + b + ');',
+    ')->.wh;',
+    '.wh out center tags;',
+    '(',
+    '  nwr(around.wh:' + r + ')["amenity"="fuel"];',
+    '  nwr(around.wh:' + r + ')["highway"="services"];',
+    '  nwr(around.wh:' + r + ')["amenity"="parking"]["hgv"];',
+    ')->.ts;',
+    '.ts out center tags;',
+    'way(around.wh:' + r + ')["highway"~"^(motorway|trunk)$"];',
+    'out geom;'
+  ].join('\n');
+}
+
+// The tiles of `size` degrees that contain at least one store, sorted so a
+// rerun walks them in the same order.
+function tilesFor(points, size) {
+  var sz = size || 2, seen = {}, out = [];
+  (points || []).forEach(function (p) {
+    var s = Math.floor(p.lat / sz) * sz, w = Math.floor(p.lon / sz) * sz;
+    var k = s + ',' + w;
+    if (seen[k]) return;
+    seen[k] = 1;
+    out.push([s, w, s + sz, w + sz]);
+  });
+  return out.sort(function (a, b) { return a[0] - b[0] || a[1] - b[1]; });
+}
+
 // One element -> one point. Nodes carry lat/lon; ways and relations carry a
 // `center` because the query says `out center`. Anything without a usable
 // coordinate is dropped rather than guessed at.
@@ -100,4 +154,4 @@ function parse(json) {
   return out;
 }
 
-module.exports = { overpassQuery, parse, isWaffleHouse, pointOf, AROUND_M, WAFFLE_WIKIDATA };
+module.exports = { overpassQuery, waffleOnlyQuery, tileQuery, tilesFor, parse, isWaffleHouse, pointOf, AROUND_M, WAFFLE_WIKIDATA };

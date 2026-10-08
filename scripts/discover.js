@@ -1,7 +1,8 @@
 // Discovery sweep: find Waffle Houses the corridor-by-corridor audit never
 // reached, and have two models research each lead blind to one another.
 //
-//   node scripts/discover.js osm                      fetch OSM, build candidates
+//   node scripts/discover.js osm                      fetch OSM, build candidates (slow,
+//                                                     about an hour; the result is committed)
 //   node scripts/discover.js osm --osm-file x.json    ...from a saved Overpass answer
 //   node scripts/discover.js judge opus  --budget 40  research every candidate
 //   node scripts/discover.js judge fable --budget 45  blind second pass
@@ -46,7 +47,9 @@ var OUT = path.join(__dirname, 'discover-out');
 var REPORT = path.join(__dirname, 'discover-report.txt');
 var F = {
   osm: path.join(OUT, 'osm.json'),
-  candidates: path.join(OUT, 'candidates.json'),
+  // Committed, so a fresh download can go straight to `judge` without the
+  // slow Overpass step. Raw tiles stay in discover-out/ (gitignored).
+  candidates: path.join(__dirname, 'discover-candidates.json'),
   ledger: path.join(OUT, 'ledger.json'),
   csv: path.join(OUT, 'review.csv'),
   judged: function (m) { return path.join(OUT, 'judged-' + m + '.jsonl'); }
@@ -56,7 +59,13 @@ var F = {
 // that could overshoot the budget. Replaced by twice the running average as
 // soon as there is one.
 var FIRST_GUESS_USD = { opus: 0.40, fable: 1.00 };
-var OVERPASS = 'https://overpass-api.de/api/interpreter';
+// The main instance first, then two public mirrors. Overpass is a shared free
+// service and any one of these can be down or rate-limiting on a given day.
+var OVERPASS = (process.env.OVERPASS_URL ? [process.env.OVERPASS_URL] : []).concat([
+  'https://overpass-api.de/api/interpreter',
+  'https://overpass.private.coffee/api/interpreter',
+  'https://maps.mail.ru/osm/tools/overpass/api/interpreter'
+]);
 
 function arg(name, dflt) {
   var i = process.argv.indexOf(name);
@@ -86,6 +95,31 @@ function loadJudged(model) {
 }
 
 // ---------------------------------------------------------------- osm ----
+async function overpass(query) {
+  var errors = [];
+  for (var round = 0; round < 3; round++) {
+    for (var i = 0; i < OVERPASS.length; i++) {
+      try {
+        var res = await fetch(OVERPASS[i], {
+          method: 'POST',
+          headers: { 'content-type': 'application/x-www-form-urlencoded',
+                     'user-agent': 'WafflePost discovery sweep (wafflepost.figari.dev)' },
+          body: 'data=' + encodeURIComponent(query)
+        });
+        if (!res.ok) { errors.push(OVERPASS[i] + ' ' + res.status); continue; }
+        var j = await res.json();
+        // Overpass reports a timeout or memory abort INSIDE a 200 answer.
+        if (j.remark && /error|timed out|out of memory/i.test(j.remark)) {
+          errors.push(OVERPASS[i] + ': ' + j.remark); continue;
+        }
+        return j;
+      } catch (e) { errors.push(OVERPASS[i] + ': ' + e.message); }
+    }
+    await pause(10000 * (round + 1));
+  }
+  throw new Error('no Overpass server answered: ' + errors.slice(-3).join('; '));
+}
+
 async function cmdOsm() {
   fs.mkdirSync(OUT, { recursive: true });
   var raw;
@@ -94,21 +128,55 @@ async function cmdOsm() {
     raw = readJSON(file, null);
     if (!raw) throw new Error('could not read ' + file);
   } else {
-    console.log('querying Overpass (nationwide; this can take several minutes)...');
-    var res = await fetch(OVERPASS, {
-      method: 'POST',
-      headers: { 'content-type': 'application/x-www-form-urlencoded',
-                 'user-agent': 'WafflePost discovery sweep (wafflepost.figari.dev)' },
-      body: 'data=' + encodeURIComponent(osm.overpassQuery())
-    });
-    if (!res.ok) {
-      throw new Error('Overpass answered ' + res.status + '. It is a shared free service; ' +
-        'retry later, or paste the query from `node scripts/discover.js query` into ' +
-        'overpass-turbo.eu, export the JSON, and pass it with --osm-file.');
+    // Stage 1: every Waffle House. Stage 2: the heavy query per tile. Tiles
+    // are cached in discover-out/tiles/, so a rerun after a failure fetches
+    // only what is missing.
+    var tileDir = path.join(OUT, 'tiles');
+    fs.mkdirSync(tileDir, { recursive: true });
+    console.log('stage 1: every Waffle House in OSM...');
+    var whRaw = await overpass(osm.waffleOnlyQuery());
+    var whs = osm.parse(whRaw).wafflehouses;
+    var tiles = osm.tilesFor(whs, 2);
+    console.log('  ' + whs.length + ' stores across ' + tiles.length + ' tiles');
+    console.log('stage 2: truck stops and highways around them, tile by tile...');
+    var elements = [], failed = [];
+    // A tile too dense to answer in time (a metro with miles of motorway
+    // geometry) is split into quarters and retried, down to half a degree.
+    async function fetchTile(bbox, depth) {
+      var tf = path.join(tileDir, bbox.join('_') + '.json');
+      var tj = readJSON(tf, null);
+      if (tj) return tj.elements || [];
+      try {
+        tj = await overpass(osm.tileQuery(bbox));
+        writeJSON(tf, tj);
+        await pause(1500);                   // shared free service; be polite
+        return tj.elements || [];
+      } catch (e) {
+        if (bbox[2] - bbox[0] <= 0.5) { failed.push(bbox.join(',')); return []; }
+        var m1 = (bbox[0] + bbox[2]) / 2, m2 = (bbox[1] + bbox[3]) / 2, out = [];
+        var quads = [[bbox[0], bbox[1], m1, m2], [bbox[0], m2, m1, bbox[3]],
+                     [m1, bbox[1], bbox[2], m2], [m1, m2, bbox[2], bbox[3]]];
+        // Only quarters that actually hold a store are worth a request.
+        quads = quads.filter(function (q) {
+          return whs.some(function (w) { return w.lat >= q[0] && w.lat < q[2] && w.lon >= q[1] && w.lon < q[3]; });
+        });
+        console.log('  tile ' + bbox.join(',') + ' too dense; splitting into ' + quads.length);
+        for (var i = 0; i < quads.length; i++) out = out.concat(await fetchTile(quads[i], depth + 1));
+        return out;
+      }
     }
-    raw = await res.json();
+    for (var t = 0; t < tiles.length; t++) {
+      elements = elements.concat(await fetchTile(tiles[t], 0));
+      process.stdout.write('  ' + (t + 1) + '/' + tiles.length + '\r');
+    }
+    console.log('');
+    if (failed.length) {
+      throw new Error(failed.length + ' tile(s) failed: ' + failed.join(' ') +
+        '\nRerun `node scripts/discover.js osm` - finished tiles are cached and are not refetched.');
+    }
+    raw = { elements: elements };
   }
-  writeJSON(F.osm, raw);
+  if (file) writeJSON(F.osm, raw);
   var parsed = osm.parse(raw);
   var built = cands.build(parsed, loadDATA());
   writeJSON(F.candidates, built);

@@ -44,6 +44,7 @@ scripts/tsaddr-verify.js  RE-VERIFIES every truck stop address against HERE, for
 scripts/tsaddr-report.txt provenance of every truck stop address, and why three rows have none
 scripts/discover.js       DISCOVERY sweep: OSM leads, researched blind by Opus 5.5 and Fable 5.1 - leads, never rows
 scripts/discover/         its pure parts: Overpass query + parse, candidate builder, prompt/schema/cost/reconcile
+scripts/discover-candidates.json  the OSM lead list, committed so `judge` can run from a fresh download
 scripts/discover-report.txt  the reconciled leads from the last sweep, once one has run
 data/atlas.csv            REGENERATED from DATA by scripts/remeasure.js - never hand-edit
 apple-touch-icon.png      iOS home screen, 180x180 - the bar tile, baked
@@ -310,12 +311,18 @@ truck-capable place within 800 m of one, drops the ones that are already
 rows, and hands each remaining lead to two models with web search.
 
 ```
-node scripts/discover.js osm                     # free; builds the lead list
+node scripts/discover.js osm                     # free, ~1 hour; result is committed
 node scripts/discover.js judge opus  --dry-run   # queue, prompt, projected cost
 node scripts/discover.js judge opus  --budget 40 # Opus 5.5 researches every lead
 node scripts/discover.js judge fable --budget 45 # Fable 5.1, blind to Opus
 node scripts/discover.js report                  # reconcile both; write the report
 ```
+
+**The queue runs best leads first.** A lead with a branded or tagged truck
+stop inside the 0.4 mi line goes first, then one with only a maybe inside it
+(QuikTrip, RaceTrac, Sheetz, Wawa, which sometimes park trucks and mostly do
+not), then everything past the line. The 10-2026 sweep found 106, 272 and 56.
+The budget cap therefore leaves the long tail unjudged, not the good leads.
 
 **The two passes never see each other.** Fable gets the same prompt Opus got
 and is never shown Opus's verdict — the same reason v4.15.0's address research
@@ -351,8 +358,11 @@ for sorting, not a measurement, for the reason in the 13-2026 trap list.
 existing rows have no Waffle House mapped near them. That number is a direct
 measure of what this sweep can miss, and it will not be zero.
 
-Raw OSM data, the candidate list, the per-model verdicts and the spend ledger
-live in `scripts/discover-out/`, which is gitignored. The report is committed
+Raw OSM tiles, the per-model verdicts and the spend ledger live in
+`scripts/discover-out/`, which is gitignored. The candidate list is committed
+as `scripts/discover-candidates.json`, because the Overpass step takes about
+an hour (a nationwide query times out on every public instance, so it runs as
+69 tiles) and a fresh download should be able to go straight to `judge`. The report is committed
 the way `remeasure-report.txt` is. `ANTHROPIC_API_KEY` comes from the
 environment and is never committed: unlike the HERE key it is not
 domain-restricted, and it spends money.

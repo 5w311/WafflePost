@@ -17,6 +17,8 @@ t.eq(cd.truckClass({ amenity: 'fuel', brand: 'Pilot', hgv: 'no' }), 'car', 'hgv=
 t.eq(cd.truckClass({ amenity: 'fuel', brand: 'Shell', hgv: 'yes' }), 'truck', 'hgv=yes makes any fuel a truck stop');
 t.eq(cd.truckClass({ amenity: 'fuel', brand: 'QuikTrip' }), 'maybe', 'QuikTrip is for the judge to settle');
 t.eq(cd.truckClass({ amenity: 'fuel', brand: 'Shell' }), 'car', 'an untagged Shell is a car station');
+t.eq(cd.truckClass({ amenity: 'fuel', name: 'Petro Express' }), 'car', 'Petro Express is not Petro');
+t.eq(cd.truckClass({ amenity: 'fuel', name: 'Petro Stopping Center' }), 'truck', 'Petro still is');
 t.eq(cd.truckClass({ amenity: 'parking' }), 'car', 'a parking lot with no hgv tag is not truck parking');
 
 // --- OSM parse -----------------------------------------------------------
@@ -61,6 +63,14 @@ t.eq(known.known[0].knownRow.city, 'Testville', 'and is reported against that ro
 var far = cd.build({ wafflehouses: p.wafflehouses, roads: [], places:
   [{ id: 'node/8', lat: 34.02, lon: -84.0, tags: { amenity: 'fuel', brand: 'Pilot' } }] }, []);
 t.eq(far.candidates.length, 0, 'a truck stop 1.4 mi away is no candidate');
+
+var mixed = cd.build({ roads: [], wafflehouses: [{ id: 'node/a', lat: 30, lon: -90, tags: {} },
+    { id: 'node/b', lat: 31, lon: -90, tags: {} }, { id: 'node/c', lat: 32, lon: -90, tags: {} }],
+  places: [{ id: 'node/qt', lat: 30.0003, lon: -90, tags: { amenity: 'fuel', brand: 'QuikTrip' } },
+    { id: 'node/pl', lat: 31.0015, lon: -90, tags: { amenity: 'fuel', brand: 'Pilot' } },
+    { id: 'node/lv', lat: 32.0065, lon: -90, tags: { amenity: 'fuel', brand: "Love's" } }] }, []);
+t.eq(mixed.candidates.map(function (c) { return c.id + ':' + c.priority; }).join(' '),
+  'node/b:0 node/a:1 node/c:2', 'a truck stop inside the line outranks a closer QuikTrip; past the line is last');
 
 // --- the prompt ----------------------------------------------------------
 var lead = jd.leadText(b.candidates[0]);

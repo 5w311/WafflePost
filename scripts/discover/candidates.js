@@ -31,6 +31,11 @@ var TRUCK_BRANDS = [
 // settle, never assumed either way.
 var MAYBE_BRANDS = ['quiktrip', 'qt', 'racetrac', 'raceway', "buc-ee's", 'bucees', 'wawa', 'sheetz'];
 
+// Names that start like a truck chain and are not one. Petro Express is a
+// Southeastern convenience chain, not a Petro Stopping Center; the first real
+// sweep put it at the head of the queue.
+var NOT_TRUCK = /^(petro express)\b/i;
+
 var TRUCK_NAME = /\b(truck ?stop|truck ?plaza|travel ?plaza|travel ?cent(er|re)|truck ?cent(er|re)|truckers?)\b/i;
 
 function lc(s) { return String(s || '').toLowerCase().trim(); }
@@ -49,6 +54,7 @@ function truckClass(tags) {
   if (hgv === 'yes' || hgv === 'designated') return 'truck';
   if (tags.amenity === 'parking') return hgv ? 'maybe' : 'car';
   var brand = lc(tags.brand), name = lc(tags.name), op = lc(tags.operator);
+  if (NOT_TRUCK.test(tags.name || '') || NOT_TRUCK.test(tags.brand || '')) return 'car';
   if (TRUCK_BRANDS.indexOf(brand) !== -1 || TRUCK_BRANDS.indexOf(op) !== -1) return 'truck';
   if (TRUCK_NAME.test(tags.name || '')) return 'truck';
   for (var i = 0; i < TRUCK_BRANDS.length; i++) {
@@ -172,8 +178,14 @@ function build(osm, data, opts) {
       };
     }).sort(function (a, b) { return a.osmFeet - b.osmFeet; });
 
+    var inside = stops.filter(function (s) { return s.insideLine; });
     var cand = {
       id: wh.id,
+      // 0: a branded or tagged truck stop inside the line. 1: only a maybe
+      // (QuikTrip, RaceTrac, Sheetz...) inside it. 2: everything past it.
+      // The judge queue runs in this order, so a budget cap spends on the
+      // likeliest pairs first and the long tail is what gets left over.
+      priority: inside.some(function (s) { return s.truckClass === 'truck'; }) ? 0 : inside.length ? 1 : 2,
       wafflehouse: {
         osmId: wh.id, lat: wh.lat, lon: wh.lon, address: addressOf(wh.tags),
         tags: pick(wh.tags, ['name', 'brand', 'opening_hours', 'phone', 'website',
@@ -192,10 +204,9 @@ function build(osm, data, opts) {
     candidates.push(cand);
   });
 
-  // Inside-the-line first, then shortest walk - the order the atlas reads in.
+  // Priority first, then shortest walk - the order the atlas reads in.
   candidates.sort(function (a, b) {
-    if (a.anyInsideLine !== b.anyInsideLine) return a.anyInsideLine ? -1 : 1;
-    return a.nearestFeet - b.nearestFeet;
+    return a.priority - b.priority || a.nearestFeet - b.nearestFeet;
   });
   return { candidates: candidates, known: known, counts: counts };
 }
