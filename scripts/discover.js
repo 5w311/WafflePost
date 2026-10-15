@@ -83,7 +83,9 @@ function loadDATA() {
   var src = fs.readFileSync(INDEX, 'utf8');
   var m = src.match(/var DATA = \[\n([\s\S]*?)\n\];/);
   if (!m) throw new Error('DATA block not found in index.html');
-  return eval('[' + m[1] + ']');
+  // The newline matters: the last row may end in a // comment, which would
+  // otherwise swallow the closing bracket.
+  return eval('[' + m[1] + '\n]');
 }
 
 function loadJudged(model) {
@@ -198,7 +200,8 @@ async function cmdOsm() {
   console.log('  already atlas rows:            ' + c.known);
   console.log('  NEW CANDIDATES:                ' + c.candidates +
     '  (' + built.candidates.filter(function (x) { return x.anyInsideLine; }).length + ' inside the 0.4 mi line)');
-  console.log('  straight line crosses highway: ' + c.crossesHighway);
+  console.log('  straight line crosses highway: ' + c.crossesHighway + '  (surface highways only)');
+  console.log('  stops dropped, across a motorway: ' + c.overpassDropped + '  (no-overpass rule)');
   var missing = loadDATA().length - c.known;
   if (missing > 0) {
     console.log('\n' + missing + ' atlas rows have no OSM Waffle House within ' + cands.KNOWN_FT +
@@ -372,6 +375,13 @@ function cmdReport() {
     var a = o[c.id] && o[c.id].verdict, b = f[c.id] && f[c.id].verdict;
     if (!a && !b) return;                       // never judged: not in the report
     var r = judge.reconcile(a, b);
+    // The stop the models named may since have been dropped from the lead
+    // under the no-overpass rule (its straight line crosses a motorway). That
+    // is a rejection, not a cue to fall back to some other nearby station.
+    var named = [a, b].filter(Boolean).map(function (v) { return v.truck_stop.osm_id; }).filter(Boolean);
+    if (named.length && !named.some(function (id) { return c.stops.some(function (s) { return s.osmId === id; }); })) {
+      r = { status: 'REJECTED', why: 'the stop the models named is across an interstate (no-overpass rule)', flags: [] };
+    }
     groups[r.status].push({ c: c, a: a, b: b, r: r });
     var v = a || b, ts = v.truck_stop || {};
     var stop = c.stops.filter(function (s) { return s.osmId === ts.osm_id; })[0] || c.stops[0];

@@ -62,10 +62,26 @@ var key = (src.match(/var HERE_API_KEY = '([^']*)'/) || [])[1];
 if (!key) { console.error('no HERE_API_KEY in index.html'); process.exit(1); }
 
 var dataMatch = src.match(/(var DATA = \[\n)([\s\S]*?)(\n\];)/);
-var lines = dataMatch[2].split('\n');
-var DATA = eval('[' + dataMatch[2] + ']');
+// Each row is one line, optionally followed by standalone // comment lines
+// that belong to it (Florence, Knoxville). Those travel with their row when
+// the block is re-sorted. `lines` holds the row lines only, index-aligned
+// with DATA.
+var blocks = [];
+dataMatch[2].split('\n').forEach(function (l) {
+  var t = l.trim();
+  if (!t || t.indexOf('//') === 0) {
+    if (!blocks.length) { console.error('DATA starts with a comment line - attach it to a row'); process.exit(1); }
+    blocks[blocks.length - 1].post.push(l);
+    return;
+  }
+  blocks.push({ post: [] });
+  blocks[blocks.length - 1].line = l;
+});
+var lines = blocks.map(function (b) { return b.line; });
+// The newline matters: the last row may end in a // comment.
+var DATA = eval('[' + dataMatch[2] + '\n]');
 if (DATA.length !== lines.length) {
-  console.error('DATA rows and source lines disagree - a row is not one line');
+  console.error('DATA rows and row lines disagree - a row is not one line');
   process.exit(1);
 }
 
@@ -290,7 +306,7 @@ function writeCsv(rows) {
     var code = (cut < 0 ? o.l : o.l.slice(0, cut)).replace(/\s+$/, '');
     var cmt = cut < 0 ? '' : o.l.slice(cut);
     if (code.slice(-1) === ',') code = code.slice(0, -1);
-    return code + (i4 < order.length - 1 ? ',' : '') + cmt;
+    return [code + (i4 < order.length - 1 ? ',' : '') + cmt].concat(blocks[o.i].post).join('\n');
   }).join('\n');
   fs.writeFileSync(INDEX, src.slice(0, dataMatch.index) + dataMatch[1] + newBody + dataMatch[3] +
     src.slice(dataMatch.index + dataMatch[0].length));

@@ -10,7 +10,7 @@ WafflePost answers *can I get a plate of hashbrowns without moving the truck*.
 
 Two tabs:
 
-- **Atlas** — map and list of all 96 exits, filterable by corridor, state,
+- **Atlas** — map and list of all 86 exits, filterable by corridor, state,
   truck stop chain, walk distance and free text. Every row, distance and
   filter is computed locally; only the basemap under the pins is fetched.
 - **Route** — pickup and delivery with address autosuggest and a "use my
@@ -47,6 +47,7 @@ scripts/discover/         its pure parts: Overpass query + parse, candidate buil
 scripts/discover-candidates.json  the OSM lead list, committed so `judge` can run from a fresh download
 scripts/discover-report.txt  the reconciled leads from the last sweep, once one has run
 scripts/discover-additions.txt  provenance of every row the 14-2026 sweep added
+scripts/overpass-audit.txt  every pairing checked against the no-overpass rule, and what came out
 data/atlas.csv            REGENERATED from DATA by scripts/remeasure.js - never hand-edit
 apple-touch-icon.png      iOS home screen, 180x180 - the bar tile, baked
 icon-192.png              Android home screen
@@ -100,16 +101,64 @@ there.
 Counts, reconciled, because three different numbers are all correct about
 different things:
 
-- **96 exits** — rows in `DATA`. 95 walkable plus one honorary member,
-  across twenty-three corridors and seventeen states.
-- **108 pairings listed** — every truck stop named, including the second,
-  third and fourth stop at exits that have them.
-- **103 pairings within 0.4 mi** — the headline number. The other 5 sit past
-  the line. Four are alternates, labelled *(past the line)* in the stop sheet
-  rather than dropped, because at 3am a 3,274 ft walk you know about beats a
-  1,483 ft walk into a full lot. The fifth is Bishopville's own primary stop
-  at 2,380 ft — the honorary row below, which carries no such label because
-  the tag is only emitted on alternates.
+- **86 exits** — rows in `DATA`, across twenty-three corridors and seventeen
+  states.
+- **91 pairings listed** — every truck stop named, including the second and
+  third stop at exits that have them.
+- **All 91 within 0.4 mi.** Until v4.22.1 five pairings sat past the line:
+  four alternates and Bishopville's honorary primary. Every one of the five
+  was across an interstate, and all came out under the no-overpass rule
+  below.
+
+## No overpass walks
+
+**Owner rule since v4.22.1: if you have to cross the interstate to walk it,
+it is not on the atlas.** That covers an overpass, an underpass and the
+interchange itself, for primaries and alternates alike. Crossing a surface
+road at grade is allowed, and the row's note says so. The rule also keeps
+`feet` honest: a straight line is a fair proxy for a walk only when nothing
+between the two doors forces a detour.
+
+**How every existing pairing was checked.** Rows store the Waffle House's
+coordinate but not the truck stop's, so each of the 106 pairings was located
+in OpenStreetMap: an object carrying the operator's name at the distance the
+row already claimed (within 40%), or failing that a truck-capable object at
+that distance, or a Census geocode of `tsAddr`. The straight line was then
+tested against OSM motorway geometry, and every hit was confirmed by eye on
+satellite imagery before anything was removed. The handful OSM could not
+place were checked on satellite with a ring drawn at the row's distance.
+Where a match was loose, the distance agreed anyway: Columbia's Love's
+measured 1,047 ft against 1,052 on file, Bishopville's Pilot 2,370 against
+2,380.
+
+**Ten rows removed**, each because its only truck stop is across the
+interstate:
+
+| exit | was | stop, across |
+|---|---|---|
+| Columbia TN, I-65 x46 | 1,052 ft | Love's #346, across I-65 |
+| Slidell LA, I-10 x266 | 1,588 ft | TA, across I-10 |
+| Wildwood FL, I-75 x329 | 1,657 ft | TA, across I-75 |
+| Port Allen LA, I-10 x151 | 1,792 ft | Love's, across I-10 |
+| Terrell TX, I-20 x501 | 1,913 ft | Valero Travel Plaza, across I-20 |
+| Marshall TX, I-20 x617 | 1,976 ft | Pony Express, across I-20 |
+| Denham Springs LA, I-12 x10 | 2,031 ft | Pilot #79, across I-12 |
+| Hope Hull AL, I-65 x164 | 2,062 ft | Saveway Truck Plaza, across I-65 |
+| Girard OH, I-80 x226 | 1,183 ft | Petro #320, across I-80 |
+| Bishopville SC, I-20 x116 | 2,380 ft | Pilot, across I-20 (the honorary row) |
+
+**Seven alternates removed** from rows that keep a same-side primary: the
+Petro and TA at Oak Grove MO (I-70), the TA, Love's and Pilot at Jackson GA
+(I-75), the Pilot at Madison GA (I-20) and Bayou Belle at Henderson LA
+(I-10). Each of those rows' notes now says which stop is across the
+interstate, so nobody re-adds it.
+
+**What this says about the old method.** The 11-2026 edition called Oak Grove
+MO "the first row where straight-line is not the walk" and every other pair
+same-side frontage. That was never measured. Nine primaries were already
+across an interstate; the haversine could not see it, and an exit guide's
+"0.3 mi" does not say which side. The discovery sweep now drops any stop whose
+straight line crosses an OSM motorway before a model ever sees it.
 
 ### The 10-2026 additions, and the corridors that came back empty
 
@@ -278,7 +327,7 @@ This one started from the map. `scripts/discover.js` (see *The discovery
 sweep* below) asked OpenStreetMap for every Waffle House in the country —
 1,750 of them — and every truck-capable place within 800 m of one, dropped the
 existing rows, and sent the leads to Opus 5.5 and then, blind, to Fable 5.1.
-69 exits become 96, 81 pairings become 108, eight new corridors (I-22, I-26,
+69 exits become 96 (86 after the v4.22.1 overpass audit), 81 pairings become 108, eight new corridors (I-22, I-26,
 I-29, I-69, I-71, I-90, I-526, I-675) and one new state, Indiana.
 
 **What a row had to clear.** Both models independently established the pair
@@ -337,36 +386,34 @@ the Pilot's lots full of trucks a few hundred yards from the store. The old
 failure was a bad address, not a missing pair. Russellville AR returns the
 same way, at a different Pilot than the row purged in 09-2026.
 
-**Eight passed both models and are held for an owner decision, not added:**
+**Eight passed both models and were not added:**
 
-- **Seven where the straight line crosses an interstate.** Braselton GA
+- **Seven where the straight line crosses an interstate, rejected under the
+  owner's no-overpass rule (v4.22.1).** Braselton GA
   (I-85 x129, 1,635 ft), Rayville LA (I-20 x138, 1,116), Walton KY (I-75
   x171, 1,506), Tallapoosa GA (I-20 x5, 1,763), Carthage TN (I-40 x258,
   1,962), Clinton SC (I-26 x52, 1,558) and Rock Hill SC (I-77 x77, 1,843).
-  Oak Grove MO is the only row where straight-line is not the walk, and there
-  it is the alternates that cross, not the primary. Admitting a primary whose
-  walk is an overpass is a new rule, and the overpass adds distance the
-  haversine does not see: Carthage is already 150 ft from the line before it.
+  See *No overpass walks* above.
 - **Madison GA, I-20 x114.** The sweep found a Waffle House 739 ft from the
   Pilot at this exit. The existing Madison row pairs a different store, 3,079
-  ft away, with the TA, and carries the Pilot as an alternate at 3,643 ft.
-  Either the exit has two stores or the existing row's coordinate is off,
-  and the existing row's TA figure is already labelled stale in
-  `remeasure-report.txt`. One row per exit means this is a correction to
-  make by hand, not a row to append.
+  ft away, with the TA. The overpass audit confirmed that pairing is on one
+  side of I-20 (682 ft by OSM) and the Pilot is across it, so the exit has
+  two stores, one on each side. One row per exit means a second Madison row
+  needs an owner decision on how the atlas lists two stores at one exit. It
+  should not be appended as a duplicate.
 
 **Two dropped.** A second Thomson GA store across I-20 (the row above is the
 one beside the Love's), and Calvert City KY (I-24 x27), at 2,555 ft past the
 line with no driver evidence for honorary status.
 
-**Fifteen disputed leads are the next edition's reading list.** Where one
+**Eleven disputed leads are the next edition's reading list.** Where one
 model established a pair and the other could not, both answers sit side by
 side under DISPUTED in `scripts/discover-report.txt`. Among them are Metter GA
 (I-16 x104, 420 ft), Lugoff SC (I-20 x92, 572), Wilson NC (I-95 x121, 520),
 Laurens SC (I-385 x9, 386) and Kansas City KS (I-635 x3, 464). Each needs one
-more independent source before it is a row. 79 more leads were judged by Opus
-alone, and 57 of Opus's unresolved leads were never reached by Fable when the
-budget ran out.
+more independent source and a satellite check before it is a row. Leads whose
+named stop is across an interstate are under REJECTED, with the no-overpass
+rule as the reason.
 
 **The QuikTrip and RaceTrac question is answered, mostly no.** 272 leads had
 only a QuikTrip, RaceTrac, RaceWay, Sheetz or Wawa inside the line. Opus
@@ -400,10 +447,12 @@ alternate indicts itself), and 17 kept stale-and-labelled where geocoding
 could not produce a credible point. A stale number that is labelled stale is
 recoverable; an invented one is not.
 
-`WALKABLE_FT` is 2,112 — 0.4 mi. One row (Bishopville SC, 0.45 mi) sits past
-it and is admitted anyway as **honorary**, on the strength of a driver review
-saying in plain words that truckers walk it. `test/data.test.js` asserts there
-is exactly one such row and that it carries its evidence in a flag or a `note`.
+`WALKABLE_FT` is 2,112 — 0.4 mi. Until v4.22.1 one row, Bishopville SC at
+0.45 mi, sat past it as **honorary**, on the strength of a driver review
+saying in plain words that truckers walk it. It left under the no-overpass
+rule, because its Pilot is across I-20. `test/data.test.js` now asserts there
+are no honorary rows, and keeps the check that any future one carries its
+evidence in a flag or a `note`.
 
 ## The discovery sweep: leads, not rows
 
@@ -514,7 +563,7 @@ dark as the walk gets longer:
 | Front porch | ≤ 500 ft | You can see the truck from the counter |
 | Short walk | ≤ 1,000 ft | Across a lot and a frontage road |
 | Long walk | ≤ 2,112 ft | A real walk, still inside the line |
-| Honorary | past 2,112 ft | Admitted on driver evidence only |
+| Honorary | past 2,112 ft | Driver evidence only; none on the atlas since v4.22.1 |
 
 The tier filter is a **ceiling, not a band**: "Short walk" shows everything up
 to 1,000 ft including the front-porch stops, because a driver setting a
@@ -1094,8 +1143,9 @@ leaderboard.
 
 `run.js` prints one `ok <name> N passed` line per file and then `all green`,
 or names the files that failed. It does not sum the assertions — at v4.18.0
-they came to 1,741 across twelve files; at v4.22.0 they come to 2,414 across
-thirteen, added up from those lines.
+they came to 1,741 across twelve files; at v4.22.1 they come to 2,207 across
+thirteen, added up from those lines (fewer than v4.22.0's 2,414 because
+the per-row checks shrink with the ten rows the overpass audit removed).
 
 ## Two version strings, on purpose
 
@@ -1130,6 +1180,25 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v4.22.1
+
+**No overpass walks.** Owner rule: if the walk crosses the interstate, it is
+not on the atlas, as a primary or as an alternate. An audit of all 106
+pairings against OSM motorway geometry, each hit confirmed on satellite,
+removed ten rows and seven alternates. See *No overpass walks* for the list
+and the method. 96 exits become 86, 108 pairings become 91, and every pairing
+is now inside the 0.4 mi line.
+
+- **Bishopville SC is gone**, and with it the only honorary row: its Pilot is
+  across I-20. `data.test.js` now asserts zero honorary rows. The tier itself
+  stays in `lib/waffledist`, so a future honorary row is possible.
+- **Notes say what was dropped.** Jackson GA, Madison GA, Henderson LA and
+  Oak Grove MO each name the stop across the interstate, so nobody re-adds it.
+- **The discovery sweep enforces the rule.** A stop whose straight line
+  crosses an OSM motorway is dropped before a model sees it, and the prompt
+  rejects any walk that needs an overpass or underpass.
+- `ATLAS_REV` stays at Rev 14-2026, a same-day correction to that edition.
 
 ### v4.22.0
 

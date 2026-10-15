@@ -82,7 +82,11 @@ DATA.forEach(function(r){
   }
 });
 
-t.eq(honorary, 1, 'exactly one honorary member (Bishopville)');
+// v4.22.1: none. Bishopville, the only honorary row, was removed under the
+// no-overpass-walks rule - its Pilot is across I-20. Honorary stays possible
+// in principle (the tier and the evidence check above remain), but a second
+// one is an owner decision, not something a sweep adds.
+t.eq(honorary, 0, 'no honorary members since Bishopville left under the overpass rule');
 
 var sorted = DATA.map(function(r){ return r.feet; });
 t.eq(sorted.slice().sort(function(a,b){return a-b;}).join() === sorted.join(), true,

@@ -1218,27 +1218,27 @@ var __mods={};
 function require(p){return __mods[p.replace(/^\.\//,'').replace(/\.js$/,'')];}
 var module={exports:{}};
 </script>
-<script src="lib/waffledist.js?v=4.22.0"></script>
+<script src="lib/waffledist.js?v=4.22.1"></script>
 <script>__mods.waffledist=module.exports;module={exports:{}};</script>
-<script src="lib/atlasfilter.js?v=4.22.0"></script>
+<script src="lib/atlasfilter.js?v=4.22.1"></script>
 <script>__mods.atlasfilter=module.exports;module={exports:{}};</script>
-<script src="lib/routewaffles.js?v=4.22.0"></script>
+<script src="lib/routewaffles.js?v=4.22.1"></script>
 <script>__mods.routewaffles=module.exports;module={exports:{}};</script>
-<script src="lib/vehicleprofile.js?v=4.22.0"></script>
+<script src="lib/vehicleprofile.js?v=4.22.1"></script>
 <script>__mods.vehicleprofile=module.exports;module={exports:{}};</script>
-<script src="lib/triptext.js?v=4.22.0"></script>
+<script src="lib/triptext.js?v=4.22.1"></script>
 <script>__mods.triptext=module.exports;module={exports:{}};</script>
-<script src="lib/escape.js?v=4.22.0"></script>
+<script src="lib/escape.js?v=4.22.1"></script>
 <script>__mods.escape=module.exports;module={exports:{}};</script>
-<script src="lib/flexible-polyline.js?v=4.22.0"></script>
+<script src="lib/flexible-polyline.js?v=4.22.1"></script>
 <script>__mods['flexible-polyline']=module.exports;module={exports:{}};</script>
-<script src="lib/autosuggest.js?v=4.22.0"></script>
+<script src="lib/autosuggest.js?v=4.22.1"></script>
 <script>__mods.autosuggest=module.exports;module={exports:{}};</script>
-<script src="lib/location.js?v=4.22.0"></script>
+<script src="lib/location.js?v=4.22.1"></script>
 <script>__mods.location=module.exports;module={exports:{}};</script>
-<script src="lib/routeoptions.js?v=4.22.0"></script>
+<script src="lib/routeoptions.js?v=4.22.1"></script>
 <script>__mods.routeoptions=module.exports;module={exports:{}};</script>
-<script src="lib/baselayer.js?v=4.22.0"></script>
+<script src="lib/baselayer.js?v=4.22.1"></script>
 <script>__mods.baselayer=module.exports;module={exports:{}};</script>
 
 <script>
@@ -1290,10 +1290,12 @@ var HERE_API_KEY = '7RDploUiahAnm08IZA9X7YSbb0Qh99pvqV2NCNQX_Hg';
    APP_VERSION - the code. Shown in the legend card. Bumped every change,
                 and stamped onto every lib/ URL as a cache-buster. */
 var ATLAS_REV   = 'Atlas Rev 14-2026';
-var APP_VERSION = '4.22.0';
+var APP_VERSION = '4.22.1';
 
 /* ===== DATA ==========================================================
-   61 rows - 60 walkable exits plus one honorary - carrying 73 pairings,
+   86 rows, every one inside the 0.4 mi line since v4.22.1, carrying 91
+   pairings. The history below keeps the counts each edition had at the time:
+   once 61 rows - 60 walkable exits plus one honorary - carrying 73 pairings,
    68 of them inside the 0.4 mi line, across fourteen corridors and
    fifteen states. I-520 is the first three-digit corridor here.
 
@@ -1304,13 +1306,20 @@ var APP_VERSION = '4.22.0';
    corridor empty. The README methodology section lists the other unchecked
    concurrencies inside Waffle House country.
 
-   OAK GROVE MO IS THE FIRST ROW WHERE STRAIGHT-LINE IS NOT THE WALK. Its
-   Petro and TA sit across I-70 from the store, so their real distances are
-   the Broadway overpass rather than the numbers stored here. Every other
-   pair on this atlas is same-side frontage, which is what made a haversine a
-   fair proxy in the first place; that row's note says so explicitly. If a
-   second such pair ever appears, this is the point at which `feet` needs a
-   companion field rather than a note.
+   NO OVERPASS WALKS (owner rule, v4.22.1). A truck stop the driver can only
+   reach on foot by crossing the interstate - on an overpass, an underpass or
+   the interchange itself - is not listed, as a primary or as an alternate.
+   Crossing a surface road at grade is allowed and said in the note. This is
+   also what keeps `feet` honest: a haversine is a fair proxy for a walk only
+   when nothing between the two doors forces a detour. Oak Grove MO used to
+   carry its Petro and TA across I-70 as alternates; they came out under this
+   rule, and the 14-2026 sweep's seven cross-interstate pairs were never added.
+   An audit of every row against OSM motorway geometry, each hit confirmed on
+   satellite, then removed ten whole rows whose only stop was across the
+   interstate - Columbia TN, Slidell LA, Wildwood FL, Port Allen LA, Terrell
+   TX, Marshall TX, Denham Springs LA, Hope Hull AL, Girard OH and
+   Bishopville SC, the honorary row - and the cross-interstate alternates at
+   Jackson GA, Madison GA and Henderson LA.
 
    The 10-2026 edition adds three rows on three corridors the original
    sweep never audited at all - I-44 Springfield MO, I-35 Oklahoma City
@@ -1406,12 +1415,12 @@ var DATA = [
 {feet:385,corridor:'I-81',state:'VA',exit:'98',city:'Dublin',ts:'A-Plus Dublin Travel Plaza',brand:'IND',lat:37.08237,lon:-80.68993,addr:'4614 Cleburne Blvd, Dublin, VA 24084',tsAddr:'4625 Cleburne Blvd, Dublin, VA 24084',flags:['smalllot'],note:'About 25 truck spaces, two showers, laundry, and a Walmart next door that also allows truck parking. A driver review calls it a hidden gem. Showers are five dollars and the recurring complaint is that they are not clean.'},  // NAME TRAP. The adjacent business at 4622 Cleburne trades as Liberty and is a 7-Eleven fuel station, NOT the truck stop - same phone, same site, different establishment. An earlier draft named Liberty and was wrong. The parking and showers are A-Plus.
 {feet:386,corridor:'I-20',state:'TX',exit:'596',city:'Longview',ts:'RaceTrac',brand:'IND',lat:32.44855,lon:-94.72351,addr:'3107 Estes Pkwy, Longview, TX 75602-4233',tsAddr:'3120 Estes Pkwy, Longview, TX 75602',flags:[],note:'One of the big-format RaceTracs — semi parking confirmed by drivers.'},
 {feet:390,corridor:'I-10',state:'LA',exit:'209',city:'LaPlace',ts:'TA Express #0479',brand:'TA',lat:30.08712,lon:-90.44526,addr:'4304 New Highway 51, Laplace, LA 70068',tsAddr:'4301 S Main St, Laplace, LA 70068',flags:[],note:'4301 Main St and 4304 Main St.'},
-{feet:394,corridor:'I-10',state:'LA',exit:'115',city:'Henderson',ts:'Henderson Travel Plaza',brand:'IND',lat:30.31355,lon:-91.83292,addr:'2998 Grandpoint Hwy, Breaux Bridge, LA 70517-7738',tsAddr:'2996 Grand Point Hwy, Breaux Bridge, LA 70517',flags:[],alt:[{ts:'Bayou Belle Truck Stop Casino',feet:2315,brand:'IND'}],note:'The 394 ft stop is rough. Bayou Belle up the same road is the classier night: 4.2 stars, casino, confirmed overnight parking.'},
+{feet:394,corridor:'I-10',state:'LA',exit:'115',city:'Henderson',ts:'Henderson Travel Plaza',brand:'IND',lat:30.31355,lon:-91.83292,addr:'2998 Grandpoint Hwy, Breaux Bridge, LA 70517-7738',tsAddr:'2996 Grand Point Hwy, Breaux Bridge, LA 70517',flags:[],note:'The 394 ft stop is rough. Bayou Belle, the classier stop, is across I-10, so it is not listed.'},
 {feet:398,corridor:'I-95',state:'NC',exit:'106',city:'Kenly',ts:'Pilot',brand:'PIL',lat:35.58192,lon:-78.14814,addr:'875 Johnston Pkwy, Kenly, NC 27542-9663',tsAddr:'1000 Truckstop Rd, Kenly, NC 27542',flags:[],alt:[{ts:'Kenly 95 Petro',feet:437,brand:'PET',tsAddr:'923 Johnston Parkway, Kenly, NC 27542'}],note:''},
 {feet:417,corridor:'I-75',state:'FL',exit:'224',city:'Ellenton',ts:'ONE9 Travel Center #89',brand:'ONE9',lat:27.52768,lon:-82.51312,addr:'1515 51st Ave E, Ellenton, FL 34222-2634',tsAddr:'1526 51st Ave E, Ellenton, FL 34222',flags:['smalllot'],note:'Drivers report no reliable overnight parking and tight maneuvering - fuel and showers, effectively.'},
 {feet:419,corridor:'I-95',state:'GA',exit:'87',city:'Richmond Hill',ts:'TA',brand:'TA',lat:31.92471,lon:-81.33386,addr:'56 Sommers Blvd, Richmond Hill, GA 31324-8885',tsAddr:'4401 US Highway 17, Richmond Hill, GA 31324',flags:[],note:''},
 {feet:429,corridor:'I-75',state:'FL',exit:'341',city:'Ocala',ts:'Marion Oaks Pilot',brand:'PIL',lat:29.02599,lon:-82.15995,addr:'2065 SW CR-484, Ocala, FL 34473-4013',tsAddr:'2020 SW Highway 484, Ocala, FL 34473',flags:[],note:''},
-{feet:432,corridor:'I-70',state:'MO',exit:'28',city:'Oak Grove',ts:'QuikTrip',brand:'IND',lat:39.01206,lon:-94.12829,addr:'451 S Broadway, Oak Grove, MO 64075',tsAddr:'309 S Broadway, Oak Grove, MO 64075',flags:[],alt:[{ts:'Petro Travel Center',feet:1298,brand:'PET',tsAddr:'301 SW 1st St, Oak Grove, MO 64075'},{ts:'TA Travel Center',feet:2087,brand:'TA',tsAddr:'100 N Broadway, Oak Grove, MO 64075'}],note:'THE PETRO AND THE TA ARE ACROSS I-70. Their straight-line figures are real but the WALK is not: you cannot cross an interstate, so both mean the Broadway overpass and both are materially longer on foot than the numbers say. Every other pair on this atlas is same-side frontage, which is why straight-line has been a fair proxy until here. The QuikTrip is same-side and is the honest primary \u2014 a large-format travel store with truck parking that reviewers thank them for, but no showers and no service bays. Park there and walk 432 ft, or take the Petro or the TA for real facilities and accept the crossing.'},  // NOT the Oak Grove KY that the 09-2026 re-audit purged - different state, different corridor, different exit. The primary is the QuikTrip because the atlas sorts on WALK, and promoting the Petro for being the better truck stop would break that.
+{feet:432,corridor:'I-70',state:'MO',exit:'28',city:'Oak Grove',ts:'QuikTrip',brand:'IND',lat:39.01206,lon:-94.12829,addr:'451 S Broadway, Oak Grove, MO 64075',tsAddr:'309 S Broadway, Oak Grove, MO 64075',flags:[],note:'Same side of I-70. A large-format QuikTrip with truck parking that reviewers thank them for, but no showers and no service bays. The Petro and the TA at this exit are across I-70, reachable on foot only by the Broadway overpass, so they are not listed.'},  // NOT the Oak Grove KY on I-24 - different state, corridor and exit. Until v4.22.1 this row carried the Petro (1,298 ft) and TA (2,087 ft) as alternates; both sit across I-70 and came out under the no-overpass-walks rule.
 {feet:453,corridor:'I-22',state:'AL',exit:'65',city:'Jasper',ts:'Love\'s Travel Stop #466',brand:'LOV',lat:33.79270,lon:-87.24337,addr:'203 Carl Cannon Blvd, Jasper, AL 35501',tsAddr:'83 Carl Cannon Blvd, Jasper, AL 35501',flags:['scale'],note:'Exit 65, not Exit 63. Jasper has two Love’s and two Waffle Houses; this pairing is the Love’s at 83 Carl Cannon Blvd and the Waffle House at 203. 68 truck spaces.'},  // 14-2026 sweep: OSM node/4921723928. Opus 5.5 and Fable 5.1 agreed blind; satellite-checked. feet is OSM pin to pin, not yet HERE-remeasured.
 {feet:479,corridor:'I-95',state:'GA',exit:'109',city:'Port Wentworth',ts:'Pilot',brand:'PIL',lat:32.18745,lon:-81.19410,addr:'6941 GA Highway 21, Port Wentworth, GA 31407-9799',tsAddr:'7001 GA Highway 21, Port Wentworth, GA 31407',flags:[],note:''},
 {feet:501,corridor:'I-10',state:'FL',exit:'258',city:'Madison',ts:'Fast Track Travel Center',brand:'IND',lat:30.39877,lon:-83.35780,addr:'145 SE Bandit St, Madison, FL 32340',tsAddr:'6390 South State Road 53, Madison, FL 32340',flags:[],note:'$10 showers. A review puts it "right across the street from the waffle house".'},
@@ -1431,7 +1440,7 @@ var DATA = [
 {feet:628,corridor:'I-10',state:'AL',exit:'4',city:'Grand Bay',ts:'TA Mobile #0054',brand:'TA',lat:30.49934,lon:-88.33533,addr:'9190 Grand Bay Wilmer Rd S, Grand Bay, AL 36541',tsAddr:'9201 Grand Bay Wilmer Rd, Grand Bay, AL 36541',flags:['scale'],note:'Across Grand Bay-Wilmer Rd from the TA; drivers call it a short walk. 89 truck spaces.'},  // 14-2026 sweep: OSM node/891156091. Opus 5.5 and Fable 5.1 agreed blind; satellite-checked. feet is OSM pin to pin, not yet HERE-remeasured.
 {feet:633,corridor:'I-675',state:'GA',exit:'5',city:'Ellenwood',ts:'QuikTrip #787',brand:'IND',lat:33.61200,lon:-84.30048,addr:'2735 Forest Pkwy, Ellenwood, GA 30294',tsAddr:'2881 Forest Pkwy, Ellenwood, GA 30294',flags:['smalllot'],note:'A QuikTrip travel center with a small truck lot that drivers say fills with locally parked trucks. No showers.'},  // 14-2026 sweep: OSM way/696233830. Opus 5.5 and Fable 5.1 agreed blind; satellite-checked. feet is OSM pin to pin, not yet HERE-remeasured.
 {feet:636,corridor:'I-95',state:'FL',exit:'129',city:'Fort Pierce',ts:"Love's",brand:'LOV',lat:27.41228,lon:-80.39660,addr:'7147 Okeechobee Rd, Fort Pierce, FL 34945-2603',tsAddr:'7150 Okeechobee Rd, Fort Pierce, FL 34945',flags:[],alt:[{ts:'Pilot',feet:1279,brand:'PIL'}],note:'A second Waffle House sits right at the ramp.'},
-{feet:646,corridor:'I-20',state:'GA',exit:'114',city:'Madison',ts:'TA',brand:'TA',lat:33.55181,lon:-83.47304,addr:'2050 Eatonton Rd, Madison, GA 30650-5000',tsAddr:'2021 Eatonton Rd, Madison, GA 30650',flags:[],alt:[{ts:'Pilot',feet:3643,brand:'PIL'}],note:''},
+{feet:646,corridor:'I-20',state:'GA',exit:'114',city:'Madison',ts:'TA',brand:'TA',lat:33.55181,lon:-83.47304,addr:'2050 Eatonton Rd, Madison, GA 30650-5000',tsAddr:'2021 Eatonton Rd, Madison, GA 30650',flags:[],note:'The Pilot at this exit is across I-20, so it is not listed.'},
 {feet:678,corridor:'I-10',state:'FL',exit:'70',city:'DeFuniak Springs',ts:"Love's",brand:'LOV',lat:30.73580,lon:-86.34972,addr:'17837 ST HWY 285 S, Defuniak Springs, FL 32435',tsAddr:'17750 State Highway 285 S, DeFuniak Springs, FL 32435',flags:[],note:'Two Waffle Houses at this exit; the Love\u2019s pairs with the farther one.'},
 {feet:678,corridor:'I-85',state:'SC',exit:'90',city:'Gaffney',ts:'ONE9 #453',brand:'ONE9',lat:35.07959,lon:-81.70324,addr:'924 Hyatt St, Gaffney, SC 29341',tsAddr:'909 Hyatt St, Gaffney, SC 29341',flags:['scale'],note:'Signed ONE9 now, formerly Pilot. Across Hyatt St, same side of I-85. About 100 spaces; reserved spots are enforced. Not the Exit 92 Waffle House.'},  // 14-2026 sweep: OSM way/732004833. Opus 5.5 and Fable 5.1 agreed blind; satellite-checked. feet is OSM pin to pin, not yet HERE-remeasured.
 {feet:687,corridor:'I-85',state:'GA',exit:'149',city:'Commerce',ts:'TA',brand:'TA',lat:34.25187,lon:-83.46108,addr:'30789 US-441 S, Commerce, GA 30529-6654',tsAddr:'30732 Highway 441 S, Commerce, GA 30529',flags:[],note:'The only walkable pair on all 666 miles of I-85.'},
@@ -1463,28 +1472,18 @@ var DATA = [
 {feet:1002,corridor:'I-75',state:'KY',exit:'129',city:'Georgetown',ts:'Pilot #353',brand:'PIL',lat:38.27409,lon:-84.55311,addr:'405 Cherry Blossom Way, Georgetown, KY 40324',tsAddr:'110 Triport Rd, Georgetown, KY 40324',flags:['scale'],note:'Pilot #353 on Triport Rd, east of I-75, not Pilot #47 across the interstate. One listing shows this Waffle House opening at 2:30am; others say 24 hours.'},  // 14-2026 sweep: OSM way/1289726480. Opus 5.5 and Fable 5.1 agreed blind; satellite-checked. feet is OSM pin to pin, not yet HERE-remeasured.
 {feet:1041,corridor:'I-95',state:'MD',exit:'109',city:'Elkton',ts:'Flying J',brand:'FJ',lat:39.63551,lon:-75.80539,addr:'261 Belle Hill Rd, Elkton, MD 21921-5132',tsAddr:'221 Belle Hill Rd, Elkton, MD 21921',flags:[],note:'The northern terminus of walkable waffles. Delaware has none on I-95.'},
 {feet:1043,corridor:'I-75',state:'GA',exit:'101',city:'Cordele',ts:'Pilot #416',brand:'PIL',lat:31.95881,lon:-83.75010,addr:'1007 Arc Way Ave, Cordele, GA 31015',tsAddr:'2201 16th Ave E, Cordele, GA 31015',flags:[],note:''},
-{feet:1052,corridor:'I-65',state:'TN',exit:'46',city:'Columbia',ts:"Love's #346",brand:'LOV',lat:35.64335,lon:-86.89491,addr:'1591 Bear Creek Pike, Columbia, TN 38401-7658',tsAddr:'1624 Bear Creek Pike, Columbia, TN 38401',flags:[],note:''},
 {feet:1058,corridor:'I-85',state:'GA',exit:'61',city:'Fairburn',ts:'Fairburn Family Travel Center',brand:'IND',lat:33.54433,lon:-84.57652,addr:'7800 Senoia Rd, Fairburn, GA 30213',tsAddr:'7860 Senoia Rd, Fairburn, GA 30213',flags:['scale'],note:'Paid parking: $20 a day first-come, $25 reserved by phone. Free spots are limited.'},  // 14-2026 sweep: OSM way/289232882. Opus 5.5 and Fable 5.1 agreed blind; satellite-checked. feet is OSM pin to pin, not yet HERE-remeasured.
 {feet:1062,corridor:'I-40',state:'AR',exit:'84',city:'Russellville',ts:'Pilot #430',brand:'PIL',lat:35.28189,lon:-93.09513,addr:'3085 E Parkway Dr, Russellville, AR 72802',tsAddr:'215 AR-331 N, Russellville, AR 72802',flags:['scale'],note:'The Pilot on AR-331, not the Flying J across I-40. 96 public spaces plus paid Prime.'},  // 14-2026 sweep: OSM way/613056329. Opus 5.5 and Fable 5.1 agreed blind; satellite-checked. feet is OSM pin to pin, not yet HERE-remeasured.
 {feet:1069,corridor:'I-65',state:'AL',exit:'19',city:'Satsuma',ts:'Pilot #75',brand:'PIL',lat:30.86996,lon:-88.04740,addr:'6097 Hwy 43 N, Satsuma, AL 36572',tsAddr:'6109 US-43 S, Satsuma, AL 36572',flags:['scale'],note:'Both sit on the west side of US-43, so the walk does not cross the four-lane. 77 public spaces plus paid Prime.'},  // 14-2026 sweep: OSM way/75498907. Opus 5.5 and Fable 5.1 agreed blind; satellite-checked. feet is OSM pin to pin, not yet HERE-remeasured.
 {feet:1131,corridor:'I-44',state:'MO',exit:'127',city:'Lebanon',ts:'Jones Auto & Truck Plaza',brand:'IND',lat:37.65093,lon:-92.66719,addr:'1924 W Elm St, Lebanon, MO 65536',tsAddr:'2031 W Elm St, Lebanon, MO 65536',flags:['diner'],note:'Formerly B&D, rebuilt after 2020 storm damage. Sit-down restaurant inside. A 2026 review says the truck lot fills by 6pm.'},  // 14-2026 sweep: OSM way/603203960. Opus 5.5 and Fable 5.1 agreed blind; satellite-checked. feet is OSM pin to pin, not yet HERE-remeasured.
 {feet:1145,corridor:'I-69',state:'IN',exit:'214',city:'Pendleton',ts:'Love\'s Travel Stop #600',brand:'LOV',lat:39.99035,lon:-85.84270,addr:'7810 S State Rd 13, Pendleton, IN 46064',tsAddr:'9000 Interpark Dr, Pendleton, IN 46064',flags:['scale'],note:'The walk follows SR 13, a rural highway; no sidewalk confirmed. 100 truck spaces.'},  // 14-2026 sweep: OSM node/6308702365. Opus 5.5 and Fable 5.1 agreed blind; satellite-checked. feet is OSM pin to pin, not yet HERE-remeasured.
 {feet:1166,corridor:'I-95',state:'GA',exit:'3',city:'Kingsland',ts:'Petro Kingsland #0344',brand:'PET',lat:30.79267,lon:-81.66335,addr:'1201 E King Ave, Kingsland, GA 31548',tsAddr:'1105 E King Ave, Kingsland, GA 31548',flags:[],note:'The store at 1201 E King Ave, not the one at 2054 Hwy 40 E. The RaceWay in between is a car station. 136 truck spaces, some paid Reserve-It.'},  // 14-2026 sweep: OSM way/1221877815. Opus 5.5 and Fable 5.1 agreed blind; satellite-checked. feet is OSM pin to pin, not yet HERE-remeasured.
-{feet:1183,corridor:'I-80',state:'OH',exit:'226',city:'Girard',ts:'Petro #320',brand:'PET',lat:41.14330,lon:-80.72091,addr:'2725 Salt Springs Rd, Girard, OH 44481-9231',tsAddr:'1 Petro Place, Girard, OH 44420',flags:[],note:''},
 {feet:1282,corridor:'I-20',state:'GA',exit:'19',city:'Temple',ts:'Pilot',brand:'PIL',lat:33.72270,lon:-85.02881,addr:'543 Carrollton St, Temple, GA 30179',tsAddr:'625 Carrollton St, Temple, GA 30179',flags:[],alt:[{ts:'Flying J',feet:1442,brand:'FJ'}],note:'Both majors sit at this exit. Exit 19, not 24 — the guides get this wrong.'},
-{feet:1483,corridor:'I-75',state:'GA',exit:'201',city:'Jackson',ts:'Flying J',brand:'FJ',lat:33.20347,lon:-84.06293,addr:'3201 W Highway 36, Jackson, GA 30233',tsAddr:'1125 Bucksnort Rd, Jackson, GA 30233',flags:[],alt:[{ts:'TA',feet:1725,brand:'TA'},{ts:"Love's",feet:2192,brand:'LOV'},{ts:'Pilot',feet:3274,brand:'PIL'}],note:'More major chains walkable from one Waffle House than anywhere else in the country.'},
+{feet:1483,corridor:'I-75',state:'GA',exit:'201',city:'Jackson',ts:'Flying J',brand:'FJ',lat:33.20347,lon:-84.06293,addr:'3201 W Highway 36, Jackson, GA 30233',tsAddr:'1125 Bucksnort Rd, Jackson, GA 30233',flags:[],note:'The TA, Love\u2019s and Pilot at this exit are all across I-75, so they are not listed. The Flying J is on the Waffle House\u2019s side.'},
 {feet:1535,corridor:'I-85',state:'SC',exit:'56',city:'Greer',ts:'Spinx #121',brand:'IND',lat:34.87696,lon:-82.22787,addr:'2412 SC-14, Greer, SC 29650',tsAddr:'2497 S Hwy 14, Greer, SC 29651',flags:['smalllot'],note:'A convenience store with diesel and roughly 10 to 18 truck spaces, not a full travel center. Overnight rules not confirmed.'},  // 14-2026 sweep: OSM way/984801237. Opus 5.5 and Fable 5.1 agreed blind; satellite-checked. feet is OSM pin to pin, not yet HERE-remeasured.
-{feet:1588,corridor:'I-10',state:'LA',exit:'266',city:'Slidell',ts:'TA',brand:'TA',lat:30.28517,lon:-89.74616,addr:'1728 Gause Blvd E, Slidell, LA 70461-5530',tsAddr:'1682 Gause Blvd, Slidell, LA 70458',flags:[],note:''},
 {feet:1647,corridor:'I-95',state:'SC',exit:'170',city:'Florence',ts:'Pilot Travel Center #62',brand:'PIL',lat:34.26226,lon:-79.70032,addr:'2880 N Williston Rd, Florence, SC 29506',tsAddr:'3006 N Williston Rd, Florence, SC 29506',flags:['scale','diner'],note:'75 spaces, 8 diesel lanes, 6 showers, CAT scale, Wendy\u2019s. A long walk rather than a short one, but comfortably inside the line.'},  // Reported at 440 ft and measures 1647: the research picked the wrong coordinate from two conflicting sources. NOT the Florence KY row six hundred miles north. The Buc-ee\u2019s at this exit is not an alternate - Buc-ee\u2019s prohibits semis company-wide.
-{feet:1657,corridor:'I-75',state:'FL',exit:'329',city:'Wildwood',ts:'TA Wildwood',brand:'TA',lat:28.87188,lon:-82.09006,addr:'7954 NE 8th Way, Wildwood, FL 34785-8458',tsAddr:'556 State Route 44, Wildwood, FL 34785',flags:[],note:''},
-{feet:1792,corridor:'I-10',state:'LA',exit:'151',city:'Port Allen',ts:"Love's",brand:'LOV',lat:30.45000,lon:-91.24561,addr:'112 S Lobdell Hwy, Port Allen, LA 70767-4117',tsAddr:'751 S Lobdell Hwy, Port Allen, LA 70767',flags:[],note:''},
-{feet:1913,corridor:'I-20',state:'TX',exit:'501',city:'Terrell',ts:'Valero Terrell Travel Plaza',brand:'IND',lat:32.70430,lon:-96.27687,addr:'1612 State Highway 34 S, Terrell, TX 75160-5407',tsAddr:'1703 State Highway 34 S, Terrell, TX 75160',flags:['smalllot'],note:'About fifteen spaces. TA #233 at exit 503 is the fallback, about 1.9 mi.'},
 {feet:1950,corridor:'I-81',state:'VA',exit:'150',city:'Troutville',ts:'ONE9',brand:'ONE9',lat:37.38399,lon:-79.90364,addr:'2609 Lee Hwy, Troutville, VA 24175-6326',tsAddr:'2966 Lee Hwy, Troutville, VA 24175',flags:['smalllot'],note:'This store is new — it did not exist a year ago. The TA up the same road is the backup when the ONE9 lot fills. About ten spaces.'},
-{feet:1976,corridor:'I-20',state:'TX',exit:'617',city:'Marshall',ts:'Pony Express Travel Center',brand:'IND',lat:32.49430,lon:-94.35878,addr:'5551 S East End Blvd, Marshall, TX 75672',tsAddr:'304 I-20 E, Marshall, TX 75672',flags:['caution'],note:'$15 to park on a lot reviewers compare to a crater field, gates close at midnight. Free parking at exit 599.'},
-{feet:1991,corridor:'I-526',state:'SC',exit:'19',city:'North Charleston',ts:'Pilot #1082',brand:'PIL',lat:32.89831,lon:-79.98599,addr:'5491 N Rhett Ave, North Charleston, SC 29406',tsAddr:'5714 N Rhett Ave, North Charleston, SC 29406',flags:['scale'],note:'A long urban walk down N Rhett Ave through the Remount Rd intersection; no sidewalk confirmed. 50 public spaces; the 13 reserved ones sell out.'},  // 14-2026 sweep: OSM way/1391599576. Opus 5.5 and Fable 5.1 agreed blind; satellite-checked. feet is OSM pin to pin, not yet HERE-remeasured.
-{feet:2031,corridor:'I-12',state:'LA',exit:'10',city:'Denham Springs',ts:'Pilot #79',brand:'PIL',lat:30.45746,lon:-90.95560,addr:'105 Rushing Rd E, Denham Springs, LA 70726-7842',tsAddr:'2601 S Range Ave, Denham Springs, LA 70726',flags:[],note:'Co-branded ONE9 on the signage.'},
-{feet:2062,corridor:'I-65',state:'AL',exit:'164',city:'Hope Hull',ts:'Saveway Truck Plaza',brand:'IND',lat:32.26881,lon:-86.35750,addr:'90 Folmar Pkwy, Montgomery, AL 36105-5509',tsAddr:'7735 Mobile Hwy, Hope Hull, AL 36043',flags:[],note:''},
-{feet:2380,corridor:'I-20',state:'SC',exit:'116',city:'Bishopville',ts:'Pilot',brand:'PIL',lat:34.19673,lon:-80.27721,addr:'1113 Sumter Hwy, Bishopville, SC 29010-7008',tsAddr:'1340 Sumter Hwy, Bishopville, SC 29010',flags:['limited'],note:'Honorary member at 0.45 mi. It is on the list because a driver review says it plainly: for truckers like us, thankfully there is a waffle house near the truck stop. The store sometimes runs window service only.'}
+{feet:1991,corridor:'I-526',state:'SC',exit:'19',city:'North Charleston',ts:'Pilot #1082',brand:'PIL',lat:32.89831,lon:-79.98599,addr:'5491 N Rhett Ave, North Charleston, SC 29406',tsAddr:'5714 N Rhett Ave, North Charleston, SC 29406',flags:['scale'],note:'A long urban walk down N Rhett Ave through the Remount Rd intersection; no sidewalk confirmed. 50 public spaces; the 13 reserved ones sell out.'}  // 14-2026 sweep: OSM way/1391599576. Opus 5.5 and Fable 5.1 agreed blind; satellite-checked. feet is OSM pin to pin, not yet HERE-remeasured.
 ];
 
 /* ===== brand letters ===============================================
