@@ -153,7 +153,7 @@ function build(osm, data, opts) {
   opts = opts || {};
   var maxFt = opts.maxFt || MAX_FT;
   var candidates = [], known = [];
-  var counts = { wafflehouses: 0, withTruckPlace: 0, known: 0, candidates: 0, crossesHighway: 0 };
+  var counts = { wafflehouses: 0, withTruckPlace: 0, known: 0, candidates: 0, crossesHighway: 0, overpassDropped: 0 };
   var capable = (osm.places || []).filter(function (p) { return truckClass(p.tags) !== 'car'; });
 
   (osm.wafflehouses || []).forEach(function (wh) {
@@ -167,6 +167,11 @@ function build(osm, data, opts) {
 
     var stops = near.map(function (p) {
       var crossed = roadsCrossed(wh, p, osm.roads);
+      // NO OVERPASS WALKS (owner rule, v4.22.1): a stop the driver can only
+      // reach by crossing a motorway is never a pairing, so it never becomes a
+      // lead. Trunk roads stay - many are at-grade surface highways, and the
+      // judging pass is told to establish the crossing.
+      if (crossed.some(function (x) { return x.highway === 'motorway'; })) { counts.overpassDropped++; return null; }
       return {
         osmId: p.id, name: displayName(p.tags), brand: p.tags.brand || '',
         truckClass: truckClass(p.tags), lat: p.lat, lon: p.lon,
@@ -176,7 +181,8 @@ function build(osm, data, opts) {
         tags: pick(p.tags, ['hgv', 'amenity', 'highway', 'brand', 'operator', 'name',
                             'opening_hours', 'website', 'phone', 'fee', 'capacity:hgv'])
       };
-    }).sort(function (a, b) { return a.osmFeet - b.osmFeet; });
+    }).filter(Boolean).sort(function (a, b) { return a.osmFeet - b.osmFeet; });
+    if (!stops.length) return;
 
     var inside = stops.filter(function (s) { return s.insideLine; });
     var cand = {

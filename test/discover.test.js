@@ -72,6 +72,17 @@ var mixed = cd.build({ roads: [], wafflehouses: [{ id: 'node/a', lat: 30, lon: -
 t.eq(mixed.candidates.map(function (c) { return c.id + ':' + c.priority; }).join(' '),
   'node/b:0 node/a:1 node/c:2', 'a truck stop inside the line outranks a closer QuikTrip; past the line is last');
 
+// --- no overpass walks (owner rule, v4.22.1) -----------------------------
+var across = cd.build({ wafflehouses: [{ id: 'node/w', lat: 34.0, lon: -84.0, tags: {} }], roads: road,
+  places: [{ id: 'node/x', lat: 34.006, lon: -84.0, tags: { amenity: 'fuel', brand: 'Pilot' } }] }, []);
+t.eq(across.candidates.length, 0, 'a Waffle House whose only truck stop is across a motorway is no lead');
+t.eq(across.counts.overpassDropped, 1, 'and the dropped stop is counted');
+var trunkRoad = [{ id: 'way/t', highway: 'trunk', ref: 'US 17', line: road[0].line }];
+var atGrade = cd.build({ wafflehouses: [{ id: 'node/w', lat: 34.0, lon: -84.0, tags: {} }], roads: trunkRoad,
+  places: [{ id: 'node/x', lat: 34.006, lon: -84.0, tags: { amenity: 'fuel', brand: 'Pilot' } }] }, []);
+t.eq(atGrade.candidates.length, 1, 'a surface trunk road between them is allowed');
+t.eq(/NO OVERPASS WALKS/.test(jd.SYSTEM), true, 'the prompt carries the rule');
+
 // --- the prompt ----------------------------------------------------------
 var lead = jd.leadText(b.candidates[0]);
 t.eq(/\d+\s*ft/.test(lead), false, 'the lead never shows the model a distance');

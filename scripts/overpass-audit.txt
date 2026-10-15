@@ -1,0 +1,114 @@
+WafflePost overpass audit (v4.22.1) - every pairing checked against the no-overpass-walks rule
+
+Method: locate each truck stop in OpenStreetMap (operator name at the distance the row claims, within 40%;
+else LOOSE = any truck-capable object within 25% of that distance; else a Census geocode of tsAddr), then test
+the straight line from the Waffle House coordinate against OSM motorway geometry. Every CROSSES hit was
+confirmed on satellite imagery before removal. "measured" is that OSM/Census distance, shown only to prove
+the right object was found; it does not replace `feet`.
+
+Good Hope AL | I-65 x304 | primary | Jack's Truck Stop | 170 ft | measured 543 | census | same side
+Walton KY | I-75 x175 | primary | Pilot | 189 ft | measured 238 | osm way/226932906 "Pilot Travel Center" | same side
+Cartersville GA | I-75 x293 | primary | JP Truck Center | 190 ft | measured 210 | LOOSE osm way/392102527 "Marathon" | same side
+Hammond LA | I-12 x40 | primary | Pilot | 205 ft | measured 212 | osm way/219822811 "Pilot Travel Center" | same side
+Hammond LA | I-12 x40 | alt     | Petro Stopping Center #310 | 506 ft | measured 336 | LOOSE osm node/12649844007 "unnamed" | same side
+Prosperity SC | I-26 x82 | primary | Pilot #4580 | 227 ft | measured 228 | osm way/1311874506 "Pilot Travel Center" | same side
+Marianna FL | I-10 x142 | primary | Pilot | 238 ft | measured 197 | osm way/226885134 "Pilot" | same side
+Augusta GA | I-520 x9 | primary | C Mart | 246 ft | measured 371 | LOOSE osm way/1207472713 "BP" | same side
+Murfreesboro TN | I-24 x81 | primary | Pilot #404 | 251 ft | measured 249 | osm way/291651304 "Pilot" | same side
+Orange TX | I-10 x877 | primary | Pilot | 252 ft | measured - | census no match | satellite ring: everything within 252 ft is south of I-10 with the store - same side
+Hubbard OH | I-80 x234 | primary | Flying J #697 | 272 ft | measured 492 | osm way/220784791 "Flying J Travel Center" | same side
+Thomson GA | I-20 x172 | primary | Love's Travel Stop #354 | 288 ft | measured 288 | osm way/225050854 "Love's Travel Stop" | same side
+Franklin OH | I-75 x36 | primary | Pilot | 301 ft | measured 210 | osm way/205877916 "Pilot" | same side
+Springfield MO | I-44 x80B | primary | Rapid Robert's Travel Plaza | 303 ft | measured 287 | osm node/2751213411 "Conoco (Cars)" | same side
+Maumelle AR | I-40 x142 | primary | Morgan SuperStop | 322 ft | measured 253 | census | same side
+Winnie TX | I-10 x829 | primary | JP Truck Stop | 336 ft | measured 393 | LOOSE osm node/12670649747 "unnamed" | same side
+Winnie TX | I-10 x829 | alt     | Bingo Travel Plaza | 935 ft | measured - | network | satellite ring: the lot at 935 ft is on the store's side of I-10, across TX-124 at grade
+Brooks KY | I-65 x121 | primary | Pilot Travel Center #356 | 347 ft | measured 391 | osm way/267331645 "Pilot Travel Center" | same side
+Theodore AL | I-10 x13 | primary | Pilot | 383 ft | measured 556 | osm way/1311861335 "Pilot Travel Center" | same side
+Dublin VA | I-81 x98 | primary | A-Plus Dublin Travel Plaza | 385 ft | measured 300 | census | same side
+Longview TX | I-20 x596 | primary | RaceTrac | 386 ft | measured 635 | osm node/12537659701 "Racetrac" | same side
+LaPlace LA | I-10 x209 | primary | TA Express #0479 | 390 ft | measured 735 | osm way/264709344 "TA Express" | same side
+Henderson LA | I-10 x115 | primary | Henderson Travel Plaza | 394 ft | measured 276 | LOOSE osm node/12680827108 "unnamed" | same side
+Henderson LA | I-10 x115 | alt     | Bayou Belle Truck Stop Casino | 2315 ft | measured - | network | ParkAdvisor coordinate 30.319229,-91.829583 is 2,323 ft away and across I-10 -> REMOVED
+Kenly NC | I-95 x106 | primary | Pilot | 398 ft | measured 597 | osm way/220150715 "Pilot" | same side
+Kenly NC | I-95 x106 | alt     | Kenly 95 Petro | 437 ft | measured 515 | LOOSE osm node/12648423248 "unnamed" | same side
+Ellenton FL | I-75 x224 | primary | ONE9 Travel Center #89 | 417 ft | measured 450 | osm way/236421275 "ONE9" | same side
+Richmond Hill GA | I-95 x87 | primary | TA | 419 ft | measured 367 | osm way/226931520 "TA" | same side
+Ocala FL | I-75 x341 | primary | Marion Oaks Pilot | 429 ft | measured 570 | LOOSE osm way/236427140 "Pilot Travel Center" | same side
+Oak Grove MO | I-70 x28 | primary | QuikTrip | 432 ft | measured 424 | osm way/1085736558 "QuikTrip" | same side  (Petro and TA alternates removed earlier in v4.22.1: across I-70)
+Jasper AL | I-22 x65 | primary | Love's Travel Stop #466 | 453 ft | measured 452 | osm way/220389475 "Love's Travel Stop" | same side
+Port Wentworth GA | I-95 x109 | primary | Pilot | 479 ft | measured 472 | osm node/5224799022 "Pilot" | same side
+Madison FL | I-10 x258 | primary | Fast Track Travel Center | 501 ft | measured - | census rejected (62334 ft) | satellite ring: the travel center is across SR-53 at grade; I-10 is south of both - same side
+Dickson TN | I-40 x172 | primary | Pilot #409 | 502 ft | measured 504 | osm way/268182457 "Pilot Travel Center" | same side
+St. George SC | I-95 x77 | primary | Flying J | 506 ft | measured 589 | osm way/231127720 "Flying J Travel Center" | same side
+Lincoln AL | I-20 x168 | primary | Pilot #1549 | 531 ft | measured 532 | osm way/1317873769 "Pilot Travel Center" | same side
+Florence KY | I-75 x181 | primary | TA Travel Center | 557 ft | measured 512 | osm way/226933441 "TA" | same side
+Haughton LA | I-20 x33 | primary | Pilot #199 | 565 ft | measured 565 | osm way/264709079 "Pilot Travel Center" | same side
+Hogansville GA | I-85 x28 | primary | Love's Travel Stop #376 | 569 ft | measured 568 | osm way/225050450 "Love's Travel Stop" | same side
+Oak Grove KY | I-24 x86 | primary | Pilot #439 | 591 ft | measured 591 | osm way/230874936 "Pilot Travel Center" | same side
+Gulfport MS | I-10 x31 | primary | Flying J | 596 ft | measured 757 | osm way/230878375 "Flying J Travel Center" | same side
+Byron GA | I-75 x149 | primary | Byron Gas N Go | 608 ft | measured 493 | census | same side
+Brunswick GA | I-95 x29 | primary | TA Brunswick #0258 | 609 ft | measured 610 | osm way/223478773 "TA" | same side
+Valdosta GA | I-75 x11 | primary | Pilot | 618 ft | measured 626 | osm way/236502829 "Pilot" | same side
+Midway FL | I-10 x192 | primary | Pilot #425 | 618 ft | measured 618 | osm way/1120903215 "Pilot Travel Center" | same side
+Grand Bay AL | I-10 x4 | primary | TA Mobile #0054 | 628 ft | measured 627 | osm way/226614213 "TA" | same side
+Ellenwood GA | I-675 x5 | primary | QuikTrip #787 | 633 ft | measured 632 | osm way/34847486 "QuikTrip" | same side
+Fort Pierce FL | I-95 x129 | primary | Love's | 636 ft | measured 558 | osm way/223432255 "Love's" | same side
+Fort Pierce FL | I-95 x129 | alt     | Pilot | 1279 ft | measured 1312 | osm way/223430141 "Pilot Travel Center" | same side
+Madison GA | I-20 x114 | primary | TA | 646 ft | measured 682 | osm way/226931009 "TA" | same side
+Madison GA | I-20 x114 | alt     | Pilot | 3643 ft | measured 3649 | osm way/226931348 "Pilot Travel Center" | CROSSES I 20 -> REMOVED
+DeFuniak Springs FL | I-10 x70 | primary | Love's | 678 ft | measured 588 | osm node/4396520321 "Love's" | same side
+Gaffney SC | I-85 x90 | primary | ONE9 #453 | 678 ft | measured 677 | LOOSE osm way/236635041 "Pilot Travel Center" | same side
+Commerce GA | I-85 x149 | primary | TA | 687 ft | measured 749 | osm way/226930084 "TA" | same side
+Ringgold GA | I-75 x345 | primary | Circle K Travel Center | 716 ft | measured 713 | LOOSE osm node/12361147696 "unnamed" | same side
+Oklahoma City OK | I-35 x137 | primary | Love's Travel Stop #205 | 754 ft | measured 758 | osm way/226296051 "Love’s" | same side
+Marion NC | I-40 x86 | primary | Love's Travel Stop #308 | 781 ft | measured 782 | osm way/224604560 "Love's Travel Stop" | same side
+Manning SC | I-95 x119 | primary | TA #179 | 791 ft | measured 737 | osm way/225350674 "TA" | same side
+Platte City MO | I-29 x18 | primary | QuikTrip #236 | 792 ft | measured 791 | osm way/1332660358 "QuikTrip" | same side
+Priceville AL | I-65 x334 | primary | Pilot #441 | 795 ft | measured 789 | osm way/236742061 "Pilot" | same side
+Baldwin FL | I-10 x343 | primary | TA | 799 ft | measured 921 | osm way/226883622 "TA" | same side
+Columbus OH | I-70 x94 | primary | Pilot Travel Center #213 | 820 ft | measured 752 | osm way/229324197 "Pilot" | same side
+La Vergne TN | I-24 x64 | primary | Pilot #52 | 838 ft | measured 820 | osm way/1253396935 "Pilot" | same side
+Knoxville TN | I-40 x374 | primary | TA Travel Center | 851 ft | measured 880 | osm way/229591985 "TA" | same side
+Carmel Church VA | I-95 x104 | primary | Flying J #749 | 858 ft | measured 870 | osm way/220795019 "Flying J Travel Center" | same side
+Hardeeville SC | I-95 x5 | primary | Pilot | 860 ft | measured 786 | osm way/565043845 "Pilot" | same side
+Jennings LA | I-10 x64 | primary | Jennings Travel Plaza | 861 ft | measured 887 | LOOSE osm node/12647808528 "unnamed" | same side
+Lafayette LA | I-10 x101 | primary | TA Travel Center #161 | 865 ft | measured 900 | osm way/229559675 "TA" | same side
+Jeffersonville OH | I-71 x65 | primary | TA Jeffersonville #0139 | 875 ft | measured 874 | osm way/785478674 "TA" | same side
+Punta Gorda FL | I-75 x161 | primary | Pilot #94 | 883 ft | measured 996 | osm way/236429504 "Pilot Travel Center" | same side
+Valdosta GA | I-75 x16 | primary | Big Foot Travel Center #946 | 889 ft | measured 958 | LOOSE osm way/1339099242 "Bigfoot Traffic Center" | same side
+Milton FL | I-10 x26 | primary | Love's (Garcon Point) | 892 ft | measured 690 | osm way/1325272648 "Love's Travel Stop" | same side
+Ashland VA | I-95 x92 | primary | TA Travel Center | 924 ft | measured 1093 | osm way/220796848 "TA" | same side
+London OH | I-70 x79 | primary | Pilot Travel Center | 927 ft | measured 932 | osm way/221628742 "Pilot" | same side
+London KY | I-75 x41 | primary | London Auto/Truck Center | 963 ft | measured 1080 | LOOSE osm node/12683651121 "unnamed" | same side
+Beaumont TX | I-10 x848 | primary | Petro Stopping Center #304 | 969 ft | measured 1200 | osm node/12079620865 "Petro Truck Stops" | same side
+Austinburg OH | I-90 x223 | primary | Pilot | 981 ft | measured 982 | osm relation/18122025 "Pilot Travel Center" | same side
+Georgetown KY | I-75 x129 | primary | Pilot #353 | 1002 ft | measured 1003 | osm way/231131953 "Pilot Travel Center" | same side
+Elkton MD | I-95 x109 | primary | Flying J | 1041 ft | measured 1045 | osm way/1120241304 "Flying J" | same side
+Cordele GA | I-75 x101 | primary | Pilot #416 | 1043 ft | measured 1041 | osm way/236479358 "Pilot" | same side
+Columbia TN | I-65 x46 | primary | Love's #346 | 1052 ft | measured 1047 | osm way/226610044 "Love's" | CROSSES I 65 -> REMOVED
+Fairburn GA | I-85 x61 | primary | Fairburn Family Travel Center | 1058 ft | measured 1059 | LOOSE osm node/12686732047 "unnamed" | same side
+Russellville AR | I-40 x84 | primary | Pilot #430 | 1062 ft | measured 1063 | osm way/264988863 "Pilot Travel Center" | same side
+Satsuma AL | I-65 x19 | primary | Pilot #75 | 1069 ft | measured 1068 | osm relation/17761413 "Pilot Travel Center" | same side
+Lebanon MO | I-44 x127 | primary | Jones Auto & Truck Plaza | 1131 ft | measured 1131 | LOOSE osm way/603203991 "B&D Auto/Truck Plaza" | same side
+Pendleton IN | I-69 x214 | primary | Love's Travel Stop #600 | 1145 ft | measured 1146 | osm way/1323902315 "Love's Travel Stop" | same side
+Kingsland GA | I-95 x3 | primary | Petro Kingsland #0344 | 1166 ft | measured 1167 | osm way/219430577 "Petro Stopping Centers" | same side
+Girard OH | I-80 x226 | primary | Petro #320 | 1183 ft | measured 1347 | LOOSE osm way/220262509 "Pilot Travel Center" | satellite ring: the only truck lots at this distance are south-east across I-80 -> REMOVED
+Temple GA | I-20 x19 | primary | Pilot | 1282 ft | measured 1374 | osm node/6533962509 "Pilot" | same side
+Temple GA | I-20 x19 | alt     | Flying J | 1442 ft | measured 1717 | osm way/221377658 "Flying J Travel Center" | same side
+Jackson GA | I-75 x201 | primary | Flying J | 1483 ft | measured 1479 | osm way/219843901 "Flying J" | same side
+Jackson GA | I-75 x201 | alt     | TA | 1725 ft | measured 1619 | osm way/219843497 "TA" | CROSSES I 75 -> REMOVED
+Jackson GA | I-75 x201 | alt     | Love's | 2192 ft | measured 2181 | osm node/9678370749 "Love's" | CROSSES I 75 -> REMOVED
+Jackson GA | I-75 x201 | alt     | Pilot | 3274 ft | measured 3294 | osm way/219842526 "Pilot" | CROSSES I 75 -> REMOVED
+Greer SC | I-85 x56 | primary | Spinx #121 | 1535 ft | measured 1536 | osm way/319303099 "Spinx Oil Truck Stop" | same side
+Slidell LA | I-10 x266 | primary | TA | 1588 ft | measured 1466 | osm way/229561070 "TA" | CROSSES I 10 -> REMOVED
+Florence SC | I-95 x170 | primary | Pilot Travel Center #62 | 1647 ft | measured 1904 | osm way/236634914 "Pilot Travel Center" | same side
+Wildwood FL | I-75 x329 | primary | TA Wildwood | 1657 ft | measured 1981 | osm way/226886623 "TA" | CROSSES I 75 -> REMOVED
+Port Allen LA | I-10 x151 | primary | Love's | 1792 ft | measured 1911 | osm way/225870591 "Love's Travel Stop" | CROSSES I 10 -> REMOVED
+Terrell TX | I-20 x501 | primary | Valero Terrell Travel Plaza | 1913 ft | measured 1922 | osm way/714766131 "Valero" | CROSSES I 20 -> REMOVED
+Troutville VA | I-81 x150 | primary | ONE9 | 1950 ft | measured 1944 | osm way/1073690493 "ONE9" | same side
+Marshall TX | I-20 x617 | primary | Pony Express Travel Center | 1976 ft | measured 1780 | census | census pin landed on I-20; satellite shows the dirt-lot truck stop on the south frontage, store north -> REMOVED
+North Charleston SC | I-526 x19 | primary | Pilot #1082 | 1991 ft | measured 1991 | osm way/1317853096 "Pilot Travel Center" | same side
+Denham Springs LA | I-12 x10 | primary | Pilot #79 | 2031 ft | measured 2155 | osm way/466289481 "undefined" | CROSSES I 12 -> REMOVED
+Hope Hull AL | I-65 x164 | primary | Saveway Truck Plaza | 2062 ft | measured 1847 | census | CROSSES I 65 -> REMOVED
+Bishopville SC | I-20 x116 | primary | Pilot | 2380 ft | measured 2370 | osm node/7883068916 "Pilot" | CROSSES I 20 -> REMOVED

@@ -60,7 +60,7 @@ var SYSTEM = [
   '- NEVER estimate or report a distance in feet, yards or miles, and never describe one as "next door" or "across the street" from addresses alone. Distances are measured later from audited coordinates. Every one of eleven earlier leads that arrived with an estimated distance measured wrong, one by a factor of fourteen.',
   '- A business is closed only if two independent, recent sources say so. A single directory "permanently closed" flag nearly purged a live truck stop before.',
   '- A shared road name is NOT a shared interchange. Two addresses on the same street have been measured at opposite ends of it, more than a mile apart. Adjacent exits in the same town with the same signage are the most common failure.',
-  '- If the straight line between the two crosses an interstate, the walk is whatever crossing exists (an overpass, an underpass), or none. Say which, with a source, or say unknown.',
+  '- NO OVERPASS WALKS. If walking between the two means crossing the interstate - by an overpass, an underpass or through the interchange - the verdict is "reject" with reject_reason "no_walkable_crossing", however close they are. Crossing a surface road at grade is allowed; say so in caution.',
   '- Never compose an address. Copy it from a page you cite, or leave it empty.',
   '- "unknown" is always an acceptable answer. A guess presented as a fact is not.',
   '',
@@ -156,7 +156,7 @@ function leadText(c) {
     if (s.crosses.length) {
       lines.push('   THE STRAIGHT LINE TO THIS PLACE CROSSES: ' +
         s.crosses.map(function (r) { return r.label; }).join(', ') +
-        '. Find the actual crossing or say there is none.');
+        '. Establish whether that is an at-grade surface crossing; if it is an interstate or any overpass, reject.');
     }
     lines.push('   tags: ' + JSON.stringify(s.tags));
   });
