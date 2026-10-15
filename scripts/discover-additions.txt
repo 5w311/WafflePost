@@ -1,0 +1,225 @@
+WafflePost 14-2026 discovery additions - provenance of every new row
+Generated from scripts/discover-out/ (gitignored) on 2026-10-15.
+
+Each row: both models established the pair blind to each other, named the same stop at the same house number,
+and a satellite image with both OSM pins marked was checked by eye. feet = haversine between the OSM Waffle House
+pin and the OSM pin of the stop both models named (lib/waffledist). NOT yet re-derived by scripts/remeasure.js.
+"census" is the US Census address-range geocoder on the agreed addresses: interpolated along a street, routinely
+off by hundreds of feet, shown only as a sanity check and never used for feet. Only the first 19 rows were run
+through it.
+
+Prosperity SC | I-26 x82 | 227 ft
+  Waffle House  OSM node/2661897439  34.24006,-81.45947  2195 SC Hwy 773, Prosperity, SC 29127
+  truck stop    OSM way/1311874506  2221 SC-773, Prosperity, SC 29127
+  Opus 5.5      Pilot Travel Center #4580 @ 2221 SC-773, Prosperity, SC 29127
+  Fable 5.1     Pilot Travel Center #4580 @ 2221 SC Highway 773, Prosperity, SC 29127
+  census        77 ft between the agreed addresses
+  satellite     Pilot lot full of trucks; Waffle House on the same NE side of I-26, across the Pilot's frontage.
+
+Murfreesboro TN | I-24 x81 | 251 ft
+  Waffle House  OSM way/450292362  35.80711,-86.39688  2477 S Church St, Murfreesboro, TN 37127
+  truck stop    OSM way/291651304  2441 S Church St, Murfreesboro, TN 37127
+  Opus 5.5      Pilot Travel Center #404 @ 2441 S Church St, Murfreesboro, TN 37127
+  Fable 5.1     Pilot Travel Center #404 @ 2441 S Church St, Murfreesboro, TN 37127
+  census        537 ft between the agreed addresses
+  satellite     Pilot with trucks lined up behind; Waffle House just south on the same side of US-231. No interstate.
+
+Thomson GA | I-20 x172 | 288 ft
+  Waffle House  OSM way/1086039919  33.51355,-82.50300  2101 Washington Rd, Thomson, GA 30824
+  truck stop    OSM way/225050854  2129 Washington Rd NW, Thomson, GA 30824
+  Opus 5.5      Love's Travel Stop #354 @ 2129 Washington Road NW, I-20 Exit 172, Thomson GA 30824
+  Fable 5.1     Love's Travel Stop #354 @ 2129 Washington Rd. NW, Thomson, GA 30824
+  census        no match on one or both addresses
+  satellite     Waffle House sits on the edge of the Love's lot, trucks parked; north of I-20.
+
+Jasper AL | I-22 x65 | 453 ft
+  Waffle House  OSM node/4921723928  33.79270,-87.24337  203 Carl Cannon Blvd, Jasper, AL 35501
+  truck stop    OSM way/220389475  83 Carl Cannon Blvd, Jasper, AL 35501
+  Opus 5.5      Love's Travel Stop #466 @ 83 Carl Cannon Blvd, Jasper, AL 35501
+  Fable 5.1     Love's Travel Stop #466 @ 83 Carl Cannon Blvd, Jasper, AL 35501
+  census        no match on one or both addresses
+  satellite     Love's lot full of trucks; Waffle House pin at the north tip of the same lot, on a recently cleared pad.
+
+Dickson TN | I-40 x172 | 502 ft
+  Waffle House  OSM way/1075228753  36.02339,-87.33989  2321 Hwy 46 S, Dickson, TN 37055
+  truck stop    OSM way/268182457  2320 TN-46, Dickson, TN 37055
+  Opus 5.5      Pilot Travel Center #409 @ 2320 TN-46 Dickson, TN 37055
+  Fable 5.1     Pilot Travel Center #409 @ 2320 TN-46, Dickson, TN 37055
+  census        66724 ft between the agreed addresses
+  satellite     Pilot lot full of trucks west of TN-46; Waffle House across TN-46; I-40 not between them.
+
+Lincoln AL | I-20 x168 | 531 ft
+  Waffle House  OSM way/1201709101  33.59440,-86.12259  670 Magnolia St, Lincoln, AL 35096
+  truck stop    OSM way/1317873769  75750 AL-77, Lincoln, AL 35096
+  Opus 5.5      Pilot Travel Center #1549 @ 75750 AL-77 Lincoln, AL 35096
+  Fable 5.1     Pilot Travel Center #1549 @ 75750 AL-77, Lincoln, AL 35096
+  census        242 ft between the agreed addresses
+  satellite     Pilot lot with trucks east of AL-77; Waffle House across AL-77; I-20 to the south, not between.
+
+Haughton LA | I-20 x33 | 565 ft
+  Waffle House  OSM way/977647884  32.54507,-93.51458  475 N Elm St, Haughton, LA 71037
+  truck stop    OSM way/264709079  490 N Elm St, Haughton, LA 71037
+  Opus 5.5      Pilot Travel Center #199 @ 490 N Elm St, Haughton, LA 71037
+  Fable 5.1     Pilot Travel Center #199 @ 490 N Elm St, Haughton, LA 71037
+  census        no match on one or both addresses
+  satellite     Pilot lot full of trucks west of LA-157; Waffle House across LA-157; I-20 to the north, not between.
+
+Hogansville GA | I-85 x28 | 569 ft
+  Waffle House  OSM way/391118314  33.16019,-84.87172  1615 Bass Cross Rd, Hogansville, GA 30230
+  truck stop    OSM way/225050450  1621 Bass Cross Rd, Hogansville, GA 30230
+  Opus 5.5      Love's Travel Stop #376 @ 1621 Bass Cross Rd., Hogansville, GA 30230
+  Fable 5.1     Love's Travel Stop #376 @ 1621 Bass Cross Rd., Hogansville, GA 30230
+  census        18 ft between the agreed addresses
+  satellite     Love's lot full of trucks; Waffle House at the north end of the same frontage road.
+
+Oak Grove KY | I-24 x86 | 591 ft
+  Waffle House  OSM node/3897624265  36.69332,-87.45235  12880 Fort Campbell Blvd, Oak Grove, KY 42262
+  truck stop    OSM way/230874936  12900 Fort Campbell Blvd, Oak Grove, KY 42262
+  Opus 5.5      Pilot Travel Center #439 @ 12900 Fort Campbell Blvd, Oak Grove, KY 42262
+  Fable 5.1     Pilot Travel Center #439 @ 12900 Fort Campbell Blvd, Oak Grove, KY 42262
+  census        no match on one or both addresses
+  satellite     Pilot lot full of trucks; Waffle House at the lot's NW corner, same side of US-41A.
+
+Brunswick GA | I-95 x29 | 609 ft
+  Waffle House  OSM node/4941343181  31.13910,-81.58087  125 Palisade Dr, Brunswick, GA 31523
+  truck stop    OSM way/223478773  185 S Port Pkwy, Brunswick, GA 31523
+  Opus 5.5      TA Brunswick #0258 (TravelCenters of America) @ 185 S. Port Parkway Brunswick, GA 31523-7778
+  Fable 5.1     TA Brunswick #0258 (TravelCenters of America) @ 185 S. Port Parkway Brunswick, GA 31523-7778
+  census        2425 ft between the agreed addresses
+  satellite     TA lot with trucks; Waffle House across one surface road to the NW; I-95 not between.
+
+Midway FL | I-10 x192 | 618 ft
+  Waffle House  OSM way/299390765  30.48488,-84.42309  2380 E Brickyard Rd, Midway, FL 32343
+  truck stop    OSM way/1120903215  33333 Blue Star Hwy, Midway, FL 32343
+  Opus 5.5      Pilot Travel Center #425 @ 33333 Blue Star Hwy, Midway, FL 32343
+  Fable 5.1     Pilot Travel Center #425 @ 33333 Blue Star Hwy, Midway, FL 32343
+  census        286 ft between the agreed addresses
+  satellite     Pilot lot full of trucks north of US-90; Waffle House across US-90; I-10 not between.
+
+Grand Bay AL | I-10 x4 | 628 ft
+  Waffle House  OSM node/891156091  30.49934,-88.33533  9190 Grand Bay Wilmer Rd S, Grand Bay, AL 36541
+  truck stop    OSM way/226614213  9201 Grand Bay Wilmer Rd, Grand Bay, AL 36541
+  Opus 5.5      TA (TravelCenters of America) - TA Mobile #0054 @ 9201 Grand Bay Grand Bay, AL 36541
+  Fable 5.1     TA Mobile #0054 (TravelCenters of America) @ 9201 Grand Bay Grand Bay, AL 36541
+  census        not run
+  satellite     TA lot full of trucks; Waffle House across Grand Bay-Wilmer Rd; I-10 to the south.
+
+Ellenwood GA | I-675 x5 | 633 ft
+  Waffle House  OSM way/696233830  33.61200,-84.30048  2735 Forest Pkwy, Ellenwood, GA 30294
+  truck stop    OSM way/34847486  2881 Forest Pkwy, Ellenwood, GA 30294
+  Opus 5.5      QuikTrip (#787) @ 2881 Forest Pkwy, Ellenwood, GA 30294
+  Fable 5.1     QuikTrip Store #787 (QuikTrip Travel Center) @ 2881 Forest Pkwy, Ellenwood, GA 30294
+  census        not run
+  satellite     QuikTrip with truck parking; large truck lot beside the Waffle House; I-675 to the east.
+
+Gaffney SC | I-85 x90 | 678 ft
+  Waffle House  OSM way/732004833  35.07959,-81.70324  924 Hyatt St, Gaffney, SC 29341
+  truck stop    OSM way/236635041  909 Hyatt St, Gaffney, SC 29341
+  Opus 5.5      ONE9 Travel Center #453 (Pilot Company, formerly Pilot Travel Center) @ 909 Hyatt St, Gaffney, SC 29341
+  Fable 5.1     ONE9 Travel Center #453 (Pilot Flying J; formerly branded Pilot Travel Center) @ 909 Hyatt St, Gaffney, SC 29341
+  census        324 ft between the agreed addresses
+  satellite     ONE9 lot full of trucks west of SC-105; Waffle House across SC-105.
+
+Marion NC | I-40 x86 | 781 ft
+  Waffle House  OSM node/6780333566  35.65981,-81.96423  3249 NC 226 S, Marion, NC 28752
+  truck stop    OSM way/224604560  3308 Hwy 226 S, Marion, NC 28752
+  Opus 5.5      Love's Travel Stop #308 @ 3308 Hwy 226 S., Marion, NC 28752
+  Fable 5.1     Love's Travel Stop #308 @ 3308 Hwy 226 S., Marion, NC 28752
+  census        not run
+  satellite     Love's lot with trucks south; Waffle House north across NC-226; I-40 to the east.
+
+Platte City MO | I-29 x18 | 792 ft
+  Waffle House  OSM way/865570639  39.35295,-94.76589  1305 Platte Falls Rd, Platte City, MO 64079
+  truck stop    OSM way/1332660358  1850 Branch St, Platte City, MO 64079
+  Opus 5.5      QuikTrip (Store #236) @ 1850 Branch St, Platte City, MO 64079
+  Fable 5.1     QuikTrip #236 @ 1850 Branch St, Platte City, MO 64079
+  census        not run
+  satellite     QuikTrip north of MO-92 with a few trucks; Waffle House across MO-92; I-29 to the east.
+
+Jeffersonville OH | I-71 x65 | 875 ft
+  Waffle House  OSM way/225084516  39.61705,-83.60599  11546 Allen Rd, Jeffersonville, OH 43128
+  truck stop    OSM way/785478674  12403 US Rt 35 NW, Jeffersonville, OH 43128
+  Opus 5.5      TA (TravelCenters of America) Jeffersonville #0139 @ 12403 US Rt 35 NW Jeffersonville, OH 43128-0068
+  Fable 5.1     TA Jeffersonville #139 (TravelCenters of America) @ 12403 US Rt 35 NW Jeffersonville, OH 43128-0068
+  census        no match on one or both addresses
+  satellite     TA lot full of trucks; Waffle House at the west end of the same frontage.
+
+Austinburg OH | I-90 x223 | 981 ft
+  Waffle House  OSM node/3056229276  41.78391,-80.85535  2850 G.H. Drive, Austinburg, OH 44010
+  truck stop    OSM relation/18122025  2246 OH-45, Austinburg, OH 44010
+  Opus 5.5      Pilot Travel Center @ 2246 State Route 45, Austinburg OH 44010
+  Fable 5.1     Pilot Travel Center #2 @ 2246 OH-45, Austinburg, OH 44010
+  census        not run
+  satellite     Pilot lot full of trucks north; Waffle House south across a side street and OH-45 frontage; I-90 to the north of both.
+
+Georgetown KY | I-75 x129 | 1002 ft
+  Waffle House  OSM way/1289726480  38.27409,-84.55311  405 Cherry Blossom Way, Georgetown, KY 40324
+  truck stop    OSM way/231131953  110 Triport Rd, Georgetown, KY 40324
+  Opus 5.5      Pilot Travel Center #353 @ 110 Triport Rd Georgetown, KY 40324
+  Fable 5.1     Pilot Travel Center #353 @ 110 Triport Rd, Georgetown, KY 40324
+  census        not run
+  satellite     Pilot lot with trucks north of KY-620; Waffle House south across KY-620; I-75 to the west.
+
+Fairburn GA | I-85 x61 | 1058 ft
+  Waffle House  OSM way/289232882  33.54433,-84.57652  7800 Senoia Rd, Fairburn, GA 30213
+  truck stop    OSM node/12686732047  7860 Senoia Rd, Fairburn, GA 30213
+  Opus 5.5      Fairburn Family Travel Center (BP; formerly listed as Fairburn BP Truck Stop) @ 7860 SENOIA RD, FAIRBURN, GA 30213
+  Fable 5.1     Fairburn Family Travel Center (BP) - Green Oil Co. @ 7860 Senoia Rd, Fairburn, GA 30213
+  census        not run
+  satellite     BP travel center with trucks and large truck lots east; Waffle House north across a signalized arterial.
+
+Russellville AR | I-40 x84 | 1062 ft
+  Waffle House  OSM way/613056329  35.28189,-93.09513  3085 E Parkway Dr, Russellville, AR 72802
+  truck stop    OSM way/264988863  215 AR-331 N, Russellville, AR 72802
+  Opus 5.5      Pilot Travel Center #430 @ 215 AR-331 N, Russellville, AR 72802
+  Fable 5.1     Pilot Travel Center #430 @ 215 AR-331 N, Russellville, AR 72802
+  census        not run
+  satellite     Pilot lot full of trucks; Waffle House NW across AR-331 near the ramp junction; I-40 to the NE, not between.
+
+Satsuma AL | I-65 x19 | 1069 ft
+  Waffle House  OSM way/75498907  30.86996,-88.04740  6097 Hwy 43 N, Satsuma, AL 36572
+  truck stop    OSM relation/17761413  6109 US-43 S, Satsuma, AL 36572
+  Opus 5.5      Pilot Travel Center #75 @ 6109 US-43 S, Satsuma, AL 36572
+  Fable 5.1     Pilot Travel Center #75 @ 6109 US-43 S, Satsuma, AL 36572
+  census        not run
+  satellite     Pilot lot with trucks; Waffle House south along the same west side of US-43.
+
+Lebanon MO | I-44 x127 | 1131 ft
+  Waffle House  OSM way/603203960  37.65093,-92.66719  1924 W Elm St, Lebanon, MO 65536
+  truck stop    OSM way/603203991  2031 W Elm St, Lebanon, MO 65536
+  Opus 5.5      Jones Auto & Truck Plaza (formerly B&D Auto/Truck Plaza) @ 2031 W Elm St, Lebanon, MO 65536
+  Fable 5.1     Jonesy's Travel Center (Roady's), formerly B&D / Jones Auto & Truck Plaza @ 2031 W Elm St, Lebanon, MO 65536
+  census        not run
+  satellite     Truck plaza lot with trucks west; Waffle House east across the Elm St junction; I-44 to the SE of both.
+
+Pendleton IN | I-69 x214 | 1145 ft
+  Waffle House  OSM node/6308702365  39.99035,-85.84270  7810 S State Rd 13, Pendleton, IN 46064
+  truck stop    OSM way/1323902315  9000 Interpark Dr, Pendleton, IN 46064
+  Opus 5.5      Love's Travel Stop #600 @ 9000 Interpark Dr, Pendleton, IN 46064
+  Fable 5.1     Love's Travel Stop #600 @ 9000 Interpark Dr, Pendleton, IN 46064
+  census        not run
+  satellite     Love's lot full of trucks; Waffle House SE across IN-13 shoulder; I-69 to the north.
+
+Kingsland GA | I-95 x3 | 1166 ft
+  Waffle House  OSM way/1221877815  30.79267,-81.66335  1201 E King Ave, Kingsland, GA 31548
+  truck stop    OSM way/219430577  1105 E King Ave, Kingsland, GA 31548
+  Opus 5.5      Petro (TravelCenters of America) - Petro Kingsland #0344 @ 1105 East King Avenue Kingsland, GA 31548
+  Fable 5.1     Petro Stopping Center (TA-Petro) Kingsland @ 1105 East King Avenue, Kingsland, GA 31548
+  census        1361 ft between the agreed addresses
+  satellite     Petro lot full of trucks; Waffle House east along GA-40, same north side; RaceWay between them is a car station.
+
+Greer SC | I-85 x56 | 1535 ft
+  Waffle House  OSM way/984801237  34.87696,-82.22787  2412 SC-14, Greer, SC 29650
+  truck stop    OSM way/319303099  2497 S Hwy 14, Greer, SC 29651
+  Opus 5.5      Spinx #121 @ 2497 S. Hwy 14, Greer, SC 29651
+  Fable 5.1     Spinx #121 @ 2497 S. Hwy 14, Greer, SC 29651
+  census        253 ft between the agreed addresses
+  satellite     Small Spinx lot, few trucks visible; Waffle House NW along SC-14; I-85 to the SE.
+
+North Charleston SC | I-526 x19 | 1991 ft
+  Waffle House  OSM way/1391599576  32.89831,-79.98599  5491 N Rhett Ave, North Charleston, SC 29406
+  truck stop    OSM way/1317853096  5714 N Rhett Ave, North Charleston, SC 29406
+  Opus 5.5      Pilot Travel Center #1082 @ 5714 N Rhett Ave, North Charleston, SC 29406
+  Fable 5.1     Pilot Travel Center #1082 @ 5714 N Rhett Ave, Charleston, SC 29406
+  census        not run
+  satellite     Pilot lot with trucks north; Waffle House 0.38 mi south down N Rhett Ave through one major intersection.

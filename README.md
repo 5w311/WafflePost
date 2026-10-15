@@ -10,7 +10,7 @@ WafflePost answers *can I get a plate of hashbrowns without moving the truck*.
 
 Two tabs:
 
-- **Atlas** — map and list of all 69 exits, filterable by corridor, state,
+- **Atlas** — map and list of all 96 exits, filterable by corridor, state,
   truck stop chain, walk distance and free text. Every row, distance and
   filter is computed locally; only the basemap under the pins is fetched.
 - **Route** — pickup and delivery with address autosuggest and a "use my
@@ -46,6 +46,7 @@ scripts/discover.js       DISCOVERY sweep: OSM leads, researched blind by Opus 5
 scripts/discover/         its pure parts: Overpass query + parse, candidate builder, prompt/schema/cost/reconcile
 scripts/discover-candidates.json  the OSM lead list, committed so `judge` can run from a fresh download
 scripts/discover-report.txt  the reconciled leads from the last sweep, once one has run
+scripts/discover-additions.txt  provenance of every row the 14-2026 sweep added
 data/atlas.csv            REGENERATED from DATA by scripts/remeasure.js - never hand-edit
 apple-touch-icon.png      iOS home screen, 180x180 - the bar tile, baked
 icon-192.png              Android home screen
@@ -99,11 +100,11 @@ there.
 Counts, reconciled, because three different numbers are all correct about
 different things:
 
-- **69 exits** — rows in `DATA`. 68 walkable plus one honorary member,
-  across fifteen corridors and sixteen states.
-- **81 pairings listed** — every truck stop named, including the second,
+- **96 exits** — rows in `DATA`. 95 walkable plus one honorary member,
+  across twenty-three corridors and seventeen states.
+- **108 pairings listed** — every truck stop named, including the second,
   third and fourth stop at exits that have them.
-- **76 pairings within 0.4 mi** — the headline number. The other 5 sit past
+- **103 pairings within 0.4 mi** — the headline number. The other 5 sit past
   the line. Four are alternates, labelled *(past the line)* in the stop sheet
   rather than dropped, because at 3am a 3,274 ft walk you know about beats a
   1,483 ft walk into a full lot. The fifth is Bishopville's own primary stop
@@ -269,6 +270,109 @@ North Carolina's I-85, I-40, I-77 and I-26; South Carolina's interior;
 Georgia's I-16; Florida's I-4. **North Carolina is the notable gap** — a top
 five Waffle House state with heavy freight on four interstates, holding
 exactly one atlas row.
+
+### The 14-2026 discovery sweep: twenty-seven rows from the other direction
+
+Every edition before this one started from exit guides and walked corridors.
+This one started from the map. `scripts/discover.js` (see *The discovery
+sweep* below) asked OpenStreetMap for every Waffle House in the country —
+1,750 of them — and every truck-capable place within 800 m of one, dropped the
+existing rows, and sent the leads to Opus 5.5 and then, blind, to Fable 5.1.
+69 exits become 96, 81 pairings become 108, eight new corridors (I-22, I-26,
+I-29, I-69, I-71, I-90, I-526, I-675) and one new state, Indiana.
+
+**What a row had to clear.** Both models independently established the pair
+(Waffle House operating, truck stop operating, semi parking, same interchange)
+with cited sources, and named the same stop at the same house number. Then a
+satellite image of each pair, both OSM pins marked, had to show a truck lot
+with trucks in it, a building where the Waffle House pin is, and no interstate
+between them. Thirty-seven pairs reached the satellite check; twenty-seven
+passed it.
+
+**`feet` on these rows is OSM building pin to OSM building pin.** That is a
+measurement from mapped geometry, not an estimate from an address, but it is
+not the HERE geocode `remeasure.js` re-derives every other figure from — the
+key is domain-locked and the sweep ran where it could not send a Referer. Each
+new row says so in its trailing comment. Run `scripts/remeasure.js` and
+`scripts/tsaddr-verify.js` with the restriction lifted before treating these
+figures as audited; until then they are the best numbers on these rows, and
+labelled as what they are.
+
+| exit | walk | stop |
+|---|---|---|
+| Prosperity SC, I-26 x82 | 227 ft | Pilot #4580 |
+| Murfreesboro TN, I-24 x81 | 251 ft | Pilot #404 |
+| Thomson GA, I-20 x172 | 288 ft | Love's #354 |
+| Jasper AL, I-22 x65 | 453 ft | Love's #466 |
+| Dickson TN, I-40 x172 | 502 ft | Pilot #409 |
+| Lincoln AL, I-20 x168 | 531 ft | Pilot #1549 |
+| Haughton LA, I-20 x33 | 565 ft | Pilot #199 |
+| Hogansville GA, I-85 x28 | 569 ft | Love's #376 |
+| Oak Grove KY, I-24 x86 | 591 ft | Pilot #439 |
+| Brunswick GA, I-95 x29 | 609 ft | TA #0258 |
+| Midway FL, I-10 x192 | 618 ft | Pilot #425 |
+| Grand Bay AL, I-10 x4 | 628 ft | TA Mobile #0054 |
+| Ellenwood GA, I-675 x5 | 633 ft | QuikTrip #787 |
+| Gaffney SC, I-85 x90 | 678 ft | ONE9 #453 |
+| Marion NC, I-40 x86 | 781 ft | Love's #308 |
+| Platte City MO, I-29 x18 | 792 ft | QuikTrip #236 |
+| Jeffersonville OH, I-71 x65 | 875 ft | TA #0139 |
+| Austinburg OH, I-90 x223 | 981 ft | Pilot |
+| Georgetown KY, I-75 x129 | 1,002 ft | Pilot #353 |
+| Fairburn GA, I-85 x61 | 1,058 ft | Fairburn Family Travel Center |
+| Russellville AR, I-40 x84 | 1,062 ft | Pilot #430 |
+| Satsuma AL, I-65 x19 | 1,069 ft | Pilot #75 |
+| Lebanon MO, I-44 x127 | 1,131 ft | Jones Auto & Truck Plaza |
+| Pendleton IN, I-69 x214 | 1,145 ft | Love's #600 |
+| Kingsland GA, I-95 x3 | 1,166 ft | Petro #0344 |
+| Greer SC, I-85 x56 | 1,535 ft | Spinx #121 |
+| North Charleston SC, I-526 x19 | 1,991 ft | Pilot #1082 |
+
+**Kingsland GA and Oak Grove KY come back, and that needs saying.** Both were
+purged in 09-2026 because the re-audit's own truck stop addresses geocoded 2.7
+and 1.1 miles from their Waffle House coordinates. This time neither figure
+comes from an address: both pins are mapped buildings, both models named the
+same stop at the same house number, and the satellite shows the Petro's and
+the Pilot's lots full of trucks a few hundred yards from the store. The old
+failure was a bad address, not a missing pair. Russellville AR returns the
+same way, at a different Pilot than the row purged in 09-2026.
+
+**Eight passed both models and are held for an owner decision, not added:**
+
+- **Seven where the straight line crosses an interstate.** Braselton GA
+  (I-85 x129, 1,635 ft), Rayville LA (I-20 x138, 1,116), Walton KY (I-75
+  x171, 1,506), Tallapoosa GA (I-20 x5, 1,763), Carthage TN (I-40 x258,
+  1,962), Clinton SC (I-26 x52, 1,558) and Rock Hill SC (I-77 x77, 1,843).
+  Oak Grove MO is the only row where straight-line is not the walk, and there
+  it is the alternates that cross, not the primary. Admitting a primary whose
+  walk is an overpass is a new rule, and the overpass adds distance the
+  haversine does not see: Carthage is already 150 ft from the line before it.
+- **Madison GA, I-20 x114.** The sweep found a Waffle House 739 ft from the
+  Pilot at this exit. The existing Madison row pairs a different store, 3,079
+  ft away, with the TA, and carries the Pilot as an alternate at 3,643 ft.
+  Either the exit has two stores or the existing row's coordinate is off,
+  and the existing row's TA figure is already labelled stale in
+  `remeasure-report.txt`. One row per exit means this is a correction to
+  make by hand, not a row to append.
+
+**Two dropped.** A second Thomson GA store across I-20 (the row above is the
+one beside the Love's), and Calvert City KY (I-24 x27), at 2,555 ft past the
+line with no driver evidence for honorary status.
+
+**Fifteen disputed leads are the next edition's reading list.** Where one
+model established a pair and the other could not, both answers sit side by
+side under DISPUTED in `scripts/discover-report.txt`. Among them are Metter GA
+(I-16 x104, 420 ft), Lugoff SC (I-20 x92, 572), Wilson NC (I-95 x121, 520),
+Laurens SC (I-385 x9, 386) and Kansas City KS (I-635 x3, 464). Each needs one
+more independent source before it is a row. 79 more leads were judged by Opus
+alone, and 57 of Opus's unresolved leads were never reached by Fable when the
+budget ran out.
+
+**The QuikTrip and RaceTrac question is answered, mostly no.** 272 leads had
+only a QuikTrip, RaceTrac, RaceWay, Sheetz or Wawa inside the line. Opus
+judged 21 of them and established none, so the rest were left unjudged. The
+two QuikTrips above came in through OSM `hgv` tagging, not the brand, and both
+are flagged `smalllot`.
 
 ### The 09-2026 re-audit
 
@@ -990,14 +1094,14 @@ leaderboard.
 
 `run.js` prints one `ok <name> N passed` line per file and then `all green`,
 or names the files that failed. It does not sum the assertions — at v4.18.0
-they came to 1,741 across twelve files; at v4.21.1 they come to 1,846 added up
-from those lines.
+they came to 1,741 across twelve files; at v4.22.0 they come to 2,414 across
+thirteen, added up from those lines.
 
 ## Two version strings, on purpose
 
 Same reasoning as FuelPost, different perishable thing:
 
-- **`ATLAS_REV`** (`Atlas Rev 13-2026`) — which edition of the walkability
+- **`ATLAS_REV`** (`Atlas Rev 14-2026`) — which edition of the walkability
   audit the rows came from. Shown in the **panel tab**, beside the pair
   count, because stores open and close: Troutville's did not exist a year
   before this revision, and a pair that has closed is a wasted exit at 3am. A
@@ -1026,6 +1130,25 @@ null, and a theme preference is never worth a blank screen. In that case the
 choice simply does not persist, which is the correct degradation.
 
 ## Version history
+
+### v4.22.0
+
+**Twenty-seven new exits, from the discovery sweep.** `ATLAS_REV` moves to
+**Rev 14-2026**: 69 exits become 96, 81 pairings 108, fifteen corridors
+twenty-three, and Indiana is the seventeenth state. See *The 14-2026 discovery
+sweep* above for what each row had to clear, the eight held for an owner
+decision, and why Kingsland GA and Oak Grove KY are back.
+
+- **`feet` on the new rows is OSM pin to pin**, labelled as such on every
+  row, pending a HERE remeasure.
+- **No app code changed.** The version moves because `DATA` did, and
+  `data/atlas.csv` is regenerated from it.
+- **`scripts/discover.js`** gained what the live run taught it: the Overpass
+  fetch runs in 69 cached tiles with mirror fallback, the queue runs real
+  truck stops first, Fable can be pointed at Opus's candidates only
+  (`--opus-verdict candidate`), spend is re-derived from the verdict logs so
+  two passes can run at once, and one house number written two ways
+  ("2246 State Route 45", "2246 OH-45") is agreement rather than a dispute.
 
 ### v4.21.1
 
