@@ -104,6 +104,7 @@ t.eq(q.length - rejectsSent, 100, 'every Opus non-reject goes to Fable');
 t.eq(rejectsSent > 45 && rejectsSent < 105, true, 'about a quarter of Opus rejects are audited (' + rejectsSent + ')');
 t.eq(jd.fableQueue(cs, opusR, { auditShare: 0.25 }).length, q.length, 'the audit sample is stable across reruns');
 t.eq(jd.fableQueue(cs, opusR, { all: true }).length, 400, '--all sends everything');
+t.eq(jd.fableQueue(cs, opusR, { onlyVerdict: 'candidate' }).length, 100, '--opus-verdict candidate takes only those');
 t.eq(jd.fableQueue([{ id: 'x' }], {}, {}).length, 0, 'a lead Opus never reached is not Fable\'s');
 t.eq(jd.fableQueue([{ id: 'x' }], { x: { error: 'API 500' } }, {}).length, 1, 'a lead Opus errored on goes to Fable');
 
@@ -127,6 +128,9 @@ t.eq(jd.reconcile(v(), v({ truck_stop: { cat_scale: 'unknown' } })).flags.join('
 t.eq(jd.reconcile(v(), v({ truck_stop: { osm_id: 'node/77' } })).status, 'DISPUTED', 'different stops');
 t.eq(jd.reconcile(v(), v({ truck_stop: { address: '2215 Highway 71, Marianna, FL' } })).status, 'DISPUTED',
   'same stop, different house numbers');
+t.eq(jd.reconcile(v({ truck_stop: { address: '2246 State Route 45, Austinburg, OH' } }),
+  v({ truck_stop: { address: '2246 OH-45, Austinburg, OH' } })).status, 'VERIFY NEXT',
+  'one house number written two ways is agreement');
 t.eq(jd.reconcile(v(), v({ verdict: 'reject', reject_reason: 'different_interchange' })).status, 'DISPUTED',
   'candidate vs reject');
 t.eq(jd.reconcile(v({ verdict: 'reject' }), v({ verdict: 'reject' })).status, 'REJECTED', 'both reject');

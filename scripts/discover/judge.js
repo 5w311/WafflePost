@@ -232,7 +232,13 @@ function fableQueue(candidates, opusResults, opts) {
     // Spending the second pass there buys single-model verdicts, which the
     // report cannot reconcile into anything.
     if (!r) return false;
-    if (!r.verdict) return true;                  // Opus errored on it: Fable is the only pass
+    if (!r.verdict) return !opts.onlyVerdict;     // Opus errored on it: Fable is the only pass
+    // --opus-verdict candidate: spend first where a second yes can produce
+    // VERIFY NEXT. Opus marks most of what it cannot settle `unresolved`
+    // rather than `reject`, so without this the audit queue is nearly every
+    // lead Opus saw, and Fable's budget runs out on leads that can at best
+    // reconcile to DISPUTED.
+    if (opts.onlyVerdict) return r.verdict.verdict === opts.onlyVerdict;
     if (r.verdict.verdict !== 'reject') return true;
     return hash01(c.id) < share;
   });
@@ -244,11 +250,15 @@ function norm(s) {
     .replace(/\s+/g, ' ').trim();
 }
 
-// Street line only: house number plus the first street word, enough to tell
-// 2310 Highway 62 from 2205 Highway 62, which is the disagreement that matters.
+// The house number alone. That is what tells 2310 Highway 62 from 2205
+// Highway 62, which is the disagreement that matters. The street word is not
+// compared: the live sweep wrote the same building as "2246 State Route 45"
+// and "2246 OH-45", "12818 Highway 56" and "12818 SC-56", and "1155 Anderson
+// Rd" and "1155 S Anderson Rd", and a street-word check called all three
+// disputes. sameStop() has already matched the operator.
 function streetKey(addr) {
-  var m = String(addr || '').toLowerCase().match(/^\s*(\d+[a-z]?)\s+([a-z0-9]+)/);
-  return m ? m[1] + ' ' + m[2] : '';
+  var m = String(addr || '').toLowerCase().match(/^\s*(\d+[a-z]?)\b/);
+  return m ? m[1] : '';
 }
 
 function sameStop(a, b) {
